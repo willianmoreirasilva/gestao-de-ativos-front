@@ -97,7 +97,9 @@ export function AppSidebar({ user }: AppSidebarProps) {
             <SidebarContent className="p-2 gap-2 overflow-x-hidden">
                 {sidebarMenuConfig.map((group) => {
                     const allowedItems = group.items.filter(
-                        (item) => !item.adminOnly || user.role === "ADMIN",
+                        (item) =>
+                            !item.allowedRoles ||
+                            item.allowedRoles.includes(user.role),
                     );
 
                     if (allowedItems.length === 0) return null;

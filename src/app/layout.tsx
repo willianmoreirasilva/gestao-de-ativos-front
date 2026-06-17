@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -6,6 +7,11 @@ export const metadata: Metadata = {
     title: "NetManager",
 };
 
+// Configura a fonte Inter
+const inter = Inter({
+    subsets: ["latin"],
+    display: "swap",
+});
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -14,7 +20,7 @@ export default function RootLayout({
     return (
         <html lang="pt-br" suppressHydrationWarning>
             <head />
-            <body>
+            <body className={`${inter.className} antialiased`}>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
