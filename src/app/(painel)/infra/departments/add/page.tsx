@@ -1,3 +1,16 @@
-export default function PrintersPage() {
-    return <h1 className="text-xl font-bold">Adicionar um Departamento</h1>;
+import { BackButton } from "@/components/users/back-button";
+import { PageTitle } from "@/components/users/page-title";
+import { DepartmentForm } from "@/components/departments/department-form";
+
+export default function Page() {
+    return (
+        <div>
+            <PageTitle
+                title="Adicionar Departamento"
+                leftSide={<BackButton fallbackUrl="/infra/departments" />}
+            />
+
+            <DepartmentForm />
+        </div>
+    );
 }

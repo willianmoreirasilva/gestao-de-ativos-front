@@ -72,22 +72,34 @@ export async function upsertDepartmentAction(
 export async function deleteDepartmentAction(id: string) {
     const api = await getServerApi();
     try {
-        const response = await api.delete(`/api/departments/${id}`);
+        // 🌟 O PULO DO GATO: Forçamos o Content-Type a ser 'undefined' nesta requisição específica
+        const response = await api.delete(`/api/departments/${id}`, {
+            headers: {
+                "Content-Type": undefined,
+            },
+        });
 
-        if (response.status !== 204 && response.data?.error) {
-            return {
-                error: response.data.error,
-                fieldErrors: {},
-            };
+        if (response.status === 204) {
+            revalidatePath("/infra/departments");
+            return { error: "", fieldErrors: {} };
         }
 
-        revalidatePath("infra/departments");
-        return {
-            error: "",
-            fieldErrors: {},
-        };
+        if (response.data?.error) {
+            return { error: response.data.error, fieldErrors: {} };
+        }
+
+        revalidatePath("/infra/departments");
+        return { error: "", fieldErrors: {} };
     } catch (error: unknown) {
-        const apiError = error as { response?: { data?: { error?: string } } };
+        const apiError = error as {
+            response?: { status?: number; data?: { error?: string } };
+        };
+
+        if (apiError.response?.status === 204) {
+            revalidatePath("/infra/departments");
+            return { error: "", fieldErrors: {} };
+        }
+
         return {
             error:
                 apiError.response?.data?.error ||

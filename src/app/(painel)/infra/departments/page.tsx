@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import {
     Table,
     TableBody,
+    TableCell,
     TableHead,
     TableHeader,
     TableRow,
@@ -19,7 +20,7 @@ const pageTitle = (
         title="Departamentos"
         rightSide={
             <Link href="/infra/departments/add">
-                <Button>Adicionar Departamento</Button>
+                <Button>Novo Departamento</Button>
             </Link>
         }
     />
@@ -35,11 +36,14 @@ export default async function Page({ searchParams }: Props) {
     const limit = 10;
     const offset = (page - 1) * limit;
 
-    const departmentsRes = await departmentService.getAllDepartments();
+    // 1. Busca os dados já paginados direto da API
+    const departmentsRes = await departmentService.getDepartments(
+        offset,
+        limit,
+    );
     const departments = (departmentsRes.data as Department[]) || [];
-    const paginatedDepartments = departments.slice(offset, offset + limit);
 
-    if (departments.length === 0) {
+    if (page === 1 && departments.length === 0) {
         return (
             <div>
                 {pageTitle}
@@ -65,12 +69,30 @@ export default async function Page({ searchParams }: Props) {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {paginatedDepartments.map((item) => (
+                    {/* 2. Renderiza a lista direta vinda do backend */}
+                    {departments.map((item) => (
                         <DepartmentItem key={item.id} department={item} />
                     ))}
+                    {/* Feedback caso o usuário avance para uma página vazia por engano */}
+                    {departments.length === 0 && (
+                        <TableRow>
+                            <TableCell
+                                colSpan={2}
+                                className="text-center py-4 text-zinc-400"
+                            >
+                                Nenhum registro encontrado nesta página.
+                            </TableCell>
+                        </TableRow>
+                    )}
                 </TableBody>
             </Table>
-            <Pagination limit={limit} count={departments.length} />
+            {/* 3. Lógica refinada de desabilitar */}
+            <Pagination
+                disablePrev={page <= 1}
+                // Se a API trouxe menos itens do que o limite estipulado,
+                // com certeza não existe uma próxima página!
+                disableNext={departments.length < limit}
+            />
         </div>
     );
 }

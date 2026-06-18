@@ -37,12 +37,11 @@ export const DepartmentForm = ({ department }: Props) => {
 
                 <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name">Nome do Departamento</Label>
+                        <Label htmlFor="name">Nome</Label>
                         <Input
                             id="name"
                             name="name"
                             defaultValue={department?.name || ""}
-                            placeholder="Nome do departamento"
                             required
                         />
                         <FieldError errors={state?.fieldErrors?.name} />
@@ -60,7 +59,7 @@ export const DepartmentForm = ({ department }: Props) => {
                         ? "Salvando..."
                         : department
                           ? "Salvar Alterações"
-                          : "Adicionar Departamento"}
+                          : "Salvar"}
                 </Button>
             </form>
         </div>

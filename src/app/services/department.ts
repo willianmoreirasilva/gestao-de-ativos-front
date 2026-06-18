@@ -1,12 +1,13 @@
 import { getServerApi } from "@/lib/server-api";
 
 export const departmentService = {
-    getAllDepartments: async () => {
+    getDepartments: async (offset: number = 0, limit: number = 10) => {
         try {
             const api = await getServerApi();
-            const response = await api.get("/api/departments");
+            const params: Record<string, string | number> = { offset, limit };
+            const response = await api.get("/api/departments", { params });
             return response.data;
-        } catch (error) {
+        } catch (error: any) {
             return { error: "Erro ao buscar departamentos", data: null };
         }
     },
