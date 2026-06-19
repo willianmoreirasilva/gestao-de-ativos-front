@@ -1,10 +1,18 @@
 import { getServerApi } from "@/lib/server-api";
 
 export const departmentService = {
-    getDepartments: async (offset: number = 0, limit: number = 10) => {
+    getDepartments: async (
+        offset: number = 0,
+        limit: number = 10,
+        name?: string,
+    ) => {
         try {
             const api = await getServerApi();
-            const params: Record<string, string | number> = { offset, limit };
+            const params: Record<string, string | number | undefined> = {
+                offset,
+                limit,
+                name,
+            };
             const response = await api.get("/api/departments", { params });
             return response.data;
         } catch (error: any) {

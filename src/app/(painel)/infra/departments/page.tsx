@@ -1,5 +1,7 @@
 import { departmentService } from "@/app/services/department";
 import { DepartmentItem } from "@/components/departments/department-item";
+import { DepartmentSearch } from "@/components/departments/department-search";
+import { EmptyDepartments } from "@/components/departments/empty-departments";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -32,6 +34,7 @@ type Props = {
 
 export default async function Page({ searchParams }: Props) {
     const params = await searchParams;
+    const name = typeof params.name === "string" ? params.name : undefined;
     const page = typeof params.page === "string" ? parseInt(params.page) : 1;
     const limit = 10;
     const offset = (page - 1) * limit;
@@ -40,18 +43,16 @@ export default async function Page({ searchParams }: Props) {
     const departmentsRes = await departmentService.getDepartments(
         offset,
         limit,
+        name,
     );
     const departments = (departmentsRes.data as Department[]) || [];
 
-    if (page === 1 && departments.length === 0) {
+    // No department and no active search → show empty state
+    if (departments.length === 0 && !name) {
         return (
             <div>
                 {pageTitle}
-                <EmptyState
-                    message="Nenhum departamento cadastrado."
-                    label="Adicionar Departamento"
-                    href="/infra/departments/add"
-                />
+                <EmptyDepartments />
             </div>
         );
     }
@@ -59,33 +60,39 @@ export default async function Page({ searchParams }: Props) {
     return (
         <div>
             {pageTitle}
-
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Nome</TableHead>
-
-                        <TableHead className="w-37.5">Ações</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {/* 2. Renderiza a lista direta vinda do backend */}
-                    {departments.map((item) => (
-                        <DepartmentItem key={item.id} department={item} />
-                    ))}
-                    {/* Feedback caso o usuário avance para uma página vazia por engano */}
-                    {departments.length === 0 && (
+            <DepartmentSearch />
+            {departments.length === 0 ? (
+                <div className="text-center p-8 text-muted-foreground">
+                    Não existe departamento com o nome "{name}" .
+                </div>
+            ) : (
+                <Table>
+                    <TableHeader>
                         <TableRow>
-                            <TableCell
-                                colSpan={2}
-                                className="text-center py-4 text-zinc-400"
-                            >
-                                Nenhum registro encontrado nesta página.
-                            </TableCell>
+                            <TableHead>Nome</TableHead>
+
+                            <TableHead className="w-37.5">Ações</TableHead>
                         </TableRow>
-                    )}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {/* 2. Renderiza a lista direta vinda do backend */}
+                        {departments.map((item) => (
+                            <DepartmentItem key={item.id} department={item} />
+                        ))}
+                        {/* Feedback caso o usuário avance para uma página vazia por engano */}
+                        {departments.length === 0 && (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={2}
+                                    className="text-center py-4 text-zinc-400"
+                                >
+                                    Nenhum registro encontrado nesta página.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            )}
             {/* 3. Lógica refinada de desabilitar */}
             <Pagination
                 disablePrev={page <= 1}
