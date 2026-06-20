@@ -37,7 +37,7 @@ const pageTitle = (
 export default async function Page({ searchParams }: Props) {
     const params = await searchParams;
     const page = parseInt(params.page || "1");
-    const query = params.q || ""; // 🌟 O SearchInput joga "q" na URL
+    const query = params.q || ""; //  O SearchInput joga "q" na URL
     const limit = 10;
     const offset = (page - 1) * limit;
 
@@ -50,6 +50,7 @@ export default async function Page({ searchParams }: Props) {
 
     const departments = departmentsRes?.data ?? [];
     const total = departmentsRes?.total ?? 0;
+    
 
     // Empty state global: banco zerado real (página 1, sem busca, sem dados)
     if (page === 1 && departments.length === 0 && !query) {
