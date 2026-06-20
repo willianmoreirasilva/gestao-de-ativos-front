@@ -1,22 +1,30 @@
 import { getServerApi } from "@/lib/server-api";
+import { Department } from "@/types/department";
+
+type DepartmentResponse = {
+    total: number;
+    data: Department[];
+};
 
 export const departmentService = {
     getDepartments: async (
         offset: number = 0,
         limit: number = 10,
-        name?: string,
-    ) => {
+        query?: string,
+    ): Promise<DepartmentResponse> => {
         try {
             const api = await getServerApi();
-            const params: Record<string, string | number | undefined> = {
-                offset,
-                limit,
-                name,
-            };
+            const params: Record<string, string | number> = { offset, limit };
+
+            if (query) params.name = query; // Ou a chave de busca que seu backend espera (ex: search ou q)
             const response = await api.get("/api/departments", { params });
-            return response.data;
-        } catch (error: any) {
-            return { error: "Erro ao buscar departamentos", data: null };
+            return {
+                total: response.data.total || 0,
+                data: response.data.data,
+            };
+        } catch (error) {
+            console.error("Erro ao buscar Departamento:", error);
+            return { total: 0, data: [] as Department[] };
         }
     },
 
@@ -28,10 +36,14 @@ export const departmentService = {
                 data: response.data.data, // Pegamos o objeto de dentro do retorno da API
                 error: null,
             };
-        } catch (error: any) {
+        } catch (error: unknown) {
             // Se a API retornar um erro formatado, tentamos pegar a mensagem dela
+            const apiError = error as {
+                response?: { data?: { error?: string } };
+            };
+
             const errorMessage =
-                error.response?.data?.error || "Erro ao buscar departamento";
+                apiError.response?.data?.error || "Erro ao buscar departamento";
             return {
                 data: null,
                 error: errorMessage,
