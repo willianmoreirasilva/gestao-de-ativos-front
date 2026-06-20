@@ -26,7 +26,9 @@ export default async function Page({ params }: Props) {
     const department = departmentRes.data as Department;
 
     return (
-        <div>
+        /* O CONTAINER DE RESGATE: Limita a largura em monitores grandes,
+           centraliza na tela, adiciona um espaçamento interno nas bordas e um recuo vertical */
+        <div className="w-full max-w-2xl mx-auto px-4 py-6 space-y-6">
             <PageTitle
                 title={`Editar Departamento`}
                 leftSide={<BackButton fallbackUrl="/infra/departments" />}

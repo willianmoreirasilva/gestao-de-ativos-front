@@ -65,11 +65,7 @@ export default function LoginPage() {
                     </h1>
                 </div>
 
-                {error && (
-                    <div className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400 text-center">
-                        {error}
-                    </div>
-                )}
+               
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1">
@@ -77,7 +73,7 @@ export default function LoginPage() {
                         <Input
                             id="email"
                             type="email"
-                            placeholder="admin@suaempresa.com"
+                            placeholder="user@unigran.br"
                             required
                             disabled={isPending}
                             value={email}
@@ -96,6 +92,12 @@ export default function LoginPage() {
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
+
+                    {error && (
+                    <div className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400 text-center">
+                        {error}
+                    </div>
+                )}
                     <Button
                         type="submit"
                         className="w-full bg-primary hover:bg-primary/90 text-white"

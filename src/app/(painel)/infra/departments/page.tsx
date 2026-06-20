@@ -12,6 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
+import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 
 import { PageTitle } from "@/components/users/page-title";
@@ -26,6 +27,7 @@ type Props = {
 const pageTitle = (
     <PageTitle
         title="Departamentos"
+        leftSide={<BackButton fallbackUrl="/infra/departments" />} 
         rightSide={
             <Link href="/infra/departments/add">
                 <Button>Novo Departamento</Button>
@@ -69,12 +71,12 @@ export default async function Page({ searchParams }: Props) {
     return (
         <div>
             {pageTitle}
-            {/* Campo de Busca Reutilizável */}
-            <SearchInput />
+            {/* Usa o padrão 'q' que já configuramos */}
+            <SearchInput placeholder="Buscar departamentos ..." queryParamName="q" />
 
-            {/* 🌟 CORREÇÃO 1: Trocado 'name' por 'query' para validar se há texto digitado */}
+            
             {departments.length === 0 && query ? (
-                <div className="text-center p-12 text-muted-foreground bg-zinc-50 rounded-lg border border-dashed border-zinc-200">
+                <div className="text-center p-12 text-muted-foreground  rounded-lg border border-dashed border-zinc-200">
                     Nenhum departamento encontrado para a busca &quot;{query}
                     &quot;.
                 </div>
@@ -97,13 +99,20 @@ export default async function Page({ searchParams }: Props) {
                                     />
                                 ))
                             ) : (
-                                <TableRow>
-                                    <TableCell
-                                        colSpan={2}
-                                        className="text-center py-12 text-zinc-400"
-                                    >
-                                        Nenhum departamento encontrado nesta
-                                        página.
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell colSpan={2} className="text-center py-16">
+                                        <div className="flex flex-col items-center justify-center gap-3">
+                                            <p className="text-zinc-400">Nenhum departamento encontrado nesta página.</p>
+                        
+                                            {/* 🌟 BOTÃO DE RESGATE EXTERNO */}
+                                            {page > 1 && (
+                                                <Link href="?page=1">
+                                                    <Button variant="outline" size="sm">
+                                                        Voltar para a primeira página
+                                                    </Button>
+                                                </Link>
+                                            )}
+                                        </div>
                                     </TableCell>
                                 </TableRow>
                             )}
