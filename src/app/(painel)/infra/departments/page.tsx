@@ -1,4 +1,4 @@
-import { departmentService } from "@/app/services/department";
+import { departmentService } from "@/services/department";
 import { DepartmentItem } from "@/components/departments/department-item";
 
 import { SearchInput } from "@/components/search-input";

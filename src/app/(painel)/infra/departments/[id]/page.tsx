@@ -1,4 +1,4 @@
-import { departmentService } from "@/app/services/department";
+import { departmentService } from "@/services/department";
 import { DepartmentForm } from "@/components/departments/department-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";

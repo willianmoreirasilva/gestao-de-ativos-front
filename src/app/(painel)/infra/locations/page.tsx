@@ -1,4 +1,4 @@
-import { locationService } from "@/app/services/location";
+import { locationService } from "@/services/location";
 import { LocationItem } from "@/components/locations/location-item";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";

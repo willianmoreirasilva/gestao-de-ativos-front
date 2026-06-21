@@ -35,15 +35,22 @@ export function ConfirmDeleteDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 transition-colors duration-200"
-                disabled={disabled}
-                title={`Excluir ${name}`}
-            >
-                <Trash2 size={16} /> 
+            <div className="inline-block" 
+                title={disabled ? "Não é possível excluir redes com IPs alocados" : `Excluir ${name}`}>
+            
+                <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    
+                    //ADICIONADO: 'disabled:cursor-not-allowed disabled:opacity-40' para dar um feedback visual clássico de bloqueado 
+                    className="h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={disabled}
+                    
+                   
+                >
+                    <Trash2 size={16} /> 
             </Button>
+            </div>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
