@@ -1,6 +1,6 @@
 "use client";
 
-import { Delete, AlertTriangle } from "lucide-react";
+import { Trash2, AlertTriangle } from "lucide-react";
 import {
     Dialog,
     DialogClose,
@@ -35,9 +35,15 @@ export function ConfirmDeleteDialog({
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="destructive" disabled={disabled}>
-                    <Delete size={16} />
-                </Button>
+            <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 transition-colors duration-200"
+                disabled={disabled}
+                title={`Excluir ${name}`}
+            >
+                <Trash2 size={16} /> 
+            </Button>
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>

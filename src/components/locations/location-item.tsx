@@ -2,7 +2,7 @@
 
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Location } from "@/types/location";
-import { FileText, Edit, Trash2 } from "lucide-react";
+import { FileText, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
     Popover,
@@ -10,20 +10,49 @@ import {
     PopoverTrigger,
 } from "@/components/ui/popover";
 import Link from "next/link";
+import { ConfirmDeleteDialog } from "../../components/users/confirm-delete-dialog";
+import { useState } from "react";
+import { deleteLocationAction } from "@/actions/locations"; // 🌟 Importa a action refatorada de locais
 
 type Props = {
     location: Location;
 };
 
 export function LocationItem({ location }: Props) {
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        setActionError(null);
+
+        const result = await deleteLocationAction(location.id);
+
+        if (result?.error) {
+            // Trava o erro na tela interna do modal e impede o fechamento prematuro
+            setActionError(result.error);
+        } else {
+            // Sucesso limpo
+            setModalOpen(false);
+        }
+        setIsDeleting(false);
+    };
+
+    const handleModalOpenChange = (open: boolean) => {
+        setModalOpen(open);
+        if (!open) {
+            setActionError(null); // Reseta resquícios de erros ao fechar voluntariamente
+        }
+    };
+
     return (
-        <TableRow>
-            <TableCell className="font-medium text-zinc-900 dark:text-zinc-100">
+        <TableRow className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition-colors">
+            <TableCell className="font-medium text-zinc-900 dark:text-zinc-100 py-3">
                 {location.name}
             </TableCell>
             <TableCell>{location.building || "—"}</TableCell>
             
-            {/* 🌟 ESCONDENDO NO MOBILE: Segue a mesma regra do cabeçalho */}
             <TableCell className="hidden md:table-cell">
                 {location.floor || "—"}
             </TableCell>
@@ -31,7 +60,6 @@ export function LocationItem({ location }: Props) {
                 {location.room || "—"}
             </TableCell>
             
-            {/* 🌟 NOTAS: Oculta em celulares muito pequenos, aparece a partir de telas 'sm' */}
             <TableCell className="hidden sm:table-cell text-center">
                 {location.notes ? (
                     <Popover>
@@ -57,17 +85,29 @@ export function LocationItem({ location }: Props) {
                 )}
             </TableCell>
 
-            {/* AÇÕES */}
-            <TableCell>
-                <div className="flex items-center gap-2">
+            {/* COLUNA DE AÇÕES ALINHADA */}
+            <TableCell className="w-24">
+                <div className="flex items-center gap-1">
                     <Link href={`/infra/locations/edit/${location.id}`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Edit className="h-4 w-4 text-zinc-500" />
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                            title="Editar local"
+                        >
+                            <Edit size={16} />
                         </Button>
                     </Link>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+
+                    {/* 🌟 DIALOG REUTILIZÁVEL E CONTROLADO */}
+                    <ConfirmDeleteDialog
+                        name={location.name}
+                        onConfirm={handleDelete}
+                        isDeleting={isDeleting}
+                        error={actionError}
+                        open={modalOpen}
+                        setOpen={handleModalOpenChange}
+                    />
                 </div>
             </TableCell>
         </TableRow>
