@@ -1,4 +1,5 @@
-import { locationService } from "@/services/location";
+import Link from "next/link";
+
 import { LocationItem } from "@/components/locations/location-item";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
 import { Pagination } from "@/components/users/pagination";
-import Link from "next/link";
+import { locationService } from "@/services/location";
+
 
 type Props = {
     searchParams: Promise<{ page?: string; q?: string }>;
