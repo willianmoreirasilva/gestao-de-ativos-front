@@ -1,14 +1,16 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
-import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
+import { Input } from "@/components/ui/input";
 
 export function NetworkFilters() {
     const router = useRouter();
+    const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Lê os valores atuais da URL para manter o formulário preenchido
+    // Lê os valores atuais da URL para manter o formulário sincronizado
     const currentSearch = searchParams.get("search") || "";
     const currentVlan = searchParams.get("vlanTag") || "";
     const currentType = searchParams.get("type") || "ALL";
@@ -16,15 +18,19 @@ export function NetworkFilters() {
     // Atualiza a URL mantendo ou removendo parâmetros dinamicamente
     const handleFilterChange = (key: string, value: string) => {
         const params = new URLSearchParams(searchParams.toString());
-        
+
         if (value && value !== "ALL") {
             params.set(key, value);
         } else {
             params.delete(key);
         }
-        
-        // Mantém o usuário na mesma página aplicando os filtros via GET
-        router.push(`?${params.toString()}`);
+
+        // 🌟 CORREÇÃO CRUCIAL: Sempre remove a paginação ao mudar os filtros!
+        // Isso evita que um offset/page alto quebre a paginação de uma listagem filtrada menor.
+        params.delete("page");
+
+        // Atualiza a rota preservando o pathname atual de forma limpa
+        router.push(`${pathname}?${params.toString()}`);
     };
 
     return (
@@ -35,7 +41,9 @@ export function NetworkFilters() {
                 <Input
                     placeholder="Buscar IP (ex: 192.168.1.0)..."
                     defaultValue={currentSearch}
-                    onChange={(e) => handleFilterChange("search", e.target.value)}
+                    onChange={(e) =>
+                        handleFilterChange("search", e.target.value)
+                    }
                     className="pl-9 bg-white dark:bg-zinc-950"
                 />
             </div>
@@ -46,7 +54,9 @@ export function NetworkFilters() {
                     type="number"
                     placeholder="Filtrar por VLAN..."
                     defaultValue={currentVlan}
-                    onChange={(e) => handleFilterChange("vlanTag", e.target.value)}
+                    onChange={(e) =>
+                        handleFilterChange("vlanTag", e.target.value)
+                    }
                     className="bg-white dark:bg-zinc-950"
                 />
             </div>
@@ -64,15 +74,24 @@ export function NetworkFilters() {
                     <option value="SWITCH_MGMT">Switches</option>
                     <option value="WIFI_MGMT">Wi-Fi</option>
                 </select>
-    
-                {/* Ícone de seta customizado com margem perfeita à direita */}
+
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-zinc-500 dark:text-zinc-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 opacity-50"><path d="m6 9 6 6 6-6"/></svg>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-4 w-4 opacity-50"
+                    >
+                        <path d="m6 9 6 6 6-6" />
+                    </svg>
                 </div>
             </div>
-
         </div>
     );
-
-
 }

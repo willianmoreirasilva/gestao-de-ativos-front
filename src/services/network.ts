@@ -1,8 +1,6 @@
 import { getServerApi } from "@/lib/server-api";
 import { Network } from "@/types/network";
 
-
-
 export interface NetworkResponse {
     data: Network[];
     meta: {
@@ -18,11 +16,13 @@ export interface SingleNetworkResponse {
     error: string | null;
 }
 
-// Filtros aceitos pela listagem principal
+// Filtros aceitos pela listagem principal (🌟 Atualizado com offset e limit)
 export interface NetworkFilters {
-    search?: string; // Usado para filtrar pelo networkAddress (ex: "192.168")
+    search?: string;
     vlanTag?: string | null;
     type?: string | null;
+    offset?: number; // 🌟 Adicionado
+    limit?: number; // 🌟 Adicionado
 }
 
 export const networkService = {
@@ -34,25 +34,35 @@ export const networkService = {
         const searchParams = new URLSearchParams();
 
         // Estrutura os parâmetros apenas se eles existirem
-        if (filters?.search) searchParams.append("search", filters.search);
+        if (filters?.search)
+            searchParams.append("networkAddress", filters.search);
         if (filters?.vlanTag) searchParams.append("vlanTag", filters.vlanTag);
-        if (filters?.type && filters.type !== "ALL") searchParams.append("type", filters.type);
+        if (filters?.type && filters.type !== "ALL")
+            searchParams.append("type", filters.type);
+
+        // 🌟 AGORA SIM: Repassa a paginação de verdade para o seu backend
+        if (filters?.offset !== undefined)
+            searchParams.append("offset", String(filters.offset));
+        if (filters?.limit !== undefined)
+            searchParams.append("limit", String(filters.limit));
 
         try {
-            // Repare na URL montada dinamicamente: /api/networks?search=...&vlanTag=...
-            const response = await api.get(`/api/networks?${searchParams.toString()}`);
-            
+            const response = await api.get(
+                `/api/networks?${searchParams.toString()}`,
+            );
+
             return {
                 data: response.data.data || [],
-                meta: response.data.meta || { total: 0, offset: 1, limit: 10 },
-                error: null
+                meta: response.data.meta || { total: 0, offset: 0, limit: 10 },
+                error: null,
             };
         } catch (error: any) {
             console.error("Erro no service getNetworks:", error);
             return {
                 data: [],
-                meta: { total: 0, offset: 1, limit: 10 },
-                error: error.response?.data?.error || "Falha ao carregar redes."
+                meta: { total: 0, offset: 0, limit: 10 },
+                error:
+                    error.response?.data?.error || "Falha ao carregar redes.",
             };
         }
     },
@@ -66,14 +76,17 @@ export const networkService = {
             const response = await api.get(`/api/networks/${id}`);
             return {
                 data: response.data.data || response.data,
-                error: null
+                error: null,
             };
         } catch (error: any) {
-            console.error(`Erro no service getNetworkById para o ID ${id}:`, error);
+            console.error(
+                `Erro no service getNetworkById para o ID ${id}:`,
+                error,
+            );
             return {
                 data: null,
-                error: error.response?.data?.error || "Rede não encontrada."
+                error: error.response?.data?.error || "Rede não encontrada.",
             };
         }
-    }
+    },
 };

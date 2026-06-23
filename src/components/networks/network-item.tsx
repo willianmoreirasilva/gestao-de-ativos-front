@@ -1,12 +1,14 @@
 "use client";
 
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { Edit } from "lucide-react";
 import Link from "next/link";
-import { ConfirmDeleteDialog } from "../users/confirm-delete-dialog";
 import { useState } from "react";
+
 import { deleteNetworkAction } from "@/actions/networks";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+
+import { ConfirmDeleteDialog } from "../users/confirm-delete-dialog";
 
 const NETWORK_TYPES = {
     GENERAL_DATA: "Dados Gerais",
@@ -51,9 +53,8 @@ export function NetworkItem({ network }: Props) {
         if (!open) setActionError(null);
     };
 
-    
     const allocatedCount = network._count?.ips ?? 0;
-    
+
     // 🧮 CÁLCULO REAL DE IPS USÁVEIS NA SUB-REDE (Fórmula: 2^(32 - CIDR) - 2)
     // Exemplo para /24: 2^(32-24) - 2 = 256 - 2 = 254 IPs utilizáveis.
     // Exemplo para /23: 2^(32-23) - 2 = 512 - 2 = 510 IPs utilizáveis.
@@ -61,7 +62,7 @@ export function NetworkItem({ network }: Props) {
 
     // Subtrai os alocados do total usável da máscara
     const availableCount = Math.max(0, totalUsableIps - allocatedCount);
-    
+
     const hasAllocatedIps = allocatedCount > 0;
     const isRunningLow = availableCount <= 15 && availableCount > 0;
     const isFullyAllocated = availableCount === 0;
@@ -80,28 +81,41 @@ export function NetworkItem({ network }: Props) {
                     <span className="text-zinc-400">—</span>
                 )}
             </TableCell>
-            <TableCell>{NETWORK_TYPES[network.type] || network.type}</TableCell>
-            
+            {/* 3. Tipo de Rede (Oculto no celular, surge no 'sm') */}
+            <TableCell className="hidden sm:table-cell text-zinc-600 dark:text-zinc-400">
+                {NETWORK_TYPES[network.type] || network.type}
+            </TableCell>
+
             {/* Coluna 4: IPs Alocados (Verde) */}
-            <TableCell className="hidden sm:table-cell">
-                <span className={hasAllocatedIps 
-                    ? "text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5" 
-                    : "text-zinc-500 text-xs px-2.5 py-1"
-                }>
-                    {hasAllocatedIps && <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />}
+            {/* 4. IPs Alocados (Oculto no celular e tablet vertical, surge no 'md') */}
+            <TableCell className="hidden md:table-cell">
+                <span
+                    className={
+                        hasAllocatedIps
+                            ? "text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5"
+                            : "text-zinc-500 text-xs px-2.5 py-1"
+                    }
+                >
+                    {hasAllocatedIps && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    )}
                     {allocatedCount} IPs alocados
                 </span>
             </TableCell>
 
             {/* Coluna 5: IPs Disponíveis com Alerta de Esgotamento Preventivo */}
-            <TableCell className="hidden sm:table-cell">
+            {/* 5. IPs Disponíveis (Oculto no celular e tablet vertical, surge no 'md') */}
+            <TableCell className="hidden md:table-cell">
                 {isFullyAllocated ? (
                     <span className="text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5 border border-red-200 dark:border-red-900/40">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                         Esgotada
                     </span>
                 ) : isRunningLow ? (
-                    <span className="text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5 border border-amber-200 dark:border-amber-900/40 animate-pulse" title="Atenção: Rede próxima do limite recomendado para expansão">
+                    <span
+                        className="text-amber-600 dark:text-amber-400 font-semibold bg-amber-50 dark:bg-amber-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5 border border-amber-200 dark:border-amber-900/40 animate-pulse"
+                        title="Atenção: Rede próxima do limite recomendado para expansão"
+                    >
                         <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                         {availableCount} restantes (Crítico)
                     </span>
@@ -116,16 +130,16 @@ export function NetworkItem({ network }: Props) {
             <TableCell className="w-24">
                 <div className="flex items-center gap-1">
                     <Link href={`/infra/networks/edit/${network.id}`}>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                             title="Editar rede"
                         >
                             <Edit size={16} />
                         </Button>
                     </Link>
-    
+
                     <ConfirmDeleteDialog
                         name={`${network.networkAddress}/${network.cidr}`}
                         onConfirm={handleDelete}

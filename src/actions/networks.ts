@@ -1,8 +1,9 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ZodError } from "zod";
+
 import { getServerApi } from "@/lib/server-api";
 import { networkSchema } from "@/schemas/network";
 
@@ -51,7 +52,8 @@ export async function upsertNetworkAction(
         if (id) {
             // Edição (PUT) - Envia apenas a VLAN de acordo com a regra de negócio
             const putPayload = { vlanTag: validation.data.vlanTag };
-            response = await api.put(`/api/networks/${id}`, putPayload);
+
+            response = await api.patch(`/api/networks/${id}`, putPayload);
         } else {
             // Criação (POST) - Envia tudo
             response = await api.post("/api/networks", validation.data);
@@ -68,10 +70,14 @@ export async function upsertNetworkAction(
         isSuccess = true;
     } catch (error: unknown) {
         // 🌟 CASO B: API rejeitou a requisição e caiu no Catch (Ex: Status 400 Bad Request, 409 Conflict)
-        const apiError = error as { response?: { status?: number; data?: { error?: string } } };
-        
+        const apiError = error as {
+            response?: { status?: number; data?: { error?: string } };
+        };
+
         return {
-            error: apiError.response?.data?.error || "Falha de comunicação com o servidor de redes.",
+            error:
+                apiError.response?.data?.error ||
+                "Falha de comunicação com o servidor de redes.",
             fieldErrors: {},
         };
     }
@@ -82,7 +88,10 @@ export async function upsertNetworkAction(
         redirect("/infra/networks");
     }
 
-    return { error: "Erro inesperado ao processar requisição.", fieldErrors: {} };
+    return {
+        error: "Erro inesperado ao processar requisição.",
+        fieldErrors: {},
+    };
 }
 export async function deleteNetworkAction(id: string) {
     const api = await getServerApi();
@@ -103,7 +112,9 @@ export async function deleteNetworkAction(id: string) {
         revalidatePath("/infra/networks");
         return { error: "", fieldErrors: {} };
     } catch (error: unknown) {
-        const apiError = error as { response?: { status?: number; data?: { error?: string } } };
+        const apiError = error as {
+            response?: { status?: number; data?: { error?: string } };
+        };
         if (apiError.response?.status === 204) {
             revalidatePath("/infra/networks");
             return { error: "", fieldErrors: {} };

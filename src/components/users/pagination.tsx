@@ -1,6 +1,8 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
 
 type Props = {
@@ -13,11 +15,9 @@ export const Pagination = ({ disablePrev, disableNext }: Props) => {
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    const page = parseInt(searchParams.get("page") || "1");
+    const currentPage = parseInt(searchParams.get("page") || "1");
 
-    // Se o botão anterior E o próximo estiverem desabilitados,
-    // significa que todos os dados já estão na tela, então o componente não renderiza nada (null)
-    if (disablePrev && disableNext) {
+    if (disablePrev && disableNext && currentPage === 1) {
         return null;
     }
 
@@ -28,21 +28,35 @@ export const Pagination = ({ disablePrev, disableNext }: Props) => {
     };
 
     return (
-        <div className="flex justify-end gap-2 mt-4">
-            <Button
-                variant="outline"
-                disabled={disablePrev}
-                onClick={() => handlePageChange(page - 1)}
-            >
-                Anterior
-            </Button>
-            <Button
-                variant="outline"
-                disabled={disableNext}
-                onClick={() => handlePageChange(page + 1)}
-            >
-                Próximo
-            </Button>
+        <div className="flex items-center justify-end gap-4 mt-4 bg-transparent py-2">
+            {/* Indicador de página elegante */}
+            <span className="text-xs font-medium text-zinc-500 dark:text-zinc-400">
+                Página {currentPage}
+            </span>
+
+            <div className="flex items-center gap-1.5">
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1 pl-2"
+                    disabled={disablePrev}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                >
+                    <ChevronLeft size={16} />
+                    Anterior
+                </Button>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1 pr-2"
+                    disabled={disableNext}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                >
+                    Próximo
+                    <ChevronRight size={16} />
+                </Button>
+            </div>
         </div>
     );
 };
