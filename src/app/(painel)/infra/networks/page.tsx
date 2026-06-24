@@ -60,7 +60,7 @@ export default async function NetworksPage({ searchParams }: PageProps) {
     //PADRÃO: Título da página isolado em uma constante
     const pageTitle = (
         <PageTitle
-            title="Redes de Infraestrutura"
+            title="Infraestrutura de Redes"
             leftSide={<BackButton fallbackUrl="/infra/networks" />}
             rightSide={
                 <Link href="/infra/networks/add">

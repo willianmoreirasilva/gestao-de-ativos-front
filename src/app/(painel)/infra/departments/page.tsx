@@ -1,3 +1,4 @@
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 import { DepartmentItem } from "@/components/departments/department-item";
@@ -21,18 +22,6 @@ type Props = {
     searchParams: Promise<{ page?: string; q?: string }>;
 };
 
-const pageTitle = (
-    <PageTitle
-        title="Departamentos"
-        leftSide={<BackButton fallbackUrl="/infra/departments" />}
-        rightSide={
-            <Link href="/infra/departments/add">
-                <Button>Novo Departamento</Button>
-            </Link>
-        }
-    />
-);
-
 export default async function Page({ searchParams }: Props) {
     const params = await searchParams;
     const page = parseInt(params.page || "1");
@@ -49,11 +38,29 @@ export default async function Page({ searchParams }: Props) {
 
     const departments = departmentsRes?.data ?? [];
     const total = departmentsRes?.total ?? 0;
+    const emptyMessage = `Nenhum departamento foi encontrado com o nome "${query}".`;
+
+    //PADRÃO: Título da página isolado em uma constante
+    const pageTitle = (
+        <PageTitle
+            title="Departamentos"
+            leftSide={<BackButton fallbackUrl="/infra/departments" />}
+            rightSide={
+                <Link href="/infra/departments/add">
+                    <Button className="flex items-center gap-2">
+                        <Plus size={16} />
+                        Novo Departamento
+                    </Button>
+                </Link>
+            }
+        />
+    );
 
     // Empty state global: banco zerado real (página 1, sem busca, sem dados)
     if (page === 1 && departments.length === 0 && !query) {
         return (
-            <div>
+            <div className="space-y-6">
+                {pageTitle}
                 <EmptyState
                     message="Nenhum departamento cadastrado ou base de dados desconectada."
                     label="Novo Departamento"
@@ -73,12 +80,18 @@ export default async function Page({ searchParams }: Props) {
             />
 
             {departments.length === 0 && query ? (
-                <div className="text-center p-12 text-muted-foreground  rounded-lg border border-dashed border-zinc-200">
-                    Nenhum departamento encontrado para a busca &quot;{query}
-                    &quot;.
-                </div>
+                <Table>
+                    <TableRow className="hover:bg-transparent">
+                        <TableCell colSpan={6} className="py-4">
+                            <EmptyState
+                                message={emptyMessage}
+                                label="Cadastrar Novo Departamento"
+                                href="/infra/departments/add"
+                            />
+                        </TableCell>
+                    </TableRow>
+                </Table>
             ) : (
-                /* CENÁRIO 2: O sistema tem dados (ou caiu em uma página vazia) */
                 <>
                     <Table>
                         <TableHeader>
@@ -97,29 +110,12 @@ export default async function Page({ searchParams }: Props) {
                                 ))
                             ) : (
                                 <TableRow className="hover:bg-transparent">
-                                    <TableCell
-                                        colSpan={2}
-                                        className="text-center py-16"
-                                    >
-                                        <div className="flex flex-col items-center justify-center gap-3">
-                                            <p className="text-zinc-400">
-                                                Nenhum departamento encontrado
-                                                nesta página.
-                                            </p>
-
-                                            {/* 🌟 BOTÃO DE RESGATE EXTERNO */}
-                                            {page > 1 && (
-                                                <Link href="?page=1">
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        Voltar para a primeira
-                                                        página
-                                                    </Button>
-                                                </Link>
-                                            )}
-                                        </div>
+                                    <TableCell colSpan={6} className="py-4">
+                                        <EmptyState
+                                            message="Nenhum departamento encontrado nesta página."
+                                            label="Voltar para pagina 1"
+                                            href="?page=1"
+                                        />
                                     </TableCell>
                                 </TableRow>
                             )}
