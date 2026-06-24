@@ -1,5 +1,4 @@
-
-export type NetworkUsageItem = {
+export interface NetworkUsageItem {
     networkName: string;
     vlanTag: number | null;
     used: number;
@@ -8,7 +7,7 @@ export type NetworkUsageItem = {
     usagePercentage: number;
 }
 
-export type InfraDashboardData = {
+export interface InfraDashboardData {
     summary: {
         totalNetworks: number;
         totalDepartments: number;
