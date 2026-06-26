@@ -11,4 +11,4 @@ export type Network = {
     };
     createdAt: string;
     updatedAt: string;
-}
+};

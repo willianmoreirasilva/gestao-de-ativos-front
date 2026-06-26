@@ -43,7 +43,7 @@ export default async function Page({ searchParams }: Props) {
     const pageTitle = (
         <PageTitle
             title="Locais e Prédios"
-            leftSide={<BackButton fallbackUrl="/infra/locations" />}
+            leftSide={<BackButton />}
             rightSide={
                 <Link href="/infra/locations/add">
                     <Button className="flex items-center gap-2">

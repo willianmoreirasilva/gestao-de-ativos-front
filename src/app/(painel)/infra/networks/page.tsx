@@ -17,6 +17,7 @@ import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
 import { Pagination } from "@/components/users/pagination";
 import { networkService } from "@/services/network";
+import type { Network } from "@/types/network";
 
 type PageProps = {
     searchParams: Promise<{
@@ -49,7 +50,7 @@ export default async function NetworksPage({ searchParams }: PageProps) {
         limit: currentLimit,
     });
 
-    const networks = Array.isArray(data) ? data : (data as any)?.data || [];
+    const networks: Network[] = Array.isArray(data) ? data : [];
     const totalRecords = meta?.total ?? 0;
     const currentOffset = meta?.offset ?? offset;
     const currentLimitActive = meta?.limit ?? currentLimit;
@@ -61,7 +62,7 @@ export default async function NetworksPage({ searchParams }: PageProps) {
     const pageTitle = (
         <PageTitle
             title="Infraestrutura de Redes"
-            leftSide={<BackButton fallbackUrl="/infra/networks" />}
+            leftSide={<BackButton />}
             rightSide={
                 <Link href="/infra/networks/add">
                     <Button className="flex items-center gap-2">

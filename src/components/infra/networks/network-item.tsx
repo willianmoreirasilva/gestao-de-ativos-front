@@ -8,6 +8,7 @@ import { deleteNetworkAction } from "@/actions/networks";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
+import type { Network } from "@/types/network";
 
 const NETWORK_TYPES = {
     GENERAL_DATA: "Dados Gerais",
@@ -17,15 +18,7 @@ const NETWORK_TYPES = {
 };
 
 type Props = {
-    network: {
-        id: string;
-        networkAddress: string;
-        cidr: number;
-        vlanTag: number | null;
-        type: "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
-        totalIps: number;
-        _count: { ips: number };
-    };
+    network: Network;
 };
 
 export function NetworkItem({ network }: Props) {
