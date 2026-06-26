@@ -1,4 +1,4 @@
-import { NetworkForm } from "@/components/networks/network-form";
+import { NetworkForm } from "@/components/infra/networks/network-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 

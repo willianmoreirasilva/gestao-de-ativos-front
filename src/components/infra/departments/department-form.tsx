@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState } from "react";
+
+import { upsertDepartmentAction } from "@/actions/departments";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { upsertDepartmentAction } from "../../actions/departments";
-import { FieldError } from "../../components/users/field-error";
+import { FieldError } from "@/components/users/field-error";
 import { Department } from "@/types/department";
 
 type Props = {
@@ -38,8 +39,12 @@ export const DepartmentForm = ({ department }: Props) => {
 
                 <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="flex items-center gap-1">
-                            Nome do Departamento <span className="text-red-500">*</span>
+                        <Label
+                            htmlFor="name"
+                            className="flex items-center gap-1"
+                        >
+                            Nome do Departamento{" "}
+                            <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="name"
@@ -61,7 +66,11 @@ export const DepartmentForm = ({ department }: Props) => {
 
                 {/* Botões de Ação alinhados com o design global */}
                 <div className="flex items-center gap-3 border-t pt-4">
-                    <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full sm:w-auto"
+                    >
                         {isPending
                             ? "Salvando..."
                             : department

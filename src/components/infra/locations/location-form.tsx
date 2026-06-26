@@ -1,12 +1,13 @@
 "use client";
 
 import { useActionState } from "react";
+
+import { upsertLocationAction } from "@/actions/locations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea"; 
-import { upsertLocationAction } from "@/actions/locations";
-import { FieldError } from "../../components/users/field-error";
+import { Textarea } from "@/components/ui/textarea";
+import { FieldError } from "@/components/users/field-error";
 import { Location } from "@/types/location";
 
 type Props = {
@@ -40,8 +41,12 @@ export const LocationForm = ({ location }: Props) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Campo Nome: Ocupa a linha inteira (Full width no grid) */}
                     <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="name" className="flex items-center gap-1">
-                            Nome do Local <span className="text-red-500">*</span>
+                        <Label
+                            htmlFor="name"
+                            className="flex items-center gap-1"
+                        >
+                            Nome do Local{" "}
+                            <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="name"
@@ -55,7 +60,12 @@ export const LocationForm = ({ location }: Props) => {
 
                     {/* Campo Prédio/Bloco: Opcional */}
                     <div className="space-y-2">
-                        <Label htmlFor="building">Prédio / Bloco <span className="text-muted-foreground text-xs">(Opcional)</span></Label>
+                        <Label htmlFor="building">
+                            Prédio / Bloco{" "}
+                            <span className="text-muted-foreground text-xs">
+                                (Opcional)
+                            </span>
+                        </Label>
                         <Input
                             id="building"
                             name="building"
@@ -67,7 +77,12 @@ export const LocationForm = ({ location }: Props) => {
 
                     {/* Campo Andar: Opcional */}
                     <div className="space-y-2">
-                        <Label htmlFor="floor">Andar <span className="text-muted-foreground text-xs">(Opcional)</span></Label>
+                        <Label htmlFor="floor">
+                            Andar{" "}
+                            <span className="text-muted-foreground text-xs">
+                                (Opcional)
+                            </span>
+                        </Label>
                         <Input
                             id="floor"
                             name="floor"
@@ -79,7 +94,12 @@ export const LocationForm = ({ location }: Props) => {
 
                     {/* Campo Sala: Opcional */}
                     <div className="space-y-2">
-                        <Label htmlFor="room">Sala <span className="text-muted-foreground text-xs">(Opcional)</span></Label>
+                        <Label htmlFor="room">
+                            Sala{" "}
+                            <span className="text-muted-foreground text-xs">
+                                (Opcional)
+                            </span>
+                        </Label>
                         <Input
                             id="room"
                             name="room"
@@ -91,7 +111,12 @@ export const LocationForm = ({ location }: Props) => {
 
                     {/* Campo Observações: Ocupa a linha inteira */}
                     <div className="space-y-2 md:col-span-2">
-                        <Label htmlFor="notes">Observações <span className="text-muted-foreground text-xs">(Opcional)</span></Label>
+                        <Label htmlFor="notes">
+                            Observações{" "}
+                            <span className="text-muted-foreground text-xs">
+                                (Opcional)
+                            </span>
+                        </Label>
                         <Textarea
                             id="notes"
                             name="notes"
@@ -112,7 +137,11 @@ export const LocationForm = ({ location }: Props) => {
 
                 {/* Botões de Ação com feedback visual */}
                 <div className="flex items-center gap-3 border-t pt-4">
-                    <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full sm:w-auto"
+                    >
                         {isPending
                             ? "Salvando..."
                             : location

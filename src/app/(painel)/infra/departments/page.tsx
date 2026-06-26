@@ -1,7 +1,7 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-import { DepartmentItem } from "@/components/departments/department-item";
+import { DepartmentItem } from "@/components/infra/departments/department-item";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import {

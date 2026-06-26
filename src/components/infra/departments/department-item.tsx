@@ -1,13 +1,14 @@
 "use client";
 
-import { Department } from "@/types/department";
-import { Button } from "../ui/button";
 import { Edit } from "lucide-react";
-import { TableCell, TableRow } from "../ui/table";
 import Link from "next/link";
-import { ConfirmDeleteDialog } from "../../components/users/confirm-delete-dialog";
 import { useState } from "react";
+
 import { deleteDepartmentAction } from "@/actions/departments";
+import { Button } from "@/components/ui/button";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
+import { Department } from "@/types/department";
 
 type Props = {
     department: Department;
@@ -49,9 +50,9 @@ export const DepartmentItem = ({ department }: Props) => {
             <TableCell className="w-24">
                 <div className="flex items-center gap-1">
                     <Link href={`/infra/departments/${department.id}`}>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                             title="Editar departamento"
                         >

@@ -1,14 +1,15 @@
 "use client";
 
 import { SearchIcon } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import {
     InputGroup,
     InputGroupAddon,
     InputGroupInput,
-} from "../ui/input-group";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useState } from "react";
-import { Button } from "../ui/button";
+} from "@/components/ui/input-group";
 
 export const DepartmentSearch = () => {
     const router = useRouter();

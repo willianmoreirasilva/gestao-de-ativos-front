@@ -6,8 +6,7 @@ import { upsertNetworkAction } from "@/actions/networks";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import { FieldError } from "../users/field-error";
+import { FieldError } from "@/components/users/field-error";
 
 const NETWORK_TYPES = {
     GENERAL_DATA: "Dados Gerais (Corporativa)",

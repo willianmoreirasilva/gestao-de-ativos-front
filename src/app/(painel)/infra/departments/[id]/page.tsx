@@ -1,9 +1,10 @@
-import { departmentService } from "@/services/department";
-import { DepartmentForm } from "@/components/departments/department-form";
+import { redirect } from "next/navigation";
+
+import { DepartmentForm } from "@/components/infra/departments/department-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+import { departmentService } from "@/services/department";
 import { Department } from "@/types/department";
-import { redirect } from "next/navigation";
 
 type Props = {
     params: Promise<{ id: string }>;

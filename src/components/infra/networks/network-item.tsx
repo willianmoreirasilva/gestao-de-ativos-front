@@ -7,8 +7,7 @@ import { useState } from "react";
 import { deleteNetworkAction } from "@/actions/networks";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-
-import { ConfirmDeleteDialog } from "../users/confirm-delete-dialog";
+import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
 
 const NETWORK_TYPES = {
     GENERAL_DATA: "Dados Gerais",

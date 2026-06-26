@@ -1,7 +1,6 @@
+import { LocationForm } from "@/components/infra/locations/location-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
-
-import { LocationForm } from "@/components/locations/location-form";
 
 export default function Page() {
     return (

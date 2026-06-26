@@ -1,9 +1,10 @@
-import { locationService } from "@/services/location";
-import { LocationForm } from "@/components/locations/location-form";
+import { redirect } from "next/navigation";
+
+import { LocationForm } from "@/components/infra/locations/location-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+import { locationService } from "@/services/location";
 import { Location } from "@/types/location";
-import { redirect } from "next/navigation";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -17,10 +18,7 @@ export default async function Page({ params }: Props) {
 
     // 2. Trava de segurança caso o ID seja inválido ou o registro não exista
     if (locationRes.error || !locationRes.data) {
-        console.error(
-            "Erro na busca do local para edição:",
-            locationRes.error,
-        );
+        console.error("Erro na busca do local para edição:", locationRes.error);
         redirect("/infra/locations");
     }
 

@@ -1,18 +1,19 @@
 "use client";
 
-import { TableCell, TableRow } from "@/components/ui/table";
-import { Location } from "@/types/location";
-import { FileText, Edit } from "lucide-react";
+import { Edit, FileText } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+
+import { deleteLocationAction } from "@/actions/locations"; // 🌟 Importa a action refatorada de locais
 import { Button } from "@/components/ui/button";
 import {
     Popover,
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import Link from "next/link";
-import { ConfirmDeleteDialog } from "../../components/users/confirm-delete-dialog";
-import { useState } from "react";
-import { deleteLocationAction } from "@/actions/locations"; // 🌟 Importa a action refatorada de locais
+import { TableCell, TableRow } from "@/components/ui/table";
+import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
+import { Location } from "@/types/location";
 
 type Props = {
     location: Location;
@@ -52,21 +53,21 @@ export function LocationItem({ location }: Props) {
                 {location.name}
             </TableCell>
             <TableCell>{location.building || "—"}</TableCell>
-            
+
             <TableCell className="hidden md:table-cell">
                 {location.floor || "—"}
             </TableCell>
             <TableCell className="hidden md:table-cell">
                 {location.room || "—"}
             </TableCell>
-            
+
             <TableCell className="hidden sm:table-cell text-center">
                 {location.notes ? (
                     <Popover>
                         <PopoverTrigger asChild>
-                            <Button 
-                                variant="ghost" 
-                                size="icon" 
+                            <Button
+                                variant="ghost"
+                                size="icon"
                                 className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/20"
                                 title="Ver observações"
                             >
@@ -75,8 +76,12 @@ export function LocationItem({ location }: Props) {
                         </PopoverTrigger>
                         <PopoverContent className="w-72 p-4 text-sm text-zinc-600 dark:text-zinc-400 bg-white dark:bg-zinc-900 shadow-md border rounded-md">
                             <div className="space-y-1">
-                                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">Observações</h4>
-                                <p className="whitespace-pre-wrap leading-relaxed">{location.notes}</p>
+                                <h4 className="font-semibold text-zinc-900 dark:text-zinc-100">
+                                    Observações
+                                </h4>
+                                <p className="whitespace-pre-wrap leading-relaxed">
+                                    {location.notes}
+                                </p>
                             </div>
                         </PopoverContent>
                     </Popover>
@@ -89,9 +94,9 @@ export function LocationItem({ location }: Props) {
             <TableCell className="w-24">
                 <div className="flex items-center gap-1">
                     <Link href={`/infra/locations/edit/${location.id}`}>
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
                             title="Editar local"
                         >

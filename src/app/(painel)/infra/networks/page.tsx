@@ -1,8 +1,8 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-import { NetworkFilters } from "@/components/networks/network-filters";
-import { NetworkItem } from "@/components/networks/network-item";
+import { NetworkFilters } from "@/components/infra/networks/network-filters";
+import { NetworkItem } from "@/components/infra/networks/network-item";
 import { Button } from "@/components/ui/button";
 import {
     Table,

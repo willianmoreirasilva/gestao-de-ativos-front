@@ -1,8 +1,9 @@
-import { networkService } from "@/services/network";
-import { NetworkForm } from "@/components/networks/network-form";
+import { redirect } from "next/navigation";
+
+import { NetworkForm } from "@/components/infra/networks/network-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
-import { redirect } from "next/navigation";
+import { networkService } from "@/services/network";
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -16,7 +17,10 @@ export default async function EditNetworkPage({ params }: Props) {
 
     // Se a rede não existir ou houver falha, redireciona para a listagem com segurança
     if (networkRes.error || !networkRes.data) {
-        console.error("Erro ao buscar dados da rede para edição:", networkRes.error);
+        console.error(
+            "Erro ao buscar dados da rede para edição:",
+            networkRes.error,
+        );
         redirect("/infra/networks");
     }
 
