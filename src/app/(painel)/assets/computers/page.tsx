@@ -1,7 +1,6 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
-import { getAssets } from "@/actions/assets";
 import { ComputerFilters } from "@/components/assets/computers/computer-filters";
 import { ComputerRowItem } from "@/components/assets/computers/computer-row-item";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
 import { Pagination } from "@/components/users/pagination";
+import { getAssets } from "@/services/assets";
 
 type PageProps = {
     searchParams: Promise<{

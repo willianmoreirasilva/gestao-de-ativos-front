@@ -1,10 +1,11 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ZodError } from "zod";
+
 import { getServerApi } from "@/lib/server-api";
-import { locationSchema } from "@/schemas/location"; 
+import { locationSchema } from "@/schemas/location";
 
 type ActionState = {
     error: string;

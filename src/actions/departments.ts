@@ -1,7 +1,8 @@
 "use server";
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { ZodError } from "zod";
+
 import { getServerApi } from "@/lib/server-api";
 import { departmentSchema } from "@/schemas/department";
 
