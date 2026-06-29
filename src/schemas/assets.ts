@@ -58,6 +58,47 @@ export const networkDeviceSchema = z.object({
 export const networkDeviceAssetFormSchema = assetBaseSchema.extend({
     networkDevice: networkDeviceSchema,
 });
+
+export const UpdateAssetSchema = z.object({
+  patrimony: z.string().optional(),
+  departmentId: z.string().uuid().optional(),
+  locationId: z.string().uuid().optional(),
+  newIpId: z.string().uuid().nullable().optional(),
+  computer: z.object({
+    hostname: z.string(),
+    username: z.string(),
+    processor: z.string().nullable(),
+    memory: z.string().nullable(),
+  }).optional(),
+  printer: z.object({
+    hostname: z.string().nullable(),
+    model: z.string(),
+    code: z.string(),
+    serial: z.string(),
+    notes: z.string(),
+  }).nullable().optional(),
+  phone: z.object({
+    phoneNumber: z.string(),
+    model: z.string(),
+    notes: z.string(),
+  }).nullable().optional(),
+  camera: z.object({
+    model: z.string(),
+    serial: z.string(),
+    mac: z.string(),
+    notes: z.string(),
+  }).nullable().optional(),
+  networkDevice: z.object({
+    mac: z.string(),
+    model: z.string(),
+    vendor: z.string(),
+    notes: z.string(),
+  }).nullable().optional(),
+});
+
+
+
 export type NetworkDeviceAssetFormValues = z.infer<
     typeof networkDeviceAssetFormSchema
 >;
+export type UpdateAssetInput = z.infer<typeof UpdateAssetSchema>;

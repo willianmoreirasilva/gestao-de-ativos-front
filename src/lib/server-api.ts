@@ -1,5 +1,5 @@
-import { cookies } from "next/headers";
 import axios from "axios";
+import { cookies } from "next/headers";
 
 export async function getServerApi() {
     const cookieStore = await cookies();

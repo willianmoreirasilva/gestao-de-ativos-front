@@ -5,10 +5,12 @@ import { ZodError } from "zod";
 
 import { getServerApi } from "@/lib/server-api";
 import { departmentSchema } from "@/schemas/department";
+import { Department } from "@/types/department";
 
 type ActionState = {
     error: string;
     fieldErrors: Record<string, string[]>;
+    data?: Department; // 🌟 Adicionado para capturar o ID retornado pela Server Action
 };
 
 function formatZodErrors(error: ZodError): Record<string, string[]> {
@@ -50,13 +52,23 @@ export async function upsertDepartmentAction(
             //Create
             response = await api.post("/api/departments", { name });
         }
-
+        // Se o backend retornou um erro estruturado dentro do 200/201
         if (response.data.error) {
             return {
                 error: response.data.error,
                 fieldErrors: {},
             };
         }
+       // 🌟 CAPTURA EXATA: Obtém o ID de dentro do objeto 'data' enviado pela sua API
+        const createdOrUpdatedId = response.data?.data?.id || id || "";
+          revalidatePath("/infra/departments");
+
+        return {
+            error: "",
+            fieldErrors: {},
+            data: createdOrUpdatedId // Entrega o ID limpo para o formulário
+        };
+
     } catch (error: unknown) {
         const apiError = error as { response?: { data?: { error?: string } } };
         return {

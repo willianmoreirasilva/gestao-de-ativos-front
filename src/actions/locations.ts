@@ -1,15 +1,16 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 
 import { getServerApi } from "@/lib/server-api";
 import { locationSchema } from "@/schemas/location";
+import { Location } from "@/types/location";
 
 type ActionState = {
     error: string;
     fieldErrors: Record<string, string[]>;
+    data?: Location;
 };
 
 // Helper idêntico ao de departamentos para formatar erros do Zod
@@ -48,7 +49,7 @@ export async function upsertLocationAction(
 
     const data = validation.data;
     const api = await getServerApi();
-    let isSuccess = false;
+    
 
     try {
         let response;
@@ -65,7 +66,16 @@ export async function upsertLocationAction(
             };
         }
 
-        isSuccess = true;
+        
+        const createdLocation: Location = response.data?.data?.id  || { id: id || "" };
+        
+        revalidatePath("/infra/locations");
+        
+        return {
+            error: "",
+            fieldErrors: {},
+            data: createdLocation,
+        };
     } catch (error: unknown) {
         const apiError = error as {
             response?: { status?: number; data?: { error?: string } };
@@ -75,13 +85,6 @@ export async function upsertLocationAction(
             fieldErrors: {},
         };
     }
-
-    if (isSuccess) {
-        revalidatePath("/infra/locations");
-        redirect("/infra/locations");
-    }
-
-    return { error: "Erro inesperado ao salvar", fieldErrors: {} };
 }
 export async function deleteLocationAction(id: string) {
     const api = await getServerApi();

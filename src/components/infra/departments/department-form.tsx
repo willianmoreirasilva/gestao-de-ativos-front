@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useRouter } from "next/navigation";
+import { useActionState, useEffect } from "react";
 
 import { upsertDepartmentAction } from "@/actions/departments";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,13 @@ import { Department } from "@/types/department";
 
 type Props = {
     department?: Department;
+    onSuccess?: (newId: string) => void; 
 };
 
 type ActionState = {
     error: string;
     fieldErrors: Record<string, string[]>;
+    data?: { id: string }; // 🌟 Adicionado para capturar o ID retornado pela Server Action
 };
 
 const initialState: ActionState = {
@@ -23,28 +26,37 @@ const initialState: ActionState = {
     fieldErrors: {},
 };
 
-export const DepartmentForm = ({ department }: Props) => {
+export const DepartmentForm = ({ department, onSuccess }: Props) => {
+    const router = useRouter();
     const [state, action, isPending] = useActionState(
         upsertDepartmentAction,
         initialState,
     );
 
+    // 🎯 Captura o sucesso da Server Action
+    useEffect(() => {
+        // Se a action executou, não há erros e retornou os dados/id
+        if (state?.data?.id && !state.error && Object.keys(state.fieldErrors).length === 0) {
+            if (onSuccess) {
+                onSuccess(state.data.id); // Fluxo do Modal: Passa o ID e fecha
+            } else {
+                router.push("/infra/departments"); // Fluxo de Página cheia: Redireciona
+                router.refresh();
+            }
+        }
+    }, [state, onSuccess, router]);
+
     return (
         <div className="w-full bg-white dark:bg-zinc-950 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm p-6">
             <form action={action} className="space-y-6">
-                {/* ID oculto essencial para o fluxo de Edição (Upsert) */}
                 {department && (
                     <input type="hidden" name="id" value={department.id} />
                 )}
 
                 <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                        <Label
-                            htmlFor="name"
-                            className="flex items-center gap-1"
-                        >
-                            Nome do Departamento{" "}
-                            <span className="text-red-500">*</span>
+                        <Label htmlFor="name" className="flex items-center gap-1">
+                            Nome do Departamento <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="name"
@@ -57,20 +69,14 @@ export const DepartmentForm = ({ department }: Props) => {
                     </div>
                 </div>
 
-                {/* Banner de erro geral vindo da API backend */}
                 {state?.error && (
                     <div className="text-destructive text-sm p-3 bg-red-50 dark:bg-red-950/20 rounded-md border border-red-200 dark:border-red-900/50">
                         {state.error}
                     </div>
                 )}
 
-                {/* Botões de Ação alinhados com o design global */}
                 <div className="flex items-center gap-3 border-t pt-4">
-                    <Button
-                        type="submit"
-                        disabled={isPending}
-                        className="w-full sm:w-auto"
-                    >
+                    <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
                         {isPending
                             ? "Salvando..."
                             : department

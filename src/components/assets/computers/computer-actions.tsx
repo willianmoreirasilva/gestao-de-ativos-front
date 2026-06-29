@@ -39,7 +39,7 @@ export function ComputerActions({ assetId, identifier }: Props) {
 
     return (
         <div className="flex items-center gap-3">
-            <Link href={`/assets/computers/edit/${assetId}`}>
+            <Link href={`/assets/computers/${assetId}/edit/`}>
                 <Button variant="outline" className="flex items-center gap-2">
                     <Edit size={16} />
                     Editar Ativo

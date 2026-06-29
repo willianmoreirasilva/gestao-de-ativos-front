@@ -125,3 +125,13 @@ export async function deleteNetworkAction(id: string) {
         };
     }
 }
+
+export async function getAvailableIpsAction(type: string, limit: number = 5) {
+    try {
+        const api = await getServerApi(); 
+        const response = await api.get(`/api/networks/available-ips?type=${type}&limitIps=${limit}`);
+        return { data: response.data.data, error: null };
+    } catch (error: any) {
+        return { data: [], error: error.response?.data?.error || "Erro ao carregar IPs" };
+    }
+}
