@@ -59,16 +59,15 @@ export async function upsertDepartmentAction(
                 fieldErrors: {},
             };
         }
-       // 🌟 CAPTURA EXATA: Obtém o ID de dentro do objeto 'data' enviado pela sua API
+        // 🌟 CAPTURA EXATA: Obtém o ID de dentro do objeto 'data' enviado pela sua API
         const createdOrUpdatedId = response.data?.data?.id || id || "";
-          revalidatePath("/infra/departments");
+        revalidatePath("/infra/departments");
 
         return {
             error: "",
             fieldErrors: {},
-            data: createdOrUpdatedId // Entrega o ID limpo para o formulário
+            data: { id: String(createdOrUpdatedId) }, // Força a conversão para string pura (evita UUID nulo)
         };
-
     } catch (error: unknown) {
         const apiError = error as { response?: { data?: { error?: string } } };
         return {

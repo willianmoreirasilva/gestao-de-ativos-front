@@ -12,7 +12,7 @@ import { Department } from "@/types/department";
 
 type Props = {
     department?: Department;
-    onSuccess?: (newId: string) => void; 
+    onSuccess?: (newId: string) => void;
 };
 
 type ActionState = {
@@ -33,16 +33,39 @@ export const DepartmentForm = ({ department, onSuccess }: Props) => {
         initialState,
     );
 
-    // 🎯 Captura o sucesso da Server Action
+    // 🎯 Captura o sucesso da Server Action de forma robusta
     useEffect(() => {
-        // Se a action executou, não há erros e retornou os dados/id
-        if (state?.data?.id && !state.error && Object.keys(state.fieldErrors).length === 0) {
+        console.log("=== [DEBUG MODAL] Mudança de Estado capturada ===");
+        console.log("State atual:", state);
+        console.log("onSuccess existe?", !!onSuccess);
+
+        const hasId = !!state?.data?.id;
+        const hasErrors =
+            !!state?.error ||
+            (state?.fieldErrors && Object.keys(state.fieldErrors).length > 0);
+
+        if (hasId && !hasErrors) {
+            const novoId = String(state.data!.id);
+            console.log(
+                "🚀 Sucesso! Enviando este ID para o Combobox:",
+                novoId,
+            );
             if (onSuccess) {
-                onSuccess(state.data.id); // Fluxo do Modal: Passa o ID e fecha
+                // Fluxo do Modal: Passa o ID gerado para o pai e fecha
+                onSuccess(novoId);
             } else {
-                router.push("/infra/departments"); // Fluxo de Página cheia: Redireciona
+                // Fluxo de Página cheia: Força o redirecionamento nativo do navegador
+                // usando o router.push combinado com o window.location para limpar o cache pesado
+                console.log("Redirecionando rota de página cheia...");
+                router.push("/infra/departments");
                 router.refresh();
             }
+        } else if (hasErrors) {
+            console.error(
+                "❌ Ação executou mas retornou erros:",
+                state?.error,
+                state?.fieldErrors,
+            );
         }
     }, [state, onSuccess, router]);
 
@@ -55,8 +78,12 @@ export const DepartmentForm = ({ department, onSuccess }: Props) => {
 
                 <div className="grid grid-cols-1 gap-4">
                     <div className="space-y-2">
-                        <Label htmlFor="name" className="flex items-center gap-1">
-                            Nome do Departamento <span className="text-red-500">*</span>
+                        <Label
+                            htmlFor="name"
+                            className="flex items-center gap-1"
+                        >
+                            Nome do Departamento{" "}
+                            <span className="text-red-500">*</span>
                         </Label>
                         <Input
                             id="name"
@@ -76,7 +103,11 @@ export const DepartmentForm = ({ department, onSuccess }: Props) => {
                 )}
 
                 <div className="flex items-center gap-3 border-t pt-4">
-                    <Button type="submit" disabled={isPending} className="w-full sm:w-auto">
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full sm:w-auto"
+                    >
                         {isPending
                             ? "Salvando..."
                             : department
