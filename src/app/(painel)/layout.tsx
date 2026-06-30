@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
+import { UserSession } from "@/services/auth";
 // 1. Importe o TooltipProvider do seu ecossistema de componentes
 import { TooltipProvider } from "@/components/ui/tooltip";
 
@@ -40,9 +41,14 @@ export default function PainelLayout({
         return null;
     }
 
-    const mappedUser = {
-        ...session.user,
-        role: (session.user as any).role || "USER",
+    const mappedUser: UserSession = {
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        image: session.user.image ?? null,
+        emailVerified: session.user.emailVerified,
+        role: ((session.user as { role?: UserSession["role"] }).role ??
+            "USER") as UserSession["role"],
     };
 
     return (

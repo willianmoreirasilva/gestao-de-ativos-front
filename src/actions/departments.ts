@@ -66,7 +66,10 @@ export async function upsertDepartmentAction(
         return {
             error: "",
             fieldErrors: {},
-            data: { id: String(createdOrUpdatedId) }, // Força a conversão para string pura (evita UUID nulo)
+            data: {
+                id: String(createdOrUpdatedId),
+                name: validation.data.name,
+            },
         };
     } catch (error: unknown) {
         const apiError = error as { response?: { data?: { error?: string } } };

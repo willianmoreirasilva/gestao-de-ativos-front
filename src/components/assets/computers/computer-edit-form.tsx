@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { updateAssetAction } from "@/actions/assets";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
-import { UpdateAssetInput,UpdateAssetSchema } from "@/schemas/assets";
+import { UpdateAssetInput, UpdateAssetSchema } from "@/schemas/assets";
 import { Department } from "@/types/department";
 import { Location } from "@/types/location";
 
@@ -22,10 +22,14 @@ interface ComputerEditFormProps {
   locations: { total: number; data: Location[] } | any[];
 }
 
-export function ComputerEditForm({ assetId, initialData, departments, locations }: ComputerEditFormProps) {
- 
+export function ComputerEditForm({
+  assetId,
+  initialData,
+  departments,
+  locations,
+}: ComputerEditFormProps) {
   const router = useRouter();
- 
+
   const [isPending, setIsPending] = useState(false);
   const [globalError, setGlobalError] = useState("");
 
@@ -60,7 +64,7 @@ export function ComputerEditForm({ assetId, initialData, departments, locations 
       setGlobalError(result.error);
       setIsPending(false);
     } else {
-     // 🌟 Usando o alert nativo provisoriamente
+      // 🌟 Usando o alert nativo provisoriamente
       alert("Computador atualizado com sucesso!");
       router.refresh();
     }
@@ -68,13 +72,15 @@ export function ComputerEditForm({ assetId, initialData, departments, locations 
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 max-w-4xl mx-auto">
-        
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-6 max-w-4xl mx-auto"
+      >
         {/* Bloco 1: Comum/Reutilizável */}
-        <AssetBaseFields 
-          form={form} 
-          departments={departments} 
-          locations={locations} 
+        <AssetBaseFields
+          form={form}
+          departments={departments}
+          locations={locations}
         />
 
         {/* Bloco 2: Técnico/Exclusivo do Computador */}
@@ -89,15 +95,19 @@ export function ComputerEditForm({ assetId, initialData, departments, locations 
 
         {/* Barra de Ações */}
         <div className="flex justify-end gap-3 border-t pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             disabled={isPending}
             onClick={() => router.push("/assets/computers")}
           >
             Cancelar
           </Button>
-          <Button type="submit" disabled={isPending} className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold shadow">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="bg-zinc-900 dark:bg-zinc-100 text-white dark:text-zinc-900 font-semibold shadow"
+          >
             {isPending ? "Gravando..." : "Salvar Alterações"}
           </Button>
         </div>

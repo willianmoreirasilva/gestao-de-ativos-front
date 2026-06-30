@@ -25,7 +25,7 @@ export default function LoginPage() {
             {
                 email,
                 password,
-                dontRememberMe: false, // Mantém o usuário conectado
+                rememberMe: true,
             },
             {
                 onRequest: () => {

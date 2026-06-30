@@ -304,7 +304,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     </DropdownMenuTrigger>
 
                     <DropdownMenuContent
-                        align={isCollapsed ? "left" : "end"}
+                        align={isCollapsed ? "start" : "end"}
                         className="w-56 mb-2 font-sans"
                     >
                         <DropdownMenuLabel>Minha Conta</DropdownMenuLabel>
