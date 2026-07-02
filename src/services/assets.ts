@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { getServerApi } from "@/lib/server-api";
+import { ApiResponse } from "@/types/api";
 import {
     ApiMeta,
     ApiResponseWithMeta,
@@ -72,16 +73,17 @@ export async function getAssets(
  */
 export async function getAssetById(
     id: string,
-): Promise<{ data: AssetItem | null; error: string | null }> {
+): Promise<ApiResponse<AssetItem>> {
     try {
         const api = await getServerApi();
+        // Consome o endpoint configurado na porta do seu backend de ativos
         const response = await api.get(`/api/assets/${id}`);
         return { data: response.data.data, error: null };
     } catch (error) {
         console.error(`❌ Erro ao buscar ativo ${id}:`, error);
         return {
             data: null,
-            error: "Erro ao buscar locais:",
+            error: "Erro ao buscar ativo:",
         };
     }
 }

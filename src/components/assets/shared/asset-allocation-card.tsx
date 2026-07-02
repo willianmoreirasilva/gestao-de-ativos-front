@@ -1,37 +1,73 @@
-import { Building2, Layout, MapPin, User } from "lucide-react";
+"use client";
 
+import { Building2, Layout, MapPin, Pencil, User } from "lucide-react";
+import { useState } from "react";
+
+import { AllocationEditModal } from "@/components/assets/computers/components/allocation_edit-modal";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface AssetAllocationCardProps {
+    assetId: string; // 🌟 Necessário para a action de update
+    patrimony?: string | null; // 🌟 Repassado para controle dentro do modal
     username?: string | null;
-    department?: { name: string } | null;
+    department?: { id: string; name: string } | null;
     location?: {
+        id: string;
         name: string;
         building?: string | null;
         floor?: string | null;
         room?: string | null;
     } | null;
+    options: {
+        departments: any[];
+        locations: any[];
+    };
 }
 
-export function AssetAllocationCard({ username, department, location }: AssetAllocationCardProps) {
-    const hasSubLocation = location?.building || location?.floor || location?.room;
+export function AssetAllocationCard({
+    assetId,
+    patrimony,
+    username,
+    department,
+    location,
+    options,
+}: AssetAllocationCardProps) {
+    const [isEditOpen, setIsEditOpen] = useState(false);
+    const hasSubLocation =
+        location?.building || location?.floor || location?.room;
 
     return (
-        <Card className="md:col-span-3 shadow-sm border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
+        // 🌟 'relative group': Permite o posicionamento absoluto do botão e o gatilho de hover
+        <Card className="relative group md:col-span-3 shadow-sm border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-200 hover:border-zinc-300 dark:hover:border-zinc-700">
+            {/* 🌟 Botão de Ação Flutuante Contextual */}
+            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 z-10 translate-y-1 group-hover:translate-y-0">
+                <Button
+                    size="sm"
+                    variant="secondary"
+                    className="h-8 text-xs font-semibold gap-1.5 shadow-sm border border-zinc-200 dark:border-zinc-800 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-sm"
+                    onClick={() => setIsEditOpen(true)}
+                >
+                    <Pencil size={13} /> Modificar Vínculos
+                </Button>
+            </div>
+
             <CardHeader className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 py-4">
                 <CardTitle className="text-sm font-bold tracking-wide uppercase text-zinc-500 flex items-center gap-2">
-                    <Layout size={16} className="text-purple-500" /> Alocação de Infraestrutura e Responsabilidade
+                    <Layout size={16} className="text-purple-500" /> Alocação de
+                    Infraestrutura e Responsabilidade
                 </CardTitle>
             </CardHeader>
             <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-                
                 {/* Usuário Responsável */}
                 <div className="space-y-1 flex items-start gap-2.5">
                     <div className="p-2 bg-zinc-50 dark:bg-zinc-900 rounded-lg mt-1">
                         <User size={16} className="text-zinc-500" />
                     </div>
                     <div>
-                        <span className="text-xs text-muted-foreground block">Usuário de Domínio / Local</span>
+                        <span className="text-xs text-muted-foreground block">
+                            Usuário de Domínio / Local
+                        </span>
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 block mt-0.5">
                             {username || "Utilizador Padrão"}
                         </span>
@@ -44,7 +80,9 @@ export function AssetAllocationCard({ username, department, location }: AssetAll
                         <Building2 size={16} className="text-zinc-500" />
                     </div>
                     <div>
-                        <span className="text-xs text-muted-foreground block">Departamento / Setor</span>
+                        <span className="text-xs text-muted-foreground block">
+                            Departamento / Setor
+                        </span>
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 block mt-0.5 text-base">
                             {department?.name || "Não Vinculado"}
                         </span>
@@ -58,7 +96,9 @@ export function AssetAllocationCard({ username, department, location }: AssetAll
                     </div>
                     <div className="space-y-2 flex-1">
                         <div>
-                            <span className="text-xs text-muted-foreground block">Localidade Principal</span>
+                            <span className="text-xs text-muted-foreground block">
+                                Localidade Principal
+                            </span>
                             <span className="font-bold text-zinc-900 dark:text-zinc-100 text-base block">
                                 {location?.name || "Não Alocado"}
                             </span>
@@ -68,20 +108,32 @@ export function AssetAllocationCard({ username, department, location }: AssetAll
                             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-dashed border-zinc-200 dark:border-zinc-800">
                                 {location.building && (
                                     <div className="bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded text-center">
-                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">Prédio</span>
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{location.building}</span>
+                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                                            Prédio
+                                        </span>
+                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                            {location.building}
+                                        </span>
                                     </div>
                                 )}
                                 {location.floor && (
                                     <div className="bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded text-center">
-                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">Andar</span>
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{location.floor}º</span>
+                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                                            Andar
+                                        </span>
+                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                            {location.floor}º
+                                        </span>
                                     </div>
                                 )}
                                 {location.room && (
                                     <div className="bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded text-center">
-                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">Sala</span>
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{location.room}</span>
+                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                                            Sala
+                                        </span>
+                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                            {location.room}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -89,6 +141,19 @@ export function AssetAllocationCard({ username, department, location }: AssetAll
                     </div>
                 </div>
             </CardContent>
+
+            {/* 🌟 Modal de Edição In-Place Contextual */}
+            <AllocationEditModal
+                isOpen={isEditOpen}
+                onClose={() => setIsEditOpen(false)}
+                assetId={assetId}
+                patrimony={patrimony}
+                username={username}
+                currentDepartmentId={department?.id || null}
+                currentLocationId={location?.id || null}
+                departments={options.departments}
+                locations={options.locations}
+            />
         </Card>
     );
 }

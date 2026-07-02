@@ -37,7 +37,6 @@ export default async function ComputersPage({ searchParams }: PageProps) {
     const searchQuery = params.search || "";
     const hasIpQuery = params.hasIp || undefined;
 
-    // Busca utilizando a action padronizada
     const { data, meta, error } = await getAssets({
         type: "COMPUTER",
         search: searchQuery,
@@ -49,15 +48,14 @@ export default async function ComputersPage({ searchParams }: PageProps) {
     const computers = Array.isArray(data) ? data : [];
     const totalRecords = meta?.total ?? 0;
 
-    // PADRÃO: Título da página isolado em uma constante
     const pageTitle = (
         <PageTitle
             title="Inventário de Computadores"
             leftSide={<BackButton />}
             rightSide={
                 <Link href="/assets/computers/add">
-                    <Button className="flex items-center gap-2">
-                        <Plus size={16} />
+                    <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
+                        <Plus size={15} />
                         Novo Computador
                     </Button>
                 </Link>
@@ -65,7 +63,6 @@ export default async function ComputersPage({ searchParams }: PageProps) {
         />
     );
 
-    // Condicional de Empty State Global (Banco zerado real: página 1, sem filtros e sem dados)
     const hasNoFilters = !searchQuery && !hasIpQuery;
     if (currentPage === 1 && computers.length === 0 && hasNoFilters && !error) {
         return (
@@ -86,41 +83,45 @@ export default async function ComputersPage({ searchParams }: PageProps) {
 
             <ComputerFilters />
 
-            <div className="rounded-md border bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
                 <Table>
                     <TableHeader>
-                        <TableRow className="bg-zinc-50/50 dark:bg-zinc-900/30">
-                            <TableHead>Hostname / Patrimônio</TableHead>
-                            <TableHead>Endereço IP</TableHead>
-                            <TableHead>Usuário</TableHead>
-                            <TableHead className="hidden md:table-cell">
-                                Hardware
+                        <TableRow className="bg-zinc-50/40 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800">
+                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 pl-5">
+                                Hostname / Patrimônio
                             </TableHead>
-                            <TableHead className="hidden sm:table-cell">
-                                Alocação (Local/Setor)
+                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
+                                Endereço IP
                             </TableHead>
-                            <TableHead className="w-16 text-center">
-                                Ficha
+                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
+                                Usuário
+                            </TableHead>
+                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden md:table-cell">
+                                Especificações de Hardware
+                            </TableHead>
+                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden sm:table-cell">
+                                Alocação Operacional
+                            </TableHead>
+                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 w-20 text-center pr-5">
+                                Ações
                             </TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {/* Tratamento 1: Erro de API */}
                         {error && (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell
                                     colSpan={6}
-                                    className="text-center py-10 text-destructive font-medium"
+                                    className="text-center py-12 text-sm text-destructive font-medium"
                                 >
                                     {error}
                                 </TableCell>
                             </TableRow>
                         )}
 
-                        {/* Tratamento 2: O usuário digitou algo na busca que não existe (Ex: "willi") */}
                         {!error && computers.length === 0 && searchQuery && (
                             <TableRow className="hover:bg-transparent">
-                                <TableCell colSpan={6} className="py-8">
+                                <TableCell colSpan={6} className="py-10">
                                     <EmptyState
                                         message={`Nenhum computador encontrado para os critérios: "${searchQuery}"`}
                                         label="Cadastrar Novo Computador"
@@ -130,10 +131,9 @@ export default async function ComputersPage({ searchParams }: PageProps) {
                             </TableRow>
                         )}
 
-                        {/* Tratamento 3: O usuário mudou de página para um índice onde não existem mais registros */}
                         {!error && computers.length === 0 && !searchQuery && (
                             <TableRow className="hover:bg-transparent">
-                                <TableCell colSpan={6} className="py-8">
+                                <TableCell colSpan={6} className="py-10">
                                     <EmptyState
                                         message="Nenhum computador encontrado nesta página."
                                         label="Voltar para a página 1"
@@ -143,7 +143,6 @@ export default async function ComputersPage({ searchParams }: PageProps) {
                             </TableRow>
                         )}
 
-                        {/* Renderização normal da lista se houver dados */}
                         {!error &&
                             computers.length > 0 &&
                             computers.map((asset) => (
@@ -153,7 +152,6 @@ export default async function ComputersPage({ searchParams }: PageProps) {
                 </Table>
             </div>
 
-            {/* Paginação baseada nos cálculos idênticos ao do módulo de locais */}
             {!error && computers.length > 0 && (
                 <Pagination
                     disablePrev={currentPage <= 1}

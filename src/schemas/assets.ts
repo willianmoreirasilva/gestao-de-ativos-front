@@ -85,12 +85,14 @@ export const UpdateAssetSchema = z.object({
 
     computer: z
         .object({
-            hostname: z.string().optional(),
-            username: z.string().optional(),
-            processor: z.string().nullable().optional(),
-            memory: z.string().nullable().optional(),
-            disk: z.string().nullable().optional(),
-            os: z.string().nullable().optional(),
+            hostname: z.string().min(1, "Hostname é obrigatório"),
+            username: z.string().min(1, "Usuário é obrigatório"),
+            memory: z.string().nullable().optional(), // Continua String direta (Ex: "16GB")
+
+            // 🌟 Agora enviamos os IDs gerados pelo Combobox
+            processorId: z.string().uuid().nullable().optional(),
+            diskId: z.string().uuid().nullable().optional(),
+            osId: z.string().uuid().nullable().optional(),
             mac: z.string().nullable().optional(),
         })
         .optional(),
