@@ -1,40 +1,19 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Cpu, HardDrive, Layers, Loader2, Monitor, User } from "lucide-react";
+import { Cpu, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { updateAssetAction } from "@/actions/assets";
 import { Button } from "@/components/ui/button";
-import { ComboboxCreateNew } from "@/components/ui/combobox-create-new";
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-} from "@/components/ui/dialog";
-import {
-    Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-} from "@/components/ui/form";
+import { ComboboxSearch } from "@/components/ui/combobox-search"; // 🌟 Importado o componente local
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
-
-import { QuickOptionForm } from "./quick-option-forms";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const systemSpecsSchema = z.object({
     computer: z.object({
@@ -49,21 +28,17 @@ const systemSpecsSchema = z.object({
 
 type SystemSpecsValues = z.infer<typeof systemSpecsSchema>;
 
+type OptionItem = { id: string; name: string };
+
 interface Props {
     isOpen: boolean;
     onClose: () => void;
     assetId: string;
-    computer: any;
-    options: { processors: any[]; operatingSystems: any[]; disks: any[] };
+    computer?: any;
+    options: { processors: OptionItem[]; operatingSystems: OptionItem[]; disks: OptionItem[] };
 }
 
-export function SystemSpecsEditModal({
-    isOpen,
-    onClose,
-    assetId,
-    computer,
-    options,
-}: Props) {
+export function SystemSpecsEditModal({ isOpen, onClose, assetId, computer, options }: Props) {
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
 
@@ -81,6 +56,21 @@ export function SystemSpecsEditModal({
         },
     });
 
+    useEffect(() => {
+        if (isOpen) {
+            form.reset({
+                computer: {
+                    hostname: computer?.hostname || "",
+                    username: computer?.username || "",
+                    processorId: computer?.processor?.id || "",
+                    osId: computer?.operatingSystem?.id || "",
+                    diskId: computer?.disk?.id || "",
+                    memory: computer?.memory || "",
+                },
+            });
+        }
+    }, [isOpen, computer?.hostname, computer?.username, computer?.processor?.id, computer?.operatingSystem?.id, computer?.disk?.id, computer?.memory, form]);
+
     const onSubmit = async (data: SystemSpecsValues) => {
         setIsPending(true);
         const result = await updateAssetAction(assetId, data);
@@ -93,209 +83,92 @@ export function SystemSpecsEditModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className="sm:max-w-[550px] bg-white dark:bg-zinc-950 p-6">
+            <DialogContent className="sm:max-w-[500px] bg-white dark:bg-zinc-950 p-6">
                 <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
-                        <Cpu className="text-emerald-500" size={18} /> Editar
-                        Hardware e Sistema
+                    <DialogTitle className="flex items-center gap-2 text-base font-bold">
+                        <Cpu className="text-emerald-500" size={18} /> Editar Hardware e Sistema
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Mantenha as especificações técnicas do terminal
-                        padronizadas.
+                        Modifique as configurações de sistema da máquina.
                     </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4 pt-4"
-                    >
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-2">
                         <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="computer.hostname"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold">
-                                            Hostname
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                className="h-9 text-xs"
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                            <FormField
-                                control={form.control}
-                                name="computer.username"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold">
-                                            Usuário
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                className="h-9 text-xs"
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
+                            <FormField control={form.control} name="computer.hostname" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">Hostname</FormLabel>
+                                    <FormControl><Input {...field} className="h-9 text-xs" /></FormControl>
+                                </FormItem>
+                            )} />
+                            <FormField control={form.control} name="computer.username" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">Usuário</FormLabel>
+                                    <FormControl><Input {...field} className="h-9 text-xs" /></FormControl>
+                                </FormItem>
+                            )} />
                         </div>
 
-                        {/* Combobox de Processadores (Padronizado) */}
-                        <FormField
-                            control={form.control}
-                            name="computer.processorId"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold">
-                                        Processador (CPU)
-                                    </FormLabel>
-                                    <ComboboxCreateNew
-                                        options={options.processors}
-                                        value={field.value || ""}
-                                        onChange={field.onChange}
-                                        placeholder="Selecionar CPU..."
-                                        createLabel="Cadastrar Novo Processador"
-                                        modalTitle="Novo Processador"
-                                        modalDescription="Adicione um modelo de CPU à lista global."
-                                        createForm={(onSuccess) => (
-                                            <QuickOptionForm
-                                                type="processor"
-                                                onSuccess={onSuccess}
-                                            />
-                                        )}
-                                    />
-                                </FormItem>
-                            )}
-                        />
+                        {/* Processador com Busca Rápida Local */}
+                        <FormField control={form.control} name="computer.processorId" render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel className="text-xs font-bold">Processador (CPU)</FormLabel>
+                                <ComboboxSearch
+                                    options={options.processors}
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    placeholder="Filtrar e selecionar processador..."
+                                />
+                            </FormItem>
+                        )} />
 
                         <div className="grid grid-cols-2 gap-4">
-                            {/* Select de Memória (Opções Fixas) */}
-                            <FormField
-                                control={form.control}
-                                name="computer.memory"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold">
-                                            Memória RAM
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            defaultValue={field.value || ""}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger className="h-9 text-xs">
-                                                    <SelectValue placeholder="Capacidade" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                {[
-                                                    "4GB",
-                                                    "8GB",
-                                                    "12GB",
-                                                    "16GB",
-                                                    "32GB",
-                                                    "64GB",
-                                                ].map((m) => (
-                                                    <SelectItem
-                                                        key={m}
-                                                        value={m}
-                                                        className="text-xs"
-                                                    >
-                                                        {m}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )}
-                            />
+                            <FormField control={form.control} name="computer.memory" render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">Memória RAM</FormLabel>
+                                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                                        <FormControl><SelectTrigger className="h-9 text-xs"><SelectValue placeholder="Capacidade" /></SelectTrigger></FormControl>
+                                        <SelectContent>
+                                            {["4GB", "8GB", "12GB", "16GB", "32GB", "64GB"].map(m => (
+                                                <SelectItem key={m} value={m} className="text-xs">{m}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )} />
 
-                            {/* Combobox de Disco (Padronizado) */}
-                            <FormField
-                                control={form.control}
-                                name="computer.diskId"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className="text-xs font-bold">
-                                            Armazenamento
-                                        </FormLabel>
-                                        <ComboboxCreateNew
-                                            options={options.disks}
-                                            value={field.value || ""}
-                                            onChange={field.onChange}
-                                            placeholder="Selecionar Disco..."
-                                            createLabel="Cadastrar Novo Disco"
-                                            modalTitle="Novo Disco/SSD"
-                                            modalDescription="Adicione um modelo de armazenamento."
-                                            createForm={(onSuccess) => (
-                                                <QuickOptionForm
-                                                    type="disk"
-                                                    onSuccess={onSuccess}
-                                                />
-                                            )}
-                                        />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        {/* Combobox de SO (Padronizado) */}
-                        <FormField
-                            control={form.control}
-                            name="computer.osId"
-                            render={({ field }) => (
+                            {/* Armazenamento com Busca Rápida Local */}
+                            <FormField control={form.control} name="computer.diskId" render={({ field }) => (
                                 <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold">
-                                        Sistema Operacional
-                                    </FormLabel>
-                                    <ComboboxCreateNew
-                                        options={options.operatingSystems}
+                                    <FormLabel className="text-xs font-bold">Armazenamento (Disco)</FormLabel>
+                                    <ComboboxSearch
+                                        options={options.disks}
                                         value={field.value || ""}
                                         onChange={field.onChange}
-                                        placeholder="Selecionar SO..."
-                                        createLabel="Cadastrar Novo SO"
-                                        modalTitle="Novo Sistema Operacional"
-                                        modalDescription="Adicione uma versão de SO à lista global."
-                                        createForm={(onSuccess) => (
-                                            <QuickOptionForm
-                                                type="os"
-                                                onSuccess={onSuccess}
-                                            />
-                                        )}
+                                        placeholder="Filtrar e selecionar disco..."
                                     />
                                 </FormItem>
-                            )}
-                        />
+                            )} />
+                        </div>
 
-                        <DialogFooter className="pt-6">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={onClose}
-                                className="h-9 text-xs font-bold"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950"
-                            >
-                                {isPending ? (
-                                    <Loader2
-                                        className="animate-spin"
-                                        size={14}
-                                    />
-                                ) : (
-                                    "Salvar Especificações"
-                                )}
+                        {/* Sistema Operacional com Busca Rápida Local */}
+                        <FormField control={form.control} name="computer.osId" render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel className="text-xs font-bold">Sistema Operacional</FormLabel>
+                                <ComboboxSearch
+                                    options={options.operatingSystems}
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    placeholder="Filtrar e selecionar SO..."
+                                />
+                            </FormItem>
+                        )} />
+
+                        <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5">
+                            <Button type="button" variant="ghost" onClick={onClose} className="h-9 text-xs font-bold">Cancelar</Button>
+                            <Button type="submit" disabled={isPending} className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950">
+                                {isPending ? <Loader2 className="animate-spin" size={14} /> : "Salvar Especificações"}
                             </Button>
                         </DialogFooter>
                     </form>
