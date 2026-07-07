@@ -1,24 +1,16 @@
+// src/components/ui/combobox-search.tsx
 "use client";
 
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Search, X } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-
-interface ComboboxSearchOption {
-    id: string;
-    name: string;
-}
+import { OptionItem } from "@/types/assets";
 
 interface ComboboxSearchProps {
-    options: ComboboxSearchOption[];
+    options: OptionItem[];
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
@@ -26,11 +18,7 @@ interface ComboboxSearchProps {
 }
 
 const normalizeText = (text: string) =>
-    text
-        .toString()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[̀-ͯ]/g, "");
+    text.toString().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 export function ComboboxSearch({
     options,
@@ -39,8 +27,9 @@ export function ComboboxSearch({
     placeholder = "Selecione uma opção...",
     emptyMessage = "Nenhum resultado encontrado.",
 }: ComboboxSearchProps) {
-    const [open, setOpen] = React.useState(false);
+    const [isOpen, setIsOpen] = React.useState(false);
     const [search, setSearch] = React.useState("");
+    const containerRef = React.useRef<HTMLDivElement>(null);
     const inputRef = React.useRef<HTMLInputElement>(null);
 
     const selectedOption = React.useMemo(
@@ -48,106 +37,122 @@ export function ComboboxSearch({
         [options, value],
     );
 
-    const handleOpenChange = (nextOpen: boolean) => {
-        if (!nextOpen) {
-            setSearch("");
-        }
-        setOpen(nextOpen);
-    };
-
-    const handleTriggerKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
-        if (open) return;
-
-        const isPrintableKey = event.key.length === 1 && !event.metaKey && !event.ctrlKey && !event.altKey;
-        if (isPrintableKey) {
-            setSearch(event.key);
-            setOpen(true);
-            event.preventDefault();
-        }
-    };
-
-    React.useEffect(() => {
-        if (open) {
-            inputRef.current?.focus();
-        }
-    }, [open]);
-
+    // Filtro instantâneo controlado via React State
     const filteredOptions = React.useMemo(() => {
-        if (!search) return options;
+        if (!search.trim()) return options;
         const normalizedSearch = normalizeText(search);
         return options.filter((option) =>
-            normalizeText(String(option.name || option.id)).includes(normalizedSearch)
+            normalizeText(String(option.name || "")).includes(normalizedSearch),
         );
     }, [options, search]);
 
+    // Fecha o menu se o usuário clicar fora deste componente
+    React.useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                containerRef.current &&
+                !containerRef.current.contains(event.target as Node)
+            ) {
+                setIsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () =>
+            document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    // Reseta a busca sempre que fechar
+    React.useEffect(() => {
+        if (!isOpen) {
+            setSearch("");
+        } else {
+            // Garante o foco no input interno assim que abrir
+            setTimeout(() => inputRef.current?.focus(), 50);
+        }
+    }, [isOpen]);
+
     return (
-        <Popover open={open} onOpenChange={handleOpenChange}>
-            <PopoverTrigger asChild>
-                <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={open}
-                    onKeyDown={handleTriggerKeyDown}
-                    className="w-full h-9 justify-between text-xs font-normal bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800"
-                >
-                    <span className="truncate flex-1 text-left">
-                        {selectedOption ? selectedOption.name : placeholder}
-                    </span>
-                    <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50" />
-                </Button>
-            </PopoverTrigger>
-            <PopoverContent
-                className="w-full max-w-[320px] p-3 pointer-events-auto"
-                align="start"
+        <div ref={containerRef} className="relative w-full">
+            {/* Botão de Gatilho Principal */}
+            <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen((prev) => !prev)}
+                className={cn(
+                    "w-full h-9 justify-between text-xs font-normal bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 transition-all",
+                    isOpen &&
+                        "border-zinc-400 dark:border-zinc-600 ring-1 ring-zinc-400 dark:ring-zinc-600",
+                )}
             >
-                <div className="space-y-2 w-full min-w-0">
-                    <Input
-                        ref={inputRef}
-                        placeholder="Digite para filtrar..."
-                        value={search}
-                        onFocus={() => setOpen(true)}
-                        onChange={(event) => setSearch(event.target.value)}
-                        autoComplete="off"
-                        className="h-9 text-xs w-full"
-                    />
-                    <div className="max-h-[220px] overflow-y-auto custom-scrollbar space-y-1" onWheel={(event) => event.stopPropagation()}>
+                <span className="truncate flex-1 text-left">
+                    {selectedOption ? selectedOption.name : placeholder}
+                </span>
+                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
+            </Button>
+
+            {/* Painel de Busca Expansível (Fica no mesmo plano do DOM, evitando bugs de foco do Dialog) */}
+            {isOpen && (
+                <div className="absolute z-50 w-full mt-1.5 p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl animate-in fade-in-50 slide-in-from-top-1 duration-150">
+                    <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-900 px-2 pb-2 mb-1">
+                        <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                        <Input
+                            ref={inputRef}
+                            placeholder=" Digite para filtrar..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            autoComplete="off"
+                            className="h-7 w-full border-0 bg-transparent p-0 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-0 text-zinc-900 dark:text-zinc-100"
+                        />
+                        {search && (
+                            <button
+                                type="button"
+                                onClick={() => setSearch("")}
+                                className="p-0.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded"
+                            >
+                                <X className="h-3 w-3 text-zinc-400" />
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Lista com scroll nativo destravado */}
+                    <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-0.5 pr-1">
                         {filteredOptions.length === 0 ? (
                             <div className="py-3 text-center text-xs text-muted-foreground">
                                 {emptyMessage}
                             </div>
                         ) : (
-                            filteredOptions.map((option) => (
-                                <button
-                                    key={option.id}
-                                    type="button"
-                                    onClick={() => {
-                                        onChange(option.id === value ? "" : option.id);
-                                        setSearch("");
-                                        setOpen(false);
-                                    }}
-                                    className={cn(
-                                        "w-full rounded-md px-3 py-2 text-xs text-left transition-colors",
-                                        value === option.id
-                                            ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100"
-                                            : "hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                                    )}
-                                >
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="truncate">{option.name}</span>
-                                        <Check
-                                            className={cn(
-                                                "h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400",
-                                                value === option.id ? "opacity-100" : "opacity-0"
-                                            )}
-                                        />
-                                    </div>
-                                </button>
-                            ))
+                            filteredOptions.map((option) => {
+                                const isSelected = option.id === value;
+                                return (
+                                    <button
+                                        key={option.id}
+                                        type="button"
+                                        onClick={() => {
+                                            onChange(
+                                                isSelected ? "" : option.id,
+                                            );
+                                            setIsOpen(false);
+                                        }}
+                                        className={cn(
+                                            "w-full rounded-md px-2.5 py-1.5 text-xs text-left transition-colors flex items-center justify-between gap-2 border border-transparent",
+                                            isSelected
+                                                ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100 font-medium border-zinc-200 dark:border-zinc-800"
+                                                : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-900/60",
+                                        )}
+                                    >
+                                        <span className="truncate">
+                                            {option.name}
+                                        </span>
+                                        {isSelected && (
+                                            <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                        )}
+                                    </button>
+                                );
+                            })
                         )}
                     </div>
                 </div>
-            </PopoverContent>
-        </Popover>
+            )}
+        </div>
     );
 }

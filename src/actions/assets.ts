@@ -13,6 +13,7 @@ interface MutationResponse {
 interface ActionResponse {
     success: boolean;
     error?: string;
+    fieldErrors?: { [key: string]: string[] };
 }
 
 /**
@@ -25,21 +26,35 @@ export async function updateAssetAction(
     try {
         const api = await getServerApi();
 
-        // Envia os dados normalizados (com os IDs selecionados nos Comboboxes)
-        await api.put(`/api/assets/${assetId}`, payload);
+        // 🌟 Validação prévia com o Schema do Servidor para evitar submits corrompidos
+        const validatedFields = UpdateAssetSchema.safeParse(payload);
+        if (!validatedFields.success) {
+            return {
+                success: false,
+                error: "Dados do formulário inválidos.",
+                fieldErrors: validatedFields.error.flatten().fieldErrors as any,
+            };
+        }
 
-        // Força o Next.js a purgar o cache das páginas de listagem e detalhes
+        // 🌟 Alterado de .put para .patch para respeitar atualizações parciais
+        await api.patch(`/api/assets/${assetId}`, validatedFields.data);
+
+        // Força o Next.js a purgar o cache mantendo o usuário na página atualizada
         revalidatePath("/assets/computers");
         revalidatePath(`/assets/computers/${assetId}`);
 
         return { success: true };
     } catch (error: any) {
         console.error(`[UPDATE_ASSET_ACTION_ERROR]:`, error);
+
+        // Retorna erros estruturados do banco ou mensagens amigáveis da API
         return {
             success: false,
             error:
                 error?.response?.data?.message ||
-                "Erro ao salvar as alterações no servidor.",
+                error?.response?.data?.error ||
+                "Erro ao salvar as alterações no servidor (Status 404/500).",
+            fieldErrors: error?.response?.data?.fieldErrors || null,
         };
     }
 }

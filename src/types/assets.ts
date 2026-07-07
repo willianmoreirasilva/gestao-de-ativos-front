@@ -6,15 +6,20 @@ export type AssetType =
     | "CAMERA"
     | "OTHER";
 
-export interface ComputerDetails {
+export type OptionItem = {
     id: string;
+    name: string;
+};
+
+export interface ComputerDetails {
+    id?: string;
+    hostname?: string | null;
     username: string;
-    hostname: string | null;
-    mac: string | null;
-    processor: string | null;
-    memory: string | null;
-    disk: string | null;
-    os: string | null;
+    memory?: string | null;
+    mac?: string | null;
+    processor?: OptionItem | null;
+    disk?: OptionItem | null;
+    operatingSystem?: OptionItem | null;
 }
 
 export interface CameraDetails {
@@ -100,3 +105,8 @@ export interface AssetFilters {
     limit?: number;
 }
 
+export interface SystemSpecsModalOptions {
+    processors: OptionItem[];
+    operatingSystems: OptionItem[];
+    disks: OptionItem[];
+}

@@ -1,11 +1,8 @@
 "use client";
 
-import { Edit, Trash2 } from "lucide-react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-import { Button } from "@/components/ui/button";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
 import { deleteAssetAction } from "@/services/assets";
 
@@ -39,13 +36,6 @@ export function ComputerActions({ assetId, identifier }: Props) {
 
     return (
         <div className="flex items-center gap-3">
-            <Link href={`/assets/computers/${assetId}/edit/`}>
-                <Button variant="outline" className="flex items-center gap-2">
-                    <Edit size={16} />
-                    Editar Ativo
-                </Button>
-            </Link>
-
             <ConfirmDeleteDialog
                 name={identifier}
                 onConfirm={handleDelete}

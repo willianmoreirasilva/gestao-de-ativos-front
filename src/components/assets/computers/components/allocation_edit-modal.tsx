@@ -10,8 +10,21 @@ import * as z from "zod";
 import { updateAssetAction } from "@/actions/assets";
 import { Button } from "@/components/ui/button";
 import { ComboboxSearch } from "@/components/ui/combobox-search"; // 🌟 Importado o componente local
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
 const allocationFormSchema = z.object({
@@ -74,7 +87,14 @@ export function AllocationEditModal({
                 },
             });
         }
-    }, [isOpen, patrimony, currentDepartmentId, currentLocationId, username, form]);
+    }, [
+        isOpen,
+        patrimony,
+        currentDepartmentId,
+        currentLocationId,
+        username,
+        form,
+    ]);
 
     const handleSave = async (data: AllocationFormValues) => {
         setIsPending(true);
@@ -97,64 +117,122 @@ export function AllocationEditModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="sm:max-w-[480px] bg-white dark:bg-zinc-950 p-6">
+            <DialogContent className="sm:max-w-120 bg-white dark:bg-zinc-950 p-6">
                 <DialogHeader>
                     <DialogTitle className="text-base font-bold flex items-center gap-2">
-                        <Building2 size={18} className="text-purple-500" /> Modificar Alocação e Responsável
+                        <Building2 size={18} className="text-purple-500" />{" "}
+                        Modificar Alocação e Responsável
                     </DialogTitle>
                     <DialogDescription className="text-xs">
-                        Atualize as dependências e o utilizador deste terminal corporativo.
+                        Atualize as dependências e o utilizador deste terminal
+                        corporativo.
                     </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSave)} className="space-y-4 pt-2">
-                        <FormField control={form.control} name="patrimony" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-xs font-bold">Etiqueta de Patrimônio</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="Ex: PAT-001" className="h-9 font-mono uppercase text-xs" {...field} value={field.value || ""} />
-                                </FormControl>
-                            </FormItem>
-                        )} />
+                    <form
+                        onSubmit={form.handleSubmit(handleSave)}
+                        className="space-y-4 pt-2"
+                    >
+                        <FormField
+                            control={form.control}
+                            name="patrimony"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">
+                                        Etiqueta de Patrimônio
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Ex: PAT-001"
+                                            className="h-9 font-mono uppercase text-xs"
+                                            {...field}
+                                            value={field.value || ""}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
 
-                        <FormField control={form.control} name="computer.username" render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="text-xs font-bold">Usuário Utilizador</FormLabel>
-                                <FormControl><Input placeholder="Ex: joao.silva" className="h-9 text-xs" {...field} /></FormControl>
-                            </FormItem>
-                        )} />
+                        <FormField
+                            control={form.control}
+                            name="computer.username"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">
+                                        Usuário Utilizador
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="Ex: joao.silva"
+                                            className="h-9 text-xs"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                </FormItem>
+                            )}
+                        />
 
                         {/* Departamento com Filtro de Digitação Rápido */}
-                        <FormField control={form.control} name="departmentId" render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel className="text-xs font-bold">Setor / Departamento</FormLabel>
-                                <ComboboxSearch
-                                    options={departments}
-                                    value={field.value || ""}
-                                    onChange={field.onChange}
-                                    placeholder="Filtrar e selecionar setor..."
-                                />
-                            </FormItem>
-                        )} />
+                        <FormField
+                            control={form.control}
+                            name="departmentId"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel className="text-xs font-bold">
+                                        Setor / Departamento
+                                    </FormLabel>
+                                    <ComboboxSearch
+                                        options={departments}
+                                        value={field.value || ""}
+                                        onChange={field.onChange}
+                                        placeholder="Filtrar e selecionar setor..."
+                                    />
+                                </FormItem>
+                            )}
+                        />
 
                         {/* Localidade com Filtro de Digitação Rápido */}
-                        <FormField control={form.control} name="locationId" render={({ field }) => (
-                            <FormItem className="flex flex-col">
-                                <FormLabel className="text-xs font-bold">Localidade Física</FormLabel>
-                                <ComboboxSearch
-                                    options={locations}
-                                    value={field.value || ""}
-                                    onChange={field.onChange}
-                                    placeholder="Filtrar e selecionar local..."
-                                />
-                            </FormItem>
-                        )} />
+                        <FormField
+                            control={form.control}
+                            name="locationId"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-col">
+                                    <FormLabel className="text-xs font-bold">
+                                        Localidade Física
+                                    </FormLabel>
+                                    <ComboboxSearch
+                                        options={locations}
+                                        value={field.value || ""}
+                                        onChange={field.onChange}
+                                        placeholder="Filtrar e selecionar local..."
+                                    />
+                                </FormItem>
+                            )}
+                        />
 
                         <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5">
-                            <Button type="button" variant="ghost" onClick={onClose} className="h-9 text-xs font-bold">Cancelar</Button>
-                            <Button type="submit" disabled={isPending} className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950">
-                                {isPending ? <Loader2 className="animate-spin" size={14} /> : "Salvar Alterações"}
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                onClick={onClose}
+                                className="h-9 text-xs font-bold"
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950"
+                            >
+                                {isPending ? (
+                                    <Loader2
+                                        className="animate-spin"
+                                        size={14}
+                                    />
+                                ) : (
+                                    "Salvar Alterações"
+                                )}
                             </Button>
                         </DialogFooter>
                     </form>
