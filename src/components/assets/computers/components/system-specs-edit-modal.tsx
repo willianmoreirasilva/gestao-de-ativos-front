@@ -36,15 +36,25 @@ import {
 import { FieldError } from "@/components/users/field-error"; // 🌟 Seu componente padrão
 import { ComputerDetails, SystemSpecsModalOptions } from "@/types/assets";
 
+// 1. Adicione a mesma Regex do back no topo do seu modal
+const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
+
 const systemSpecsSchema = z.object({
     computer: z.object({
         hostname: z.string().min(1, "Hostname obrigatório"),
         username: z.string().min(1, "Usuário obrigatório"),
-        processorId: z.string().uuid().nullable().optional(),
-        osId: z.string().uuid().nullable().optional(),
-        diskId: z.string().uuid().nullable().optional(),
+        // Permite passar string vazia no estado local do form
+        processorId: z.string().uuid().or(z.literal("")).nullable().optional(),
+        osId: z.string().uuid().or(z.literal("")).nullable().optional(),
+        diskId: z.string().uuid().or(z.literal("")).nullable().optional(),
         memory: z.string().nullable().optional(),
-        mac: z.string().nullable().optional(),
+        mac: z
+            .string()
+            .nullable()
+            .optional()
+            .refine((val) => !val || val.trim() === "" || macRegex.test(val), {
+                message: "Formato de MAC inválido. Use Ex: 00:1A:3F:F1:4C:C2",
+            }),
     }),
 });
 
@@ -109,8 +119,30 @@ export function SystemSpecsEditModal({
     const onSubmit = async (data: SystemSpecsValues) => {
         setIsPending(true);
         setApiError(null);
+        // 🌟 CLONAR E TRATAR PAYLOAD: Se o MAC ou a memória forem strings vazias, envia null para a API
+        const sanitizedData = {
+            ...data,
+            computer: {
+                ...data.computer,
+                // Se o usuário apagou o campo (ficou ""), vira null. Caso contrário, mantém o valor ou limpa espaços
+                mac:
+                    data.computer.mac?.trim() === ""
+                        ? null
+                        : data.computer.mac?.trim(),
+                memory:
+                    data.computer.memory === "" ? null : data.computer.memory,
+                processorId:
+                    data.computer.processorId === ""
+                        ? null
+                        : data.computer.processorId,
+                diskId:
+                    data.computer.diskId === "" ? null : data.computer.diskId,
+                osId: data.computer.osId === "" ? null : data.computer.osId,
+            },
+        };
 
-        const result = await updateAssetAction(assetId, data);
+        // Passamos o payload limpo e sanitizado para a Server Action
+        const result = await updateAssetAction(assetId, sanitizedData as any);
 
         if (result.success) {
             router.refresh();
@@ -292,6 +324,14 @@ export function SystemSpecsEditModal({
                                                 </SelectTrigger>
                                             </FormControl>
                                             <SelectContent>
+                                                {/* 🌟 Opção adicionada para permitir desvincular ou deixar em branco */}
+                                                <SelectItem
+                                                    value=""
+                                                    className="text-xs text-muted-foreground italic font-medium"
+                                                >
+                                                    Nenhuma (Deixar em branco)
+                                                </SelectItem>
+
                                                 {[
                                                     "4GB",
                                                     "8GB",

@@ -59,77 +59,82 @@ export const networkDeviceAssetFormSchema = assetBaseSchema.extend({
     networkDevice: networkDeviceSchema,
 });
 
+// Helper para strings comuns: Transforma string vazia ("") em null de forma limpa
+const emptyToNull = z.preprocess(
+    (val) =>
+        val === "" || val === undefined || val === null || val === "null"
+            ? null
+            : val,
+    z.string().nullable(),
+);
+
+// 🌟 HELPER BLINDADO PARA UUIDs OPCIONAIS:
+// Se for uma string vazia, vira null IMEDIATAMENTE e ignora a validação de UUID.
+const emptyUuidToNull = z.preprocess(
+    (val) => {
+        if (val === "" || val === undefined || val === null || val === "null") {
+            return null;
+        }
+        return val;
+    },
+    z.union([z.string().uuid("UUID Inválido"), z.null()]),
+);
 export const UpdateAssetSchema = z.object({
-    patrimony: z
-        .preprocess(
-            (val) => (val === "" || val === undefined ? null : val),
-            z.string().nullable(),
-        )
-        .optional(),
-
-    departmentId: z
-        .preprocess(
-            (val) => (val === "" || val === undefined ? null : val),
-            z.string().uuid("UUID Inválido").nullable(),
-        )
-        .optional(),
-
-    locationId: z
-        .preprocess(
-            (val) => (val === "" || val === undefined ? null : val),
-            z.string().uuid("UUID Inválido").nullable(),
-        )
-        .optional(),
-
-    newIpId: z.string().uuid().nullable().optional(),
+    patrimony: emptyToNull.optional(),
+    departmentId: emptyUuidToNull.optional(),
+    locationId: emptyUuidToNull.optional(),
+    newIpId: emptyUuidToNull.optional(),
 
     computer: z
         .object({
-            hostname: z.string().min(1, "Hostname é obrigatório"),
-            username: z.string().min(1, "Usuário é obrigatório"),
-            memory: z.string().nullable().optional(), // Continua String direta (Ex: "16GB")
+            hostname: z.string().min(1, "Hostname é obrigatório").optional(),
+            username: z.string().min(1, "Usuário é obrigatório").optional(),
 
-            // 🌟 Agora enviamos os IDs gerados pelo Combobox
-            processorId: z.string().uuid().nullable().optional(),
-            diskId: z.string().uuid().nullable().optional(),
-            osId: z.string().uuid().nullable().optional(),
-            mac: z.string().nullable().optional(),
+            // 🌟 Agora o processador, disk e osId aceitam string vazia que vira null sem dar erro de UUID!
+            memory: emptyToNull.optional(),
+            processorId: emptyUuidToNull.optional(),
+            diskId: emptyUuidToNull.optional(),
+            osId: emptyUuidToNull.optional(),
+            mac: emptyToNull.optional(),
         })
         .optional(),
 
     printer: z
         .object({
-            hostname: z.string().nullable(),
-            model: z.string(),
-            code: z.string(),
-            serial: z.string(),
-            notes: z.string(),
+            hostname: emptyToNull,
+            model: emptyToNull,
+            code: emptyToNull,
+            serial: emptyToNull,
+            notes: emptyToNull,
         })
         .nullable()
         .optional(),
+
     phone: z
         .object({
-            phoneNumber: z.string(),
-            model: z.string(),
-            notes: z.string(),
+            phoneNumber: emptyToNull,
+            model: emptyToNull,
+            notes: emptyToNull,
         })
         .nullable()
         .optional(),
+
     camera: z
         .object({
-            model: z.string(),
-            serial: z.string(),
-            mac: z.string(),
-            notes: z.string(),
+            model: emptyToNull,
+            serial: emptyToNull,
+            mac: emptyToNull,
+            notes: emptyToNull,
         })
         .nullable()
         .optional(),
+
     networkDevice: z
         .object({
-            mac: z.string(),
-            model: z.string(),
-            vendor: z.string(),
-            notes: z.string(),
+            mac: emptyToNull,
+            model: emptyToNull,
+            vendor: emptyToNull,
+            notes: emptyToNull,
         })
         .nullable()
         .optional(),

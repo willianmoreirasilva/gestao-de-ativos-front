@@ -17,6 +17,29 @@ interface ActionResponse {
 }
 
 /**
+ * 🧼 Higienizador linear de Payload:
+ * Transforma qualquer string vazia ("") em null de forma direta.
+ * O backend agora receberá o null e atualizará a coluna limpando-a.
+ */
+function sanitizePayload(obj: any): any {
+    if (obj === null || obj === undefined) return null;
+
+    if (typeof obj === "string") {
+        return obj.trim() === "" ? null : obj;
+    }
+    if (Array.isArray(obj)) {
+        return obj.map(sanitizePayload);
+    }
+    if (typeof obj === "object") {
+        return Object.keys(obj).reduce((acc: any, key) => {
+            acc[key] = sanitizePayload(obj[key]);
+            return acc;
+        }, {});
+    }
+    return obj;
+}
+
+/**
  * Atualiza parcialmente ou totalmente qualquer ativo via PATCH
  */
 export async function updateAssetAction(
@@ -26,17 +49,26 @@ export async function updateAssetAction(
     try {
         const api = await getServerApi();
 
-        // 🌟 Validação prévia com o Schema do Servidor para evitar submits corrompidos
-        const validatedFields = UpdateAssetSchema.safeParse(payload);
+        // 🌟 Intercepta e higieniza os dados vindos dos formulários do front-end
+        const sanitizedPayload = sanitizePayload(payload);
+
+        // 🌟 Validação prévia com o Schema do Servidor (agora recebendo null ao invés de "")
+        const validatedFields = UpdateAssetSchema.safeParse(sanitizedPayload);
+
         if (!validatedFields.success) {
+            console.error(
+                "[VALIDATION_ERROR_DETAILS]:",
+                validatedFields.error.flatten().fieldErrors,
+            );
+
             return {
                 success: false,
-                error: "Dados do formulário inválidos.",
+                error: "Erro de validação nos dados enviados.",
                 fieldErrors: validatedFields.error.flatten().fieldErrors as any,
             };
         }
 
-        // 🌟 Alterado de .put para .patch para respeitar atualizações parciais
+        // Envia o payload 100% validado e limpo para o seu backend
         await api.patch(`/api/assets/${assetId}`, validatedFields.data);
 
         // Força o Next.js a purgar o cache mantendo o usuário na página atualizada
@@ -47,13 +79,12 @@ export async function updateAssetAction(
     } catch (error: any) {
         console.error(`[UPDATE_ASSET_ACTION_ERROR]:`, error);
 
-        // Retorna erros estruturados do banco ou mensagens amigáveis da API
         return {
             success: false,
             error:
                 error?.response?.data?.message ||
                 error?.response?.data?.error ||
-                "Erro ao salvar as alterações no servidor (Status 404/500).",
+                "Erro ao salvar as alterações no servidor.",
             fieldErrors: error?.response?.data?.fieldErrors || null,
         };
     }

@@ -1,7 +1,6 @@
-// src/components/ui/combobox-search.tsx
 "use client";
 
-import { Check, ChevronsUpDown, Search, X } from "lucide-react";
+import { Check, ChevronsUpDown, Eraser, Search, X } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -37,7 +36,6 @@ export function ComboboxSearch({
         [options, value],
     );
 
-    // Filtro instantâneo controlado via React State
     const filteredOptions = React.useMemo(() => {
         if (!search.trim()) return options;
         const normalizedSearch = normalizeText(search);
@@ -46,7 +44,6 @@ export function ComboboxSearch({
         );
     }, [options, search]);
 
-    // Fecha o menu se o usuário clicar fora deste componente
     React.useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
             if (
@@ -61,12 +58,10 @@ export function ComboboxSearch({
             document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Reseta a busca sempre que fechar
     React.useEffect(() => {
         if (!isOpen) {
             setSearch("");
         } else {
-            // Garante o foco no input interno assim que abrir
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen]);
@@ -74,23 +69,43 @@ export function ComboboxSearch({
     return (
         <div ref={containerRef} className="relative w-full">
             {/* Botão de Gatilho Principal */}
-            <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOpen((prev) => !prev)}
-                className={cn(
-                    "w-full h-9 justify-between text-xs font-normal bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 transition-all",
-                    isOpen &&
-                        "border-zinc-400 dark:border-zinc-600 ring-1 ring-zinc-400 dark:ring-zinc-600",
-                )}
-            >
-                <span className="truncate flex-1 text-left">
-                    {selectedOption ? selectedOption.name : placeholder}
-                </span>
-                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 ml-2" />
-            </Button>
+            <div className="relative flex items-center w-full">
+                <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsOpen((prev) => !prev)}
+                    className={cn(
+                        "w-full h-9 justify-between text-xs font-normal bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 transition-all text-left pr-8",
+                        isOpen &&
+                            "border-zinc-400 dark:border-zinc-600 ring-1 ring-zinc-400 dark:ring-zinc-600",
+                    )}
+                >
+                    <span className="truncate text-left block w-full">
+                        {selectedOption ? selectedOption.name : placeholder}
+                    </span>
+                </Button>
 
-            {/* Painel de Busca Expansível (Fica no mesmo plano do DOM, evitando bugs de foco do Dialog) */}
+                {/* Ícones de controle empilhados à direita */}
+                <div className="absolute right-2.5 flex items-center gap-1.5 pointer-events-auto">
+                    {/* 🌟 Botão rápido de Clear (X) se houver valor selecionado */}
+                    {value && (
+                        <button
+                            type="button"
+                            onClick={(e) => {
+                                e.stopPropagation(); // Evita abrir o dropdown ao clicar no X
+                                onChange("");
+                            }}
+                            className="p-0.5 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 transition-colors"
+                            title="Limpar seleção"
+                        >
+                            <X className="h-3 w-3" />
+                        </button>
+                    )}
+                    <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 opacity-40 text-zinc-500" />
+                </div>
+            </div>
+
+            {/* Painel de Busca Expansível */}
             {isOpen && (
                 <div className="absolute z-50 w-full mt-1.5 p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl animate-in fade-in-50 slide-in-from-top-1 duration-150">
                     <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-900 px-2 pb-2 mb-1">
@@ -116,6 +131,21 @@ export function ComboboxSearch({
 
                     {/* Lista com scroll nativo destravado */}
                     <div className="max-h-48 overflow-y-auto custom-scrollbar space-y-0.5 pr-1">
+                        {/* 🌟 Botão fixo no topo da lista para limpar de forma explícita */}
+                        {value && !search.trim() && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onChange("");
+                                    setIsOpen(false);
+                                }}
+                                className="w-full rounded-md px-2.5 py-1.5 text-xs text-left transition-colors flex items-center gap-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20 font-medium border border-transparent border-dashed border-red-200 dark:border-red-900/40 mb-1"
+                            >
+                                <Eraser className="h-3.5 w-3.5 shrink-0" />
+                                <span>Remover / Limpar campo</span>
+                            </button>
+                        )}
+
                         {filteredOptions.length === 0 ? (
                             <div className="py-3 text-center text-xs text-muted-foreground">
                                 {emptyMessage}

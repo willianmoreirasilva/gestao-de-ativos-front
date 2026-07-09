@@ -88,31 +88,40 @@ export async function getAssetById(
     }
 }
 
-/**
- * Remove um ativo do sistema
- */
-export async function deleteAssetAction(
-    id: string,
-): Promise<{ error: string }> {
+export async function deleteAssetAction(id: string) {
     try {
         const api = await getServerApi();
-        await api.delete(`/api/assets/${id}`);
 
-        // Força a atualização da tabela principal
-        revalidatePath("/assets/computers");
-        return { error: "" };
-    } catch (error: unknown) {
-        console.error("❌ Erro ao deletar ativo:", error);
-        const apiError = error as {
-            response?: { status?: number; data?: { error?: string } };
-        };
+        // 🌟 Forçamos o cabeçalho JSON E enviamos um objeto vazio no data.
+        // Isso resolve o erro 415/500 do Fastify!
+        const response = await api.delete(`/api/assets/${id}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+            data: {}, // 🌟 CRUCIAL: Fastify precisa de um body válido se houver Content-Type
+        });
 
-        if (apiError.response?.status === 204) {
+        if (response.status === 204 || response.status === 200) {
             revalidatePath("/assets/computers");
-            return { error: "" };
+            return { error: "", fieldErrors: {} };
         }
+
+        return { error: "", fieldErrors: {} };
+    } catch (error: any) {
+        console.error("❌ [DELETE_ASSET_ACTION_ERROR]:", error);
+
+        if (error.response?.status === 204 || error.response?.status === 200) {
+            revalidatePath("/assets/computers");
+            return { error: "", fieldErrors: {} };
+        }
+
+        const errorMessage =
+            error.response?.data?.error || error.response?.data?.message;
         return {
-            error: apiError.response?.data?.error || "Erro ao excluir o ativo.",
+            error:
+                errorMessage ||
+                "Erro interno do servidor (500) ao tentar remover o ativo.",
+            fieldErrors: {},
         };
     }
 }

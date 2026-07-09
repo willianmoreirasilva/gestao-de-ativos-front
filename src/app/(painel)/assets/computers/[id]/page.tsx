@@ -40,6 +40,7 @@ export default async function ComputerDetailsPage({ params }: Props) {
     ]);
 
     const asset = assetResult?.data;
+
     const error = assetResult?.error;
 
     if (error || !asset) {
@@ -90,15 +91,14 @@ export default async function ComputerDetailsPage({ params }: Props) {
                     options={options}
                 />
 
-                {/* 2. Conectividade IP (Seu componente intocado) */}
+                {/* 2. Conectividade IP (Patrimônio removido e focado apenas em rede) */}
                 <AssetConnectivityCard
                     assetId={asset.id}
-                    patrimony={asset.patrimony}
                     ip={asset.ip}
                     vlanType={asset.vlanType || "GENERAL_DATA"}
                 />
 
-                {/* 3. Alocação Física e Lógica Adaptada */}
+                {/* 3. Alocação Física e Lógica Adaptada (Concentra Patrimônio e Responsabilidade) */}
                 <AssetAllocationCard
                     assetId={asset.id}
                     patrimony={asset.patrimony}

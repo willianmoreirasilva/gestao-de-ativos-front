@@ -1,11 +1,13 @@
+// src/components/assets/shared/asset-allocation-card.tsx
 "use client";
 
-import { Building2, Layout, MapPin, Pencil, User } from "lucide-react";
+import { Building2, Layout, MapPin, Pencil, Tag, User } from "lucide-react";
 import { useState } from "react";
 
 import { AllocationEditModal } from "@/components/assets/computers/components/allocation_edit-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { OptionItem } from "@/types/assets";
 
 interface AssetAllocationCardProps {
     assetId: string;
@@ -20,28 +22,29 @@ interface AssetAllocationCardProps {
         room?: string | null;
     } | null;
     options: {
-        departments: any[];
-        locations: any[];
+        departments: OptionItem[];
+        locations: OptionItem[];
     };
 }
 
-export function AssetAllocationCard({ 
+export function AssetAllocationCard({
     assetId,
     patrimony,
-    username, 
-    department, 
+    username,
+    department,
     location,
-    options
+    options,
 }: AssetAllocationCardProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
-    const hasSubLocation = location?.building || location?.floor || location?.room;
+    const hasSubLocation =
+        location?.building || location?.floor || location?.room;
 
     return (
         <Card className="md:col-span-3 shadow-sm border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950">
-            {/* Header com o botão de edição alinhado perfeitamente */}
             <CardHeader className="border-b border-zinc-100 dark:border-zinc-900 bg-zinc-50/50 dark:bg-zinc-900/20 py-3 flex flex-row items-center justify-between space-y-0">
                 <CardTitle className="text-sm font-bold tracking-wide uppercase text-zinc-500 flex items-center gap-2">
-                    <Layout size={16} className="text-purple-500" /> Alocação de Infraestrutura e Responsabilidade
+                    <Layout size={16} className="text-purple-500" /> Alocação de
+                    Infraestrutura e Responsabilidade
                 </CardTitle>
                 <Button
                     size="icon"
@@ -53,13 +56,33 @@ export function AssetAllocationCard({
                     <Pencil size={14} />
                 </Button>
             </CardHeader>
-            <CardContent className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                {/* 🌟 Item Novo: Patrimônio Corporativo */}
+                <div className="space-y-1 flex items-start gap-2.5">
+                    <div className="p-2 bg-zinc-50 dark:bg-zinc-900 rounded-lg mt-1">
+                        <Tag
+                            size={16}
+                            className="text-purple-500 dark:text-purple-400"
+                        />
+                    </div>
+                    <div>
+                        <span className="text-xs text-muted-foreground block">
+                            Patrimônio
+                        </span>
+                        <span className="font-mono font-bold text-zinc-900 dark:text-zinc-100 block mt-0.5 text-base uppercase tracking-wider">
+                            {patrimony || "Sem Registro"}
+                        </span>
+                    </div>
+                </div>
+
                 <div className="space-y-1 flex items-start gap-2.5">
                     <div className="p-2 bg-zinc-50 dark:bg-zinc-900 rounded-lg mt-1">
                         <User size={16} className="text-zinc-500" />
                     </div>
                     <div>
-                        <span className="text-xs text-muted-foreground block">Usuário de Domínio / Local</span>
+                        <span className="text-xs text-muted-foreground block">
+                            Usuário Responsável
+                        </span>
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 block mt-0.5">
                             {username || "Utilizador Padrão"}
                         </span>
@@ -71,7 +94,9 @@ export function AssetAllocationCard({
                         <Building2 size={16} className="text-zinc-500" />
                     </div>
                     <div>
-                        <span className="text-xs text-muted-foreground block">Departamento / Setor</span>
+                        <span className="text-xs text-muted-foreground block">
+                            Departamento / Setor
+                        </span>
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 block mt-0.5 text-base">
                             {department?.name || "Não Vinculado"}
                         </span>
@@ -84,7 +109,9 @@ export function AssetAllocationCard({
                     </div>
                     <div className="space-y-2 flex-1">
                         <div>
-                            <span className="text-xs text-muted-foreground block">Localidade Principal</span>
+                            <span className="text-xs text-muted-foreground block">
+                                Localidade Principal
+                            </span>
                             <span className="font-bold text-zinc-900 dark:text-zinc-100 text-base block">
                                 {location?.name || "Não Alocado"}
                             </span>
@@ -94,20 +121,32 @@ export function AssetAllocationCard({
                             <div className="grid grid-cols-3 gap-2 pt-2 border-t border-dashed border-zinc-200 dark:border-zinc-800">
                                 {location.building && (
                                     <div className="bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded text-center">
-                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">Prédio</span>
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{location.building}</span>
+                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                                            Prédio
+                                        </span>
+                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                            {location.building}
+                                        </span>
                                     </div>
                                 )}
                                 {location.floor && (
                                     <div className="bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded text-center">
-                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">Andar</span>
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{location.floor}º</span>
+                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                                            Andar
+                                        </span>
+                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                            {location.floor}º
+                                        </span>
                                     </div>
                                 )}
                                 {location.room && (
                                     <div className="bg-zinc-50 dark:bg-zinc-900/50 p-1.5 rounded text-center">
-                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">Sala</span>
-                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">{location.room}</span>
+                                        <span className="text-[10px] text-muted-foreground block uppercase font-medium">
+                                            Sala
+                                        </span>
+                                        <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                                            {location.room}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -116,7 +155,7 @@ export function AssetAllocationCard({
                 </div>
             </CardContent>
 
-            <AllocationEditModal 
+            <AllocationEditModal
                 isOpen={isEditOpen}
                 onClose={() => setIsEditOpen(false)}
                 assetId={assetId}
