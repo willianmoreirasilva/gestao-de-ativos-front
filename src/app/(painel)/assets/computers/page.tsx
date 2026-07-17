@@ -78,78 +78,96 @@ export default async function ComputersPage({ searchParams }: PageProps) {
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 px-1.5 md:px-0">
             {pageTitle}
 
             <ComputerFilters />
 
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-zinc-50/40 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800">
-                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 pl-5">
-                                Hostname / Patrimônio
-                            </TableHead>
-                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
-                                Endereço IP
-                            </TableHead>
-                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
-                                Usuário
-                            </TableHead>
-                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden md:table-cell">
-                                Especificações de Hardware
-                            </TableHead>
-                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden sm:table-cell">
-                                Alocação Operacional
-                            </TableHead>
-                            <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 w-20 text-center pr-5">
-                                Ações
-                            </TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {error && (
-                            <TableRow className="hover:bg-transparent">
-                                <TableCell
-                                    colSpan={6}
-                                    className="text-center py-12 text-sm text-destructive font-medium"
-                                >
-                                    {error}
-                                </TableCell>
+                <div className="overflow-x-auto w-full">
+                    <Table className="min-w-[600px] md:min-w-full">
+                        <TableHeader>
+                            <TableRow className="bg-zinc-50/40 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800">
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 pl-5">
+                                    Hostname / Patrimônio
+                                </TableHead>
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
+                                    Endereço IP
+                                </TableHead>
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden sm:table-cell">
+                                    Conexão Switch
+                                </TableHead>
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden md:table-cell">
+                                    Usuário
+                                </TableHead>
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden lg:table-cell">
+                                    Hardware
+                                </TableHead>
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden sm:table-cell">
+                                    Alocação
+                                </TableHead>
+                                <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 w-20 text-center pr-5">
+                                    Ações
+                                </TableHead>
                             </TableRow>
-                        )}
+                        </TableHeader>
+                        <TableBody>
+                            {error && (
+                                <TableRow className="hover:bg-transparent">
+                                    <TableCell
+                                        colSpan={7}
+                                        className="text-center py-12 text-sm text-destructive font-medium"
+                                    >
+                                        {error}
+                                    </TableCell>
+                                </TableRow>
+                            )}
 
-                        {!error && computers.length === 0 && searchQuery && (
-                            <TableRow className="hover:bg-transparent">
-                                <TableCell colSpan={6} className="py-10">
-                                    <EmptyState
-                                        message={`Nenhum computador encontrado para os critérios: "${searchQuery}"`}
-                                        label="Cadastrar Novo Computador"
-                                        href="/assets/computers/add"
+                            {!error &&
+                                computers.length === 0 &&
+                                searchQuery && (
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableCell
+                                            colSpan={7}
+                                            className="py-10"
+                                        >
+                                            <EmptyState
+                                                message={`Nenhum computador encontrado para: "${searchQuery}"`}
+                                                label="Cadastrar Novo Computador"
+                                                href="/assets/computers/add"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+
+                            {!error &&
+                                computers.length === 0 &&
+                                !searchQuery && (
+                                    <TableRow className="hover:bg-transparent">
+                                        <TableCell
+                                            colSpan={7}
+                                            className="py-10"
+                                        >
+                                            <EmptyState
+                                                message="Nenhum computador encontrado nesta página."
+                                                label="Voltar para a página 1"
+                                                href="?page=1"
+                                            />
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+
+                            {!error &&
+                                computers.length > 0 &&
+                                computers.map((asset) => (
+                                    <ComputerRowItem
+                                        key={asset.id}
+                                        asset={asset}
                                     />
-                                </TableCell>
-                            </TableRow>
-                        )}
-
-                        {!error && computers.length === 0 && !searchQuery && (
-                            <TableRow className="hover:bg-transparent">
-                                <TableCell colSpan={6} className="py-10">
-                                    <EmptyState
-                                        message="Nenhum computador encontrado nesta página."
-                                        label="Voltar para a página 1"
-                                        href="?page=1"
-                                    />
-                                </TableCell>
-                            </TableRow>
-                        )}
-
-                        {!error &&
-                            computers.length > 0 &&
-                            computers.map((asset) => (
-                                <ComputerRowItem key={asset.id} asset={asset} />
-                            ))}
-                    </TableBody>
-                </Table>
+                                ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </div>
 
             {!error && computers.length > 0 && (

@@ -17,25 +17,43 @@ interface ActionResponse {
 }
 
 /**
- * 🧼 Higienizador linear de Payload:
- * Transforma qualquer string vazia ("") em null de forma direta.
- * O backend agora receberá o null e atualizará a coluna limpando-a.
+ * 🧼 Higienizador inteligente de Payload:
+ * Mantém os dados fiéis ao contrato do backend.
+ *
+ * REGRA CRUCIAL:
+ * - Se a propriedade for `undefined`, nós a REMOVEMOS do payload final.
+ *   Dessa forma, o Prisma do backend ignora o campo e NÃO limpa o valor existente no banco.
+ * - Apenas as strings vazias `""` fornecidas ativamente pelo usuário são transformadas em `null`.
  */
-function sanitizePayload(obj: any): any {
-    if (obj === null || obj === undefined) return null;
+function sanitizePayloadForBackend(obj: any): any {
+    if (obj === null || obj === undefined) return undefined;
 
     if (typeof obj === "string") {
         return obj.trim() === "" ? null : obj;
     }
+
     if (Array.isArray(obj)) {
-        return obj.map(sanitizePayload);
+        return obj.map(sanitizePayloadForBackend);
     }
+
     if (typeof obj === "object") {
-        return Object.keys(obj).reduce((acc: any, key) => {
-            acc[key] = sanitizePayload(obj[key]);
-            return acc;
-        }, {});
+        const cleaned: any = {};
+        for (const key of Object.keys(obj)) {
+            const val = obj[key];
+
+            // Se o campo não está no formulário, não o envie para evitar resetar no banco
+            if (val === undefined) {
+                continue;
+            }
+
+            const sanitizedVal = sanitizePayloadForBackend(val);
+            if (sanitizedVal !== undefined) {
+                cleaned[key] = sanitizedVal;
+            }
+        }
+        return cleaned;
     }
+
     return obj;
 }
 
@@ -49,35 +67,21 @@ export async function updateAssetAction(
     try {
         const api = await getServerApi();
 
-        // 🌟 Intercepta e higieniza os dados vindos dos formulários do front-end
-        const sanitizedPayload = sanitizePayload(payload);
+        // 🌟 Remove propriedades undefined e limpa strings vazias de forma segura
+        const sanitizedPayload = sanitizePayloadForBackend(payload);
 
-        // 🌟 Validação prévia com o Schema do Servidor (agora recebendo null ao invés de "")
-        const validatedFields = UpdateAssetSchema.safeParse(sanitizedPayload);
+        // Envia apenas o payload higienizado contendo o que de fato mudou
+        await api.patch(`/api/assets/${assetId}`, sanitizedPayload);
 
-        if (!validatedFields.success) {
-            console.error(
-                "[VALIDATION_ERROR_DETAILS]:",
-                validatedFields.error.flatten().fieldErrors,
-            );
-
-            return {
-                success: false,
-                error: "Erro de validação nos dados enviados.",
-                fieldErrors: validatedFields.error.flatten().fieldErrors as any,
-            };
-        }
-
-        // Envia o payload 100% validado e limpo para o seu backend
-        await api.patch(`/api/assets/${assetId}`, validatedFields.data);
-
-        // Força o Next.js a purgar o cache mantendo o usuário na página atualizada
         revalidatePath("/assets/computers");
         revalidatePath(`/assets/computers/${assetId}`);
 
         return { success: true };
     } catch (error: any) {
-        console.error(`[UPDATE_ASSET_ACTION_ERROR]:`, error);
+        console.error(
+            `[UPDATE_ASSET_ACTION_ERROR]:`,
+            error?.response?.data || error,
+        );
 
         return {
             success: false,
@@ -90,25 +94,46 @@ export async function updateAssetAction(
     }
 }
 
-// 🛠️ Troca rápida de IP no modal (Apenas IP)
+/**
+ * 🛠️ Troca rápida de IP no modal (Apenas IP)
+ * Alinhado estritamente com o campo `newIpId` exigido pelo backend
+ */
 export async function updateAssetOnlyIpAction(
     id: string,
-    newIpId: UpdateAssetInput["newIpId"],
+    newIpIdFromFront: any,
 ): Promise<MutationResponse> {
     try {
         const api = await getServerApi();
-        await api.patch(`/api/assets/${id}`, { newIpId });
+
+        // 1. Extraímos estritamente a string do UUID se vier embrulhado em um objeto do select
+        let cleanIpId: string | null = null;
+        if (newIpIdFromFront) {
+            cleanIpId =
+                typeof newIpIdFromFront === "object"
+                    ? newIpIdFromFront.id || null
+                    : newIpIdFromFront;
+        }
+
+        // 2. O backend exige "newIpId" e valida via Zod como UUID ou null.
+        // Não envie "ipId" aqui para não confundir o Schema de validação do back!
+        const payload: UpdateAssetInput = {
+            newIpId: cleanIpId,
+        };
+
+        await api.patch(`/api/assets/${id}`, payload);
 
         revalidatePath(`/assets/computers/${id}`);
         revalidatePath("/assets/computers");
 
         return {};
     } catch (error: any) {
-        if (error.response?.data?.fieldErrors) {
-            return { fieldErrors: error.response.data.fieldErrors };
-        }
+        console.error(
+            "[ERROR_UPDATE_ONLY_IP]:",
+            error?.response?.data || error.message,
+        );
         return {
             error:
+                error.response?.data?.message ||
                 error.response?.data?.error ||
                 "Não foi possível vincular o IP informado.",
         };
@@ -127,7 +152,6 @@ export async function findIpByAddressAction(
     try {
         const api = await getServerApi();
 
-        // Removemos o filtro fixo de status na URL para que possamos dar erros mais precisos se o IP existir mas estiver ocupado
         const response = await api.get(`/api/ip-addresses?search=${address}`);
         const ipList: any[] = response.data?.data || [];
 
@@ -146,11 +170,10 @@ export async function findIpByAddressAction(
             return { error: `O endereço IP ${address} não foi encontrado.` };
         }
 
-        // 2️⃣ NOVA VALIDAÇÃO: Bloqueia mistura de redes (Ex: Ativo corporativo pegando IP de Câmeras/Switch)
+        // 2️⃣ NOVA VALIDAÇÃO: Bloqueia mistura de redes
         const currentNetworkType = exactIpMatch.network?.type;
 
         if (currentNetworkType && currentNetworkType !== expectedVlanType) {
-            // Mapeamento amigável para o técnico entender o erro
             const typeLabels: Record<string, string> = {
                 GENERAL_DATA: "Rede de Dados Gerais",
                 CAMERA_VLAN: "VLAN de Câmeras (CFTV)",
@@ -168,14 +191,21 @@ export async function findIpByAddressAction(
             };
         }
 
-        // 3️⃣ Validação de Status (Se já estiver em uso, avisa o usuário)
+        // 3️⃣ Validação de Status
         if (exactIpMatch.status !== "AVAILABLE") {
             return {
                 error: `Este endereço IP já está em uso (${exactIpMatch.status}) por outro ativo.`,
             };
         }
-        // Se passou em todas as regras, retorna o UUID correto
-        return { data: exactIpMatch };
+
+        // Retornamos os dados sanitizados para garantir que o front-end tenha o ID string de forma fácil
+        return {
+            data: {
+                id: exactIpMatch.id,
+                address: exactIpMatch.address,
+                status: exactIpMatch.status,
+            },
+        };
     } catch (error: any) {
         return {
             error:

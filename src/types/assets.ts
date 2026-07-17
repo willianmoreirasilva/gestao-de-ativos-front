@@ -2,7 +2,8 @@ export type AssetType =
     | "COMPUTER"
     | "PRINTER"
     | "PHONE"
-    | "NETWORK_DEVICE"
+    | "SWITCH"
+    | "ACCESS_POINT"
     | "CAMERA"
     | "OTHER";
 
@@ -20,6 +21,7 @@ export interface ComputerDetails {
     processor?: OptionItem | null;
     disk?: OptionItem | null;
     operatingSystem?: OptionItem | null;
+    notes?: string | null; // 🌟 Recuperado com segurança
 }
 
 export interface CameraDetails {
@@ -46,11 +48,21 @@ export interface PhoneDetails {
     notes: string | null;
 }
 
-export interface NetworkDeviceDetails {
+export interface SwitchDetails {
     id: string;
-    mac: string | null;
-    model: string | null;
+    hostname: string | null;
+    model: string;
     vendor: string | null;
+    totalPorts: number;
+    mac: string | null;
+    notes: string | null;
+}
+
+export interface AccessPointDetails {
+    id: string;
+    model: string;
+    vendor: string | null;
+    mac: string | null;
     notes: string | null;
 }
 
@@ -61,8 +73,18 @@ export interface AssetItem {
     departmentId: string | null;
     locationId: string | null;
     ipId: string | null;
+
+    // 🔌 Conexão física de rede herdada por qualquer tipo
+    connectedToSwitchId: string | null;
+    switchPort: number | null;
+
+    // 🌟 NOVOS CAMPOS VINDOS DO BACK-END
+    vlanType: string; // ex: "GENERAL_DATA", "CAMERA_VLAN"
+    vlanTag: number | null; // ex: 10, 20 ou null se não houver
+
     createdAt: string;
     updatedAt: string;
+
     department: { id: string; name: string } | null;
     location: {
         id: string;
@@ -71,12 +93,29 @@ export interface AssetItem {
         floor: string | null;
         room: string | null;
     } | null;
-    ip: { id: string; address: string } | null;
+
+    // 🌐 IP atualizado caso você precise acessar algo da rede via asset.ip.network
+    ip: {
+        id: string;
+        address: string;
+        network?: any | null; // Deixamos como any para evitar brigas com o schema do banco
+    } | null;
+
+    // Relação de conexão do switch resolvido
+    connectedToSwitch?: {
+        id: string;
+        hostname: string;
+        model: string;
+        vendor: string | null;
+    } | null;
+
+    // Sub-especificações opcionais com base no tipo
     computer?: ComputerDetails | null;
     camera?: CameraDetails | null;
     printer?: PrinterDetails | null;
     phone?: PhoneDetails | null;
-    networkDevice?: NetworkDeviceDetails | null;
+    switch?: SwitchDetails | null;
+    accessPoint?: AccessPointDetails | null;
 }
 
 // 🌟 Objeto de Paginação da API
@@ -93,12 +132,13 @@ export interface ApiResponseWithMeta<T> {
     meta: ApiMeta;
 }
 
-// 🌟 Novos Filtros Suportados pelos Query Parameters
+// 🌟 Filtros de Busca atualizados com conexão física
 export interface AssetFilters {
     type?: AssetType;
     departmentId?: string;
     locationId?: string;
     networkId?: string;
+    connectedToSwitchId?: string; // 🔍 Adicionado filtro por Switch de origem
     hasIp?: "true" | "false";
     search?: string;
     page?: number;

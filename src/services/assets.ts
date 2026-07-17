@@ -25,11 +25,8 @@ export async function getAssets(
 ): Promise<ActionResponse<AssetItem[]>> {
     try {
         const api = await getServerApi();
-
-        // Converte o objeto de filtros em Query Strings válidas para a API
         const searchParams = new URLSearchParams();
 
-        // Filtros originais
         if (filters.type) searchParams.append("type", filters.type);
         if (filters.departmentId)
             searchParams.append("departmentId", filters.departmentId);
@@ -37,8 +34,13 @@ export async function getAssets(
             searchParams.append("locationId", filters.locationId);
         if (filters.networkId)
             searchParams.append("networkId", filters.networkId);
+        if (filters.connectedToSwitchId)
+            searchParams.append(
+                "connectedToSwitchId",
+                filters.connectedToSwitchId,
+            );
 
-        // 🌟 NOVOS FILTROS OBRIGATÓRIOS PARA A BUSCA FUNCIONAR:
+        // Filtros de controle e busca global
         if (filters.search) searchParams.append("search", filters.search);
         if (filters.hasIp) searchParams.append("hasIp", filters.hasIp);
         if (filters.page) searchParams.append("page", String(filters.page));
@@ -76,14 +78,13 @@ export async function getAssetById(
 ): Promise<ApiResponse<AssetItem>> {
     try {
         const api = await getServerApi();
-        // Consome o endpoint configurado na porta do seu backend de ativos
         const response = await api.get(`/api/assets/${id}`);
         return { data: response.data.data, error: null };
     } catch (error) {
         console.error(`❌ Erro ao buscar ativo ${id}:`, error);
         return {
             data: null,
-            error: "Erro ao buscar ativo:",
+            error: "Erro ao buscar ativo.",
         };
     }
 }
@@ -92,13 +93,12 @@ export async function deleteAssetAction(id: string) {
     try {
         const api = await getServerApi();
 
-        // 🌟 Forçamos o cabeçalho JSON E enviamos um objeto vazio no data.
-        // Isso resolve o erro 415/500 do Fastify!
+        // 🌟 Enviando um payload vazio no delete para contornar problemas no parser do Fastify
         const response = await api.delete(`/api/assets/${id}`, {
             headers: {
                 "Content-Type": "application/json",
             },
-            data: {}, // 🌟 CRUCIAL: Fastify precisa de um body válido se houver Content-Type
+            data: {},
         });
 
         if (response.status === 204 || response.status === 200) {

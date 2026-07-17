@@ -1,141 +1,193 @@
 "use client";
 
-import { Cpu, Eye, HardDrive, Layers, ShieldAlert } from "lucide-react";
+import { Eye, HardDrive, Link2, Monitor, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 
-import { Badge } from "@/components/ui/badge";
+import { NotesPopover } from "@/components/assets/shared/notes-popover";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
-import type { AssetItem } from "@/types/assets";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
+import { deleteAssetAction } from "@/services/assets";
+import { AssetItem } from "@/types/assets";
 
-type Props = {
+interface ComputerRowItemProps {
     asset: AssetItem;
-};
+}
 
-export function ComputerRowItem({ asset }: Props) {
-    const hasHardwareInfo =
-        asset.computer?.processor?.name ||
-        asset.computer?.memory ||
-        asset.computer?.disk?.name;
-    const osName = asset.computer?.operatingSystem?.name || "";
+export function ComputerRowItem({ asset }: ComputerRowItemProps) {
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [modalOpen, setModalOpen] = useState(false);
 
-    // Helper visual para determinar a cor do selo do SO de forma elegante
-    const getOsBadgeStyles = (name: string) => {
-        const lower = name.toLowerCase();
-        if (lower.includes("win"))
-            return "bg-blue-50/60 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400 border border-blue-100 dark:border-blue-900/30";
-        if (lower.includes("lin") || lower.includes("ubu"))
-            return "bg-orange-50/60 text-orange-700 dark:bg-orange-950/20 dark:text-orange-400 border border-orange-100 dark:border-orange-900/30";
-        if (lower.includes("mac"))
-            return "bg-zinc-100 text-zinc-800 dark:bg-zinc-800/40 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700/30";
-        return "bg-zinc-50 text-zinc-600 dark:bg-zinc-900/40 dark:text-zinc-400 border border-zinc-200/50 dark:border-zinc-800/50";
+    const diskInfo = asset.computer?.disk
+        ? `${asset.computer.disk.name} ${(asset.computer.disk as any).size || ""}`.trim()
+        : "Sem Disco";
+
+    const identifier =
+        asset.computer?.hostname || asset.patrimony || "Este ativo";
+
+    const handleDelete = async () => {
+        setIsDeleting(true);
+        setActionError(null);
+
+        try {
+            const result = await deleteAssetAction(asset.id);
+
+            // Nota: Se a sua action antiga disparar redirect(), o código não chegará aqui.
+            // Mas se ela retornar um objeto, validamos o erro conforme sua estrutura original:
+            if (result?.error) {
+                setActionError(result.error);
+                setIsDeleting(false);
+            } else {
+                toast.success("Ativo removido com sucesso.");
+                setModalOpen(false);
+                setIsDeleting(false);
+            }
+        } catch (err) {
+            setActionError("Falha de comunicação com o servidor.");
+            setIsDeleting(false);
+        }
     };
 
     return (
-        <TableRow className="hover:bg-zinc-50/40 dark:hover:bg-zinc-900/40 transition-colors border-b border-zinc-100 dark:border-zinc-900 group">
-            {/* 1. Hostname e Código de Patrimônio */}
-            <TableCell className="py-3.5 pl-5 font-semibold text-zinc-900 dark:text-zinc-100">
-                <div className="flex flex-col gap-0.5">
-                    <span className="tracking-tight group-hover:text-zinc-900 dark:group-hover:text-white transition-colors">
-                        {asset.computer?.hostname || "Sem Hostname"}
-                    </span>
-                    {asset.patrimony && (
-                        <span className="text-[10px] text-zinc-400 dark:text-zinc-500 font-mono tracking-wider font-normal">
-                            PAT: {asset.patrimony}
+        <TooltipProvider delayDuration={200}>
+            <TableRow className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
+                {/* Hostname / Patrimônio */}
+                <TableCell className="py-3.5 pl-5">
+                    <div className="flex flex-col">
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 text-sm">
+                            <Monitor
+                                size={14}
+                                className="text-zinc-400 shrink-0"
+                            />
+                            {asset.computer?.hostname || "Sem Hostname"}
+                        </span>
+                        <span className="text-xs text-zinc-400 font-mono mt-0.5">
+                            {asset.patrimony || "S/ PATRIMÔNIO"}
+                        </span>
+                    </div>
+                </TableCell>
+
+                {/* IP Atribuído */}
+                <TableCell className="py-3.5">
+                    {asset.ip?.address ? (
+                        <code className="text-xs font-semibold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 px-2 py-1 rounded">
+                            {asset.ip.address}
+                        </code>
+                    ) : (
+                        <span className="text-xs text-zinc-400 italic">
+                            Sem IP
                         </span>
                     )}
-                </div>
-            </TableCell>
+                </TableCell>
 
-            {/* 2. Endereço IPv4 */}
-            <TableCell className="py-3.5">
-                {asset.ip?.address ? (
-                    <Badge
-                        variant="secondary"
-                        className="font-bold bg-emerald-50/60 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-900/20 px-2.5 py-0.5 rounded-md text-xs shadow-none"
-                    >
-                        {asset.ip.address}
-                    </Badge>
-                ) : (
-                    <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50/50 dark:bg-amber-950/20 px-2 py-0.5 rounded-md border border-amber-200/60 dark:border-amber-900/30">
-                        <ShieldAlert size={12} /> Sem IP
-                    </span>
-                )}
-            </TableCell>
-
-            {/* 3. Usuário Responsável / Utilizador */}
-            <TableCell className="py-3.5 text-zinc-600 dark:text-zinc-400 text-sm font-medium">
-                {asset.computer?.username || "—"}
-            </TableCell>
-
-            {/* 4. Módulo de Hardware Padronizado (UI/UX Limpa) */}
-            <TableCell className="hidden md:table-cell py-3.5 max-w-xs">
-                {hasHardwareInfo ? (
-                    <div className="space-y-1.5 max-w-[280px]">
-                        {/* Linha 1: Processador e Memória */}
-                        <div className="flex items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-                            <span className="inline-flex items-center gap-1 font-medium truncate max-w-[180px]">
-                                <Cpu
+                {/* Conexão Switch */}
+                <TableCell className="py-3.5 hidden sm:table-cell">
+                    {asset.connectedToSwitch ? (
+                        <div className="flex flex-col text-xs">
+                            <span className="font-semibold text-zinc-800 dark:text-zinc-200 flex items-center gap-1">
+                                <Link2
                                     size={12}
-                                    className="text-zinc-400 shrink-0"
+                                    className="text-blue-500 shrink-0"
                                 />
-                                {asset.computer?.processor?.name ||
-                                    "CPU Desconhecida"}
+                                {asset.connectedToSwitch.hostname ||
+                                    "Switch s/ Hostname"}
                             </span>
-                            {asset.computer?.memory && (
-                                <span className="bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 px-1.5 py-px rounded text-[10px] font-bold uppercase shrink-0">
-                                    {asset.computer.memory}
-                                </span>
-                            )}
+                            <span className="text-zinc-400 text-[10px] uppercase font-mono mt-0.5">
+                                Porta {asset.switchPort || "N/A"}
+                            </span>
                         </div>
-                        {/* Linha 2: Disco e Sistema Operacional */}
-                        <div className="flex items-center gap-2">
-                            {asset.computer?.disk?.name && (
-                                <span className="inline-flex items-center gap-1 text-[11px] text-zinc-400 dark:text-zinc-500 font-normal truncate max-w-[120px]">
-                                    <HardDrive size={11} className="shrink-0" />
-                                    {asset.computer.disk.name}
-                                </span>
-                            )}
-                            {osName && (
-                                <span
-                                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-px rounded tracking-tight shrink-0 ${getOsBadgeStyles(osName)}`}
-                                >
-                                    <Layers size={10} className="opacity-70" />
-                                    {osName}
-                                </span>
-                            )}
-                        </div>
+                    ) : (
+                        <span className="text-xs text-zinc-400 italic">
+                            Desconectado
+                        </span>
+                    )}
+                </TableCell>
+
+                {/* Usuário Responsável */}
+                <TableCell className="py-3.5 hidden md:table-cell text-sm text-zinc-600 dark:text-zinc-400 font-medium">
+                    {asset.computer?.username || "Padrão"}
+                </TableCell>
+
+                {/* Especificações Técnicas de Hardware */}
+                <TableCell className="py-3.5 hidden lg:table-cell">
+                    <div className="flex flex-col text-xs text-zinc-500">
+                        <span className="font-medium text-zinc-700 dark:text-zinc-300">
+                            {asset.computer?.operatingSystem?.name || "N/A"}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 mt-0.5 flex items-center gap-1 flex-wrap">
+                            <span>
+                                {asset.computer?.processor?.name || "Sem CPU"}
+                            </span>
+                            <span>•</span>
+                            <span>{asset.computer?.memory || "Sem RAM"}</span>
+                            <span>•</span>
+                            <span className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-[9px] font-medium text-zinc-600 dark:text-zinc-300">
+                                <HardDrive size={9} className="shrink-0" />
+                                {diskInfo}
+                            </span>
+                        </span>
                     </div>
-                ) : (
-                    <span className="text-xs text-zinc-400">—</span>
-                )}
-            </TableCell>
+                </TableCell>
 
-            {/* 5. Alocação (Localidade & Setor) */}
-            <TableCell className="hidden sm:table-cell py-3.5 text-xs text-zinc-600 dark:text-zinc-400">
-                <div className="flex flex-col gap-0.5">
-                    <span className="font-semibold text-zinc-800 dark:text-zinc-300 tracking-tight">
-                        {asset.location?.name || "Não Alocado"}
-                    </span>
-                    <span className="text-[11px] text-zinc-400 dark:text-zinc-500">
-                        {asset.department?.name || "Sem Departamento"}
-                    </span>
-                </div>
-            </TableCell>
+                {/* Alocação Operacional */}
+                <TableCell className="py-3.5 hidden sm:table-cell">
+                    <div className="flex flex-col text-xs">
+                        <span className="font-medium text-zinc-800 dark:text-zinc-200">
+                            {asset.department?.name || "Não Vinculado"}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 mt-0.5">
+                            {asset.location?.name || "Sem Prédio"}
+                        </span>
+                    </div>
+                </TableCell>
 
-            {/* 6. Ação: Visualização da Ficha Completa */}
-            <TableCell className="py-3.5 w-20 text-center pr-5">
-                <Link href={`/assets/computers/${asset.id}`}>
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 rounded-lg text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-all"
-                        title="Visualizar ficha técnica completa"
-                    >
-                        <Eye size={15} />
-                    </Button>
-                </Link>
-            </TableCell>
-        </TableRow>
+                {/* Ações Técnicas com Tooltip */}
+                <TableCell className="py-3.5 pr-5 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                        {/* Notas Popover */}
+                        <NotesPopover notes={asset.computer?.notes} />
+
+                        {/* Modal de confirmação (Ele renderiza a lixeira cinza/hover vermelho nativamente)*/}
+                        <ConfirmDeleteDialog
+                            name={identifier}
+                            onConfirm={handleDelete}
+                            isDeleting={isDeleting}
+                            error={actionError}
+                            open={modalOpen}
+                            setOpen={setModalOpen}
+                        />
+
+                        {/* Botão de Visualização / Ficha Completa */}
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Link href={`/assets/computers/${asset.id}`}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-950/40 border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 rounded-lg transition-all"
+                                    >
+                                        <Eye size={14} />
+                                    </Button>
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                                <p className="text-[10px] font-semibold">
+                                    Visualizar Ativo
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                </TableCell>
+            </TableRow>
+        </TooltipProvider>
     );
 }

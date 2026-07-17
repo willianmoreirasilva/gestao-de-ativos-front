@@ -5,15 +5,15 @@ import {
     getOperatingSystemsAction,
     getProcessorsAction,
 } from "@/actions/options";
-import { ComputerActions } from "@/components/assets/computers/computer-actions";
-import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card"; // 🌟 Ganhando superpoderes de edição
-import { AssetAllocationCard } from "@/components/assets/shared/asset-allocation-card"; // 🌟 Mantido e envelopado para edição
+import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
+import { AssetAllocationCard } from "@/components/assets/shared/asset-allocation-card";
 import { AssetConnectivityCard } from "@/components/assets/shared/asset-connectivity-card";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 import { getAssetById } from "@/services/assets";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
+import { switchService } from "@/services/switches"; // Importando o novo serviço de switches
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -22,7 +22,7 @@ interface Props {
 export default async function ComputerDetailsPage({ params }: Props) {
     const { id } = await params;
 
-    // 🚀 Busca paralela unificada no Servidor (Zero Delay)
+    // Buscando em paralelo as informações necessárias
     const [
         assetResult,
         departmentsRes,
@@ -30,6 +30,7 @@ export default async function ComputerDetailsPage({ params }: Props) {
         processorsRes,
         osRes,
         disksRes,
+        switchesRes,
     ] = await Promise.all([
         getAssetById(id),
         departmentService.getDepartments(),
@@ -37,10 +38,10 @@ export default async function ComputerDetailsPage({ params }: Props) {
         getProcessorsAction(),
         getOperatingSystemsAction(),
         getDisksAction(),
+        switchService.getSwitches({ page: 1, limit: 100 }),
     ]);
 
     const asset = assetResult?.data;
-
     const error = assetResult?.error;
 
     if (error || !asset) {
@@ -54,13 +55,17 @@ export default async function ComputerDetailsPage({ params }: Props) {
         );
     }
 
-    // Extração limpa das opções para os comboboxes
     const options = {
         departments: departmentsRes?.data || [],
         locations: locationsRes?.data || [],
         processors: processorsRes?.data || [],
         operatingSystems: osRes?.data || [],
         disks: disksRes?.data || [],
+        // Mapeia os switches adicionando o hostname de forma clara no Select
+        switches: (switchesRes.data || []).map((sw) => ({
+            id: sw.id,
+            name: `${sw.hostname || sw.model} (${sw.vendor || "Genérico"})`.trim(),
+        })),
     };
 
     const computerName = asset.computer?.hostname || "Sem Hostname";
@@ -70,35 +75,28 @@ export default async function ComputerDetailsPage({ params }: Props) {
             <PageTitle
                 title={`Ficha: ${computerName}`}
                 leftSide={<BackButton />}
-                rightSide={
-                    <ComputerActions
-                        assetId={asset.id}
-                        identifier={
-                            asset.computer?.hostname ||
-                            asset.patrimony ||
-                            "Este computador"
-                        }
-                    />
-                }
             />
 
-            {/* Grid 3 Colunas Padrão Dashboard SaaS */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                {/* 1. Hardware Especifico com Edição In-Place */}
+                {/* 1. Hardware */}
                 <ComputerHardwareCard
                     assetId={asset.id}
                     computer={asset.computer}
                     options={options}
                 />
 
-                {/* 2. Conectividade IP (Patrimônio removido e focado apenas em rede) */}
+                {/* 2. Conectividade IP, Switch de Conexão e Porta Física com Hostname e VLAN Tag */}
                 <AssetConnectivityCard
                     assetId={asset.id}
                     ip={asset.ip}
-                    vlanType={asset.vlanType || "GENERAL_DATA"}
+                    vlanType={asset.vlanType}
+                    vlanTag={asset.vlanTag} // 🌟 Passando a VLAN Tag recebida do back
+                    connectedToSwitch={asset.connectedToSwitch} // 🌟 Passando o objeto switch completo
+                    switchPort={asset.switchPort?.toString()}
+                    switches={options.switches}
                 />
 
-                {/* 3. Alocação Física e Lógica Adaptada (Concentra Patrimônio e Responsabilidade) */}
+                {/* 3. Alocação */}
                 <AssetAllocationCard
                     assetId={asset.id}
                     patrimony={asset.patrimony}

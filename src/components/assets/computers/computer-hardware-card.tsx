@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
+import { AssetNotesCard } from "../assets-notes-card";
 import { SystemSpecsEditModal } from "./components/system-specs-edit-modal";
 
 type OptionItem = { id: string; name: string };
@@ -18,6 +19,7 @@ type ComputerDetails = {
     processor?: OptionItem | null;
     disk?: OptionItem | null;
     operatingSystem?: OptionItem | null;
+    notes?: string | null;
 };
 
 type Props = {
@@ -102,6 +104,7 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                         {computer?.mac || "N/A"}
                     </span>
                 </div>
+                <AssetNotesCard notes={computer?.notes} />
             </CardContent>
 
             <SystemSpecsEditModal
