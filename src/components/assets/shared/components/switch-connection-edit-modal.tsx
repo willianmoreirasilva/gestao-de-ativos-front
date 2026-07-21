@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { updateAssetAction } from "@/actions/assets";
+import { updateAssetConnectivityAction } from "@/actions/asset-shared.actions";
 import { Button } from "@/components/ui/button";
 import { ComboboxSearch } from "@/components/ui/combobox-search";
 import {
@@ -71,11 +71,9 @@ export function SwitchConnectionEditModal({
         },
     });
 
-    // Observa o valor selecionado do Switch para desabilitar e resetar a porta em tempo real
     const watchedSwitchId = form.watch("connectedToSwitchId");
     const isSwitchDisconnected = !watchedSwitchId || watchedSwitchId === "";
 
-    // Sincroniza os estados ao abrir ou receber novas propriedades
     useEffect(() => {
         if (isOpen) {
             setApiError(null);
@@ -86,7 +84,6 @@ export function SwitchConnectionEditModal({
         }
     }, [isOpen, currentSwitchId, currentPort, form]);
 
-    // Limpa automaticamente a porta se o usuário optar por desvincular o switch concentrador
     useEffect(() => {
         if (isSwitchDisconnected) {
             form.setValue("switchPort", "");
@@ -101,21 +98,23 @@ export function SwitchConnectionEditModal({
         setIsPending(true);
         setApiError(null);
 
-        // Converte strings vazias vindas do Combobox para nulo antes de enviar ao back-end
+        // 🚀 Mapeia e converte a porta para Number seguindo o contrato atômico do Back
         const payload = {
             connectedToSwitchId: data.connectedToSwitchId || null,
-            switchPort: data.switchPort || null,
+            switchPort: data.switchPort ? Number(data.switchPort) : null,
         };
 
         try {
-            const response = await updateAssetAction(assetId, payload);
+            const response = await updateAssetConnectivityAction(
+                assetId,
+                payload,
+            );
 
             if (response.success) {
                 toast.success("Mapeamento físico de rede atualizado!");
                 router.refresh();
                 onClose();
             } else {
-                // Se o backend retornar um conflito de porta ocupada (Código 409 ou erro específico)
                 if (
                     response.error?.toLowerCase().includes("ocupada") ||
                     response.error?.toLowerCase().includes("porta")
@@ -169,7 +168,6 @@ export function SwitchConnectionEditModal({
                         onChange={handleFormInteraction}
                         className="space-y-4 pt-2"
                     >
-                        {/* Seleção do Switch Concentrador */}
                         <FormField
                             control={form.control}
                             name="connectedToSwitchId"
@@ -204,7 +202,6 @@ export function SwitchConnectionEditModal({
                             )}
                         />
 
-                        {/* Entrada da Porta Física */}
                         <FormField
                             control={form.control}
                             name="switchPort"
@@ -220,7 +217,7 @@ export function SwitchConnectionEditModal({
                                             placeholder={
                                                 isSwitchDisconnected
                                                     ? "Desconectado do switch concentrador"
-                                                    : "Ex: Gi1/0/24 ou Port 5"
+                                                    : "Ex: 24 ou 5"
                                             }
                                             disabled={
                                                 isSwitchDisconnected ||
@@ -243,7 +240,6 @@ export function SwitchConnectionEditModal({
                             )}
                         />
 
-                        {/* Erro global ou de API mapeado de forma padronizada */}
                         {apiError && (
                             <div className="pt-1">
                                 <FieldError errors={[apiError]} />

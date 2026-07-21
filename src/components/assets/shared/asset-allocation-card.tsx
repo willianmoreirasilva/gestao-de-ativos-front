@@ -1,10 +1,10 @@
-// src/components/assets/shared/asset-allocation-card.tsx
 "use client";
 
 import { Building2, Layout, MapPin, Pencil, Tag, User } from "lucide-react";
 import { useState } from "react";
 
-import { AllocationEditModal } from "@/components/assets/computers/components/allocation_edit-modal";
+// 🚀 Caminho atualizado para a pasta compartilhada
+import { AllocationEditModal } from "@/components/allocation-edit-modal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { OptionItem } from "@/types/assets";
@@ -57,7 +57,7 @@ export function AssetAllocationCard({
                 </Button>
             </CardHeader>
             <CardContent className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-                {/* 🌟 Item Novo: Patrimônio Corporativo */}
+                {/* Patrimônio Corporativo */}
                 <div className="space-y-1 flex items-start gap-2.5">
                     <div className="p-2 bg-zinc-50 dark:bg-zinc-900 rounded-lg mt-1">
                         <Tag

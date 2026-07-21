@@ -33,9 +33,14 @@ export function NetworkSelectorFields({
     onManualIpChange,
     fieldErrors,
 }: NetworkSelectorFieldsProps) {
-    
-    const { networks, isLoading, error: apiError } = useAvailableIps(vlanType, 3, !isManualMode);
-    const currentSelectedNetwork = networks.find((n) => n.networkId === selectedNetworkId);
+    const {
+        networks,
+        isLoading,
+        error: apiError,
+    } = useAvailableIps(vlanType, 5, !isManualMode);
+    const currentSelectedNetwork = networks.find(
+        (n) => n.networkId === selectedNetworkId,
+    );
 
     return (
         <div className="space-y-4">
@@ -68,7 +73,10 @@ export function NetworkSelectorFields({
             {/* MODO MANUAL */}
             {isManualMode ? (
                 <div className="space-y-1.5 animate-in fade-in duration-200">
-                    <Label htmlFor="manualIp" className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+                    <Label
+                        htmlFor="manualIp"
+                        className="text-xs font-semibold text-zinc-700 dark:text-zinc-300"
+                    >
                         Digitar Endereço IPv4
                     </Label>
                     <Input
@@ -77,10 +85,16 @@ export function NetworkSelectorFields({
                         value={manualIpValue}
                         onChange={(e) => onManualIpChange(e.target.value)}
                         className={`font-mono h-11 bg-background text-foreground border-input focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 ${
-                            fieldErrors?.newIpAddress || fieldErrors?.newIpId ? "border-destructive focus-visible:ring-destructive/20" : ""
+                            fieldErrors?.newIpAddress || fieldErrors?.newIpId
+                                ? "border-destructive focus-visible:ring-destructive/20"
+                                : ""
                         }`}
                     />
-                    <FieldError errors={fieldErrors?.newIpAddress || fieldErrors?.newIpId} />
+                    <FieldError
+                        errors={
+                            fieldErrors?.newIpAddress || fieldErrors?.newIpId
+                        }
+                    />
                 </div>
             ) : (
                 /* MODO AUTOMÁTICO */
@@ -98,15 +112,28 @@ export function NetworkSelectorFields({
                             }}
                             className="flex h-11 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 text-sm text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer disabled:opacity-50 font-medium shadow-sm transition-all"
                         >
-                            <option value="" className="bg-white dark:bg-zinc-950">
-                                {isLoading ? "Buscando topologia..." : "Escolha um segmento..."}
+                            <option
+                                value=""
+                                className="bg-white dark:bg-zinc-950"
+                            >
+                                {isLoading
+                                    ? "Buscando topologia..."
+                                    : "Escolha um segmento..."}
                             </option>
-                            <option value="REMOVE_IP" className="text-amber-600 dark:text-amber-400 font-medium bg-white dark:bg-zinc-950">
+                            <option
+                                value="REMOVE_IP"
+                                className="text-amber-600 dark:text-amber-400 font-medium bg-white dark:bg-zinc-950"
+                            >
                                 ⚠️ Desvincular e deixar Sem IP
                             </option>
                             {networks.map((net) => (
-                                <option key={net.networkId} value={net.networkId} className="bg-white dark:bg-zinc-950">
-                                    {net.networkAddress} {net.vlanTag ? `• VLAN ${net.vlanTag}` : ""}
+                                <option
+                                    key={net.networkId}
+                                    value={net.networkId}
+                                    className="bg-white dark:bg-zinc-950"
+                                >
+                                    {net.networkAddress}{" "}
+                                    {net.vlanTag ? `• VLAN ${net.vlanTag}` : ""}
                                 </option>
                             ))}
                         </select>
@@ -115,7 +142,9 @@ export function NetworkSelectorFields({
                     {/* Bloco informativo da VLAN */}
                     {currentSelectedNetwork && (
                         <div className="flex items-center gap-2 p-2 px-3 bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-150 dark:border-zinc-800 rounded-lg">
-                            <span className="text-xs text-zinc-500 dark:text-zinc-400">Segmento:</span>
+                            <span className="text-xs text-zinc-500 dark:text-zinc-400">
+                                Segmento:
+                            </span>
                             <span className="text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200">
                                 {currentSelectedNetwork.networkAddress}
                             </span>
@@ -138,14 +167,23 @@ export function NetworkSelectorFields({
                                 onChange={(e) => onIpChange(e.target.value)}
                                 className="flex h-11 w-full rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 text-sm font-mono font-semibold text-emerald-600 dark:text-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 cursor-pointer shadow-sm"
                             >
-                                <option value="" className="font-sans text-zinc-400 dark:text-zinc-500 bg-white dark:bg-zinc-950">
+                                <option
+                                    value=""
+                                    className="font-sans text-zinc-400 dark:text-zinc-500 bg-white dark:bg-zinc-950"
+                                >
                                     Selecione o endereço final...
                                 </option>
-                                {currentSelectedNetwork?.availableIps.map((ip) => (
-                                    <option key={ip.id} value={ip.id} className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
-                                        {ip.address}
-                                    </option>
-                                ))}
+                                {currentSelectedNetwork?.availableIps.map(
+                                    (ip) => (
+                                        <option
+                                            key={ip.id}
+                                            value={ip.id}
+                                            className="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100"
+                                        >
+                                            {ip.address}
+                                        </option>
+                                    ),
+                                )}
                             </select>
                         </div>
                     )}

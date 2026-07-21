@@ -5,15 +5,13 @@ import {
     getOperatingSystemsAction,
     getProcessorsAction,
 } from "@/actions/options";
-import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
-import { AssetAllocationCard } from "@/components/assets/shared/asset-allocation-card";
-import { AssetConnectivityCard } from "@/components/assets/shared/asset-connectivity-card";
+import { AssetTechnicalCard } from "@/components/assets/shared/asset-technical-card";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 import { getAssetById } from "@/services/assets";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
-import { switchService } from "@/services/switches"; // Importando o novo serviço de switches
+import { switchService } from "@/services/switches";
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -22,7 +20,7 @@ interface Props {
 export default async function ComputerDetailsPage({ params }: Props) {
     const { id } = await params;
 
-    // Buscando em paralelo as informações necessárias
+    // Buscando concorrentemente no servidor todas as dependências necessárias
     const [
         assetResult,
         departmentsRes,
@@ -44,6 +42,7 @@ export default async function ComputerDetailsPage({ params }: Props) {
     const asset = assetResult?.data;
     const error = assetResult?.error;
 
+    // Tratamento unificado de erros de carregamento ou ativo inexistente
     if (error || !asset) {
         return (
             <div className="space-y-6">
@@ -55,13 +54,13 @@ export default async function ComputerDetailsPage({ params }: Props) {
         );
     }
 
+    // Centralização e padronização dos catálogos de opções e dropdowns
     const options = {
         departments: departmentsRes?.data || [],
         locations: locationsRes?.data || [],
         processors: processorsRes?.data || [],
         operatingSystems: osRes?.data || [],
         disks: disksRes?.data || [],
-        // Mapeia os switches adicionando o hostname de forma clara no Select
         switches: (switchesRes.data || []).map((sw) => ({
             id: sw.id,
             name: `${sw.hostname || sw.model} (${sw.vendor || "Genérico"})`.trim(),
@@ -77,35 +76,8 @@ export default async function ComputerDetailsPage({ params }: Props) {
                 leftSide={<BackButton />}
             />
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                {/* 1. Hardware */}
-                <ComputerHardwareCard
-                    assetId={asset.id}
-                    computer={asset.computer}
-                    options={options}
-                />
-
-                {/* 2. Conectividade IP, Switch de Conexão e Porta Física com Hostname e VLAN Tag */}
-                <AssetConnectivityCard
-                    assetId={asset.id}
-                    ip={asset.ip}
-                    vlanType={asset.vlanType}
-                    vlanTag={asset.vlanTag} // 🌟 Passando a VLAN Tag recebida do back
-                    connectedToSwitch={asset.connectedToSwitch} // 🌟 Passando o objeto switch completo
-                    switchPort={asset.switchPort?.toString()}
-                    switches={options.switches}
-                />
-
-                {/* 3. Alocação */}
-                <AssetAllocationCard
-                    assetId={asset.id}
-                    patrimony={asset.patrimony}
-                    username={asset.computer?.username}
-                    department={asset.department}
-                    location={asset.location}
-                    options={options}
-                />
-            </div>
+            {/* 🚀 O Container Orquestrador assume a montagem e injeção inteligente dos cards */}
+            <AssetTechnicalCard mode="view" asset={asset} options={options} />
         </div>
     );
 }
