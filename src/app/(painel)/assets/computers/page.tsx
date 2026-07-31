@@ -85,7 +85,7 @@ export default async function ComputersPage({ searchParams }: PageProps) {
 
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto w-full">
-                    <Table className="min-w-[600px] md:min-w-full">
+                    <Table className="min-w-150 md:min-w-full">
                         <TableHeader>
                             <TableRow className="bg-zinc-50/40 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800">
                                 <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 pl-5">

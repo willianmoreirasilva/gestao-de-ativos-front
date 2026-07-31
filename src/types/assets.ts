@@ -150,3 +150,56 @@ export interface SystemSpecsModalOptions {
     operatingSystems: OptionItem[];
     disks: OptionItem[];
 }
+
+export interface CreateAssetInput {
+    // Identificador/Tipo
+    category?: string; // "COMPUTER", "CAMERA", "PRINTER", etc.
+
+    // Especificações Básicas (Specs)
+    hostname?: string | null;
+    os?: string | null;
+    cpu?: string | null;
+    ram?: string | null;
+    storage?: string | null;
+    macAddress?: string | null;
+    notes?: string | null;
+
+    // Redes / Conectividade
+    ipId?: string | null;
+    switchId?: string | null;
+    switchPort?: number | string | null;
+
+    // Alocação / Setor
+    patrimony?: string | null;
+    username?: string | null;
+    departmentId?: string | null;
+    locationId?: string | null;
+}
+
+export interface CreateComputerPayload {
+    type: "COMPUTER";
+    patrimony?: string | null;
+    departmentId?: string | null;
+    locationId?: string | null;
+    ipId?: string | null;
+    manualIp?: string | null;
+    connectedToSwitchId?: string | null;
+    switchPort?: number | null;
+    computer: {
+        hostname: string;
+        username?: string | null;
+        mac?: string | null;
+        processorId?: string | null;
+        diskId?: string | null;
+        osId?: string | null;
+        memory?: string | null;
+        notes?: string | null;
+    };
+}
+
+export interface ActionResult<T = any> {
+    success: boolean;
+    data?: T;
+    error?: string;
+    fieldErrors?: Record<string, string[]>;
+}

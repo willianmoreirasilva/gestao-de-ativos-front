@@ -2,6 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
+import {
+    getDisksAction,
+    getOperatingSystemsAction,
+    getProcessorsAction,
+} from "@/actions/options";
 import { getServerApi } from "@/lib/server-api";
 import { ApiResponse } from "@/types/api";
 import {
@@ -10,6 +15,10 @@ import {
     AssetFilters,
     AssetItem,
 } from "@/types/assets";
+
+import { departmentService } from "./department";
+import { locationService } from "./location";
+import { switchService } from "./switches";
 
 interface ActionResponse<T> {
     data: T | null;
@@ -122,6 +131,63 @@ export async function deleteAssetAction(id: string) {
                 errorMessage ||
                 "Erro interno do servidor (500) ao tentar remover o ativo.",
             fieldErrors: {},
+        };
+    }
+}
+
+export async function getAssetOptionsAction() {
+    try {
+        // Executa todas as chamadas em paralelo
+        const [
+            processorsRes,
+            osRes,
+            disksRes,
+            departmentsRes,
+            locationsRes,
+            switchesRes,
+        ] = await Promise.all([
+            getProcessorsAction().catch(() => ({ data: [] })),
+            getOperatingSystemsAction().catch(() => ({ data: [] })),
+            getDisksAction().catch(() => ({ data: [] })),
+            departmentService.getDepartments(0, 100),
+            locationService.getLocations(0, 100),
+            switchService.getSwitches({ page: 1, limit: 100 }),
+        ]);
+
+        return {
+            success: true,
+            data: {
+                processors: processorsRes.data ?? [],
+                operatingSystems: osRes.data ?? [],
+                disks: disksRes.data ?? [],
+
+                // Mapeia Departamentos
+                departments: (departmentsRes.data ?? []).map((dep) => ({
+                    id: dep.id,
+                    name: dep.name,
+                })),
+
+                // Mapeia Locais / Unidades
+                units: (locationsRes.data ?? []).map((loc) => ({
+                    id: loc.id,
+                    name: loc.name,
+                })),
+
+                // Mapeia Switches (usa name, hostname ou ip como nome de exibição)
+                switches: (switchesRes.data ?? []).map((sw) => ({
+                    id: sw.id,
+                    name: sw.hostname || "Switch Sem Nome",
+                })),
+
+                // Lista de usuários (adicione seu service de usuários quando disponível)
+                users: [],
+            },
+        };
+    } catch (error) {
+        console.error("Erro ao agregar opções de formulário:", error);
+        return {
+            success: false,
+            error: "Falha ao carregar opções para o cadastro.",
         };
     }
 }

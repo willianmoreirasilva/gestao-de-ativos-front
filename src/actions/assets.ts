@@ -3,33 +3,15 @@
 import { revalidatePath } from "next/cache";
 
 import { getServerApi } from "@/lib/server-api";
+import { sanitizePayloadForBackend } from "@/lib/utils";
+import { ComputerFormValues } from "@/schemas/asset-create.schema";
+import { ActionResult, CreateComputerPayload } from "@/types/assets";
 
 interface ActionResponse<T = any> {
     success: boolean;
     data?: T;
     error?: string;
     fieldErrors?: { [key: string]: string[] } | null;
-}
-
-/**
- * 🧼 Higienizador inteligente de Payload
- */
-function sanitizePayloadForBackend(obj: any): any {
-    if (obj === null || obj === undefined) return undefined;
-    if (typeof obj === "string") return obj.trim() === "" ? null : obj;
-    if (Array.isArray(obj)) return obj.map(sanitizePayloadForBackend);
-
-    if (typeof obj === "object") {
-        const cleaned: any = {};
-        for (const key of Object.keys(obj)) {
-            const val = obj[key];
-            if (val === undefined) continue;
-            const sanitizedVal = sanitizePayloadForBackend(val);
-            if (sanitizedVal !== undefined) cleaned[key] = sanitizedVal;
-        }
-        return cleaned;
-    }
-    return obj;
 }
 
 /**
@@ -156,6 +138,137 @@ export async function findIpByAddressAction(
             error:
                 error.response?.data?.error ||
                 "O endereço IP informado não é válido para este ativo.",
+        };
+    }
+}
+
+// Helper para converter strings vazias ou com apenas espaços em NULL
+const sanitizeNullable = (value?: string | null): string | null => {
+    if (!value || typeof value !== "string") return null;
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+};
+
+export async function createComputerAssetAction(
+    formData: ComputerFormValues,
+): Promise<ActionResult> {
+    try {
+        const api = await getServerApi();
+
+        let resolvedIpId: string | null = null;
+
+        // 🟢 1. RESOLVER IP MANUAL PARA UUID
+        if (formData.isManualMode && formData.manualIpValue) {
+            const cleanIp = formData.manualIpValue.trim();
+
+            const ipLookup = await findIpByAddressAction(
+                cleanIp,
+                "GENERAL_DATA",
+            );
+
+            if (!ipLookup.success || !ipLookup.data?.id) {
+                return {
+                    success: false,
+                    fieldErrors: {
+                        manualIpValue: [
+                            ipLookup.error ||
+                                "Endereço IP indisponível ou incompatível.",
+                        ],
+                    },
+                };
+            }
+
+            resolvedIpId = ipLookup.data.id;
+        } else if (!formData.isManualMode && formData.selectedIpId) {
+            resolvedIpId = sanitizeNullable(formData.selectedIpId);
+        }
+
+        // 🟢 2. TRATAMENTO SEGURO DA PORTA DO SWITCH
+        let parsedSwitchPort: number | null = null;
+        if (formData.switchPort && `${formData.switchPort}`.trim() !== "") {
+            const num = Number(formData.switchPort);
+            if (!Number.isNaN(num) && num > 0) {
+                parsedSwitchPort = num;
+            }
+        }
+
+        // 🟢 3. PAYLOAD MONTAGEM
+        const payload = {
+            type: "COMPUTER",
+            patrimony: sanitizeNullable(formData.patrimony),
+            departmentId: sanitizeNullable(formData.departmentId),
+            locationId: sanitizeNullable(
+                formData.unitId || formData.locationId,
+            ),
+
+            // Conectividade
+            ipId: resolvedIpId,
+            connectedToSwitchId: sanitizeNullable(formData.switchId),
+            switchPort: parsedSwitchPort, // Envia number ou null limpo
+
+            computer: {
+                hostname: formData.hostname.trim(),
+                username: sanitizeNullable(formData.username) ?? "",
+                mac: sanitizeNullable(formData.mac),
+                processorId: sanitizeNullable(formData.processorId),
+                diskId: sanitizeNullable(formData.diskId),
+                osId: sanitizeNullable(formData.osId),
+                memory: sanitizeNullable(formData.memory),
+                notes: sanitizeNullable(formData.notes),
+            },
+        };
+
+        const response = await api.post("/api/assets", payload);
+
+        return {
+            success: true,
+            data: response.data,
+        };
+    } catch (error: any) {
+        if (error.response?.data) {
+            const apiData = error.response.data;
+
+            // 🟢 Se o backend enviou mapa de erros por campo, repassa direto
+            if (
+                apiData.fieldErrors &&
+                Object.keys(apiData.fieldErrors).length > 0
+            ) {
+                return {
+                    success: false,
+                    fieldErrors: apiData.fieldErrors,
+                };
+            }
+
+            // 🟢 Se o backend enviou mensagem genérica, identifica o tipo de erro
+            const errorMsg =
+                apiData.message || apiData.error || "Erro ao salvar o ativo.";
+
+            // Se a mensagem mencionar Switch ou Porta, atrela ao campo do Switch
+            if (
+                errorMsg.toLowerCase().includes("switch") ||
+                errorMsg.toLowerCase().includes("porta")
+            ) {
+                return {
+                    success: false,
+                    fieldErrors: {
+                        switchPort: [errorMsg],
+                    },
+                };
+            }
+
+            // Se for erro de IP
+            return {
+                success: false,
+                fieldErrors: {
+                    manualIpValue: [errorMsg],
+                },
+                error: errorMsg,
+            };
+        }
+
+        return {
+            success: false,
+            error: "Falha de comunicação com o servidor.",
         };
     }
 }

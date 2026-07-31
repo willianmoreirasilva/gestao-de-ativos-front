@@ -3,49 +3,14 @@
 import { revalidatePath } from "next/cache";
 
 import { getServerApi } from "@/lib/server-api";
+import { sanitizePayloadForBackend } from "@/lib/utils";
+import { CreateAssetInput } from "@/schemas/assets";
 
 interface ActionResponse<T = any> {
     success: boolean;
     data?: T;
     error?: string;
     fieldErrors?: { [key: string]: string[] } | null;
-}
-
-/**
- * 🧼 Higienizador inteligente de Payload
- * Transforma strings vazias em null, preserva nulls explícitos para o Prisma zerar campos,
- * e ignora undefined para evitar sobrescrever dados não enviados.
- */
-function sanitizePayloadForBackend(obj: any): any {
-    // 1. undefined é ignorado (não altera o banco)
-    if (obj === undefined) return undefined;
-
-    // 2. null é preservado (instrução para o Prisma zerar/desvincular o campo)
-    if (obj === null) return null;
-
-    // 3. Strings vazias viram null, strings preenchidas sofrem trim
-    if (typeof obj === "string") return obj.trim() === "" ? null : obj.trim();
-
-    // 4. Tratamento recursivo de Arrays
-    if (Array.isArray(obj)) return obj.map(sanitizePayloadForBackend);
-
-    // 5. Tratamento recursivo de Objetos
-    if (typeof obj === "object") {
-        const cleaned: any = {};
-        for (const key of Object.keys(obj)) {
-            const val = obj[key];
-            if (val === undefined) continue;
-
-            const sanitizedVal = sanitizePayloadForBackend(val);
-            // Só adiciona a chave se o valor retornado não for undefined
-            if (sanitizedVal !== undefined) {
-                cleaned[key] = sanitizedVal;
-            }
-        }
-        return cleaned;
-    }
-
-    return obj;
 }
 
 /**
@@ -156,6 +121,42 @@ export async function updateAssetAllocationAction(
         return handleError(
             error,
             "Erro ao atualizar os dados de alocação e patrimônio.",
+        );
+    }
+}
+
+/**
+ * ➕ CRIAR NOVO ATIVO (POST)
+ * Cria o ativo base junto com suas especificações, conectividade e alocação.
+ */
+export async function createAssetAction(
+    data: CreateAssetInput,
+): Promise<ActionResponse<{ id: string }>> {
+    try {
+        const api = await getServerApi();
+
+        // Sanitiza o payload (converte "" em null e limpa espaços)
+        const sanitized = sanitizePayloadForBackend(data);
+
+        // Dispara o POST para o backend
+        const response = await api.post("/api/assets", sanitized);
+
+        const newAssetId = response.data?.data?.id || response.data?.id;
+
+        // Revalida a listagem do dashboard
+        revalidatePath("/assets");
+        revalidatePath("/assets/computers");
+        revalidatePath("/assets/cameras");
+        revalidatePath("/assets/printers");
+
+        return {
+            success: true,
+            data: { id: newAssetId },
+        };
+    } catch (error: any) {
+        return handleError(
+            error,
+            "Erro ao cadastrar o novo ativo na infraestrutura.",
         );
     }
 }
