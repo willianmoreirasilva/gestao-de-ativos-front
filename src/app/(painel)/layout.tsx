@@ -2,12 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { authClient } from "@/lib/auth-client";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+
 import { AppSidebar } from "@/components/app-sidebar";
-import { UserSession } from "@/services/auth";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 // 1. Importe o TooltipProvider do seu ecossistema de componentes
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
+import { UserSession } from "@/services/auth";
 
 export default function PainelLayout({
     children,

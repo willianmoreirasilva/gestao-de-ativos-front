@@ -210,6 +210,7 @@ export async function createComputerAssetAction(
                 hostname: formData.hostname.trim(),
                 username: sanitizeNullable(formData.username) ?? "",
                 mac: sanitizeNullable(formData.mac),
+                anydesk: sanitizeNullable(formData.anydesk),
                 processorId: sanitizeNullable(formData.processorId),
                 diskId: sanitizeNullable(formData.diskId),
                 osId: sanitizeNullable(formData.osId),

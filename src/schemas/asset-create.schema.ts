@@ -1,59 +1,26 @@
 import * as z from "zod";
 
-// Helper para tratar strings nulas/vazias sem estourar o Zod
 const nullableString = z
     .union([z.string(), z.null(), z.undefined()])
     .transform((val) => (val && val.trim() !== "" ? val.trim() : null));
-
-/**
- * 1. Schema da Server Action (Backend / API)
- */
-export const createAssetSchema = z.object({
-    category: z.string().default("COMPUTER"),
-
-    // Especificações
-    hostname: z
-        .string({ required_error: "O Hostname é obrigatório." })
-        .trim()
-        .min(1, "O Hostname é obrigatório para o cadastro."),
-    os: nullableString,
-    cpu: nullableString,
-    ram: nullableString,
-    storage: nullableString,
-    macAddress: nullableString,
-    notes: nullableString,
-
-    // Conectividade
-    ipId: nullableString,
-    switchId: nullableString,
-    switchPort: z.coerce.number().nullable().optional(),
-
-    // Alocação & Responsabilidades
-    patrimony: nullableString,
-    username: nullableString,
-    departmentId: nullableString,
-    locationId: nullableString, // Backend mapeia como locationId
-});
 
 const ipv4Regex =
     /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
 const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 
-// Helper tolerante: Aceita string, null ou undefined e não estoura erro de tipo no Client
 const lenientOptionalString = z
     .union([z.string(), z.null(), z.undefined()])
     .optional();
 
 export const computerFormSchema = z
     .object({
-        // Único campo de texto estritamente obrigatório
         hostname: z
             .string({ required_error: "O Hostname é obrigatório" })
             .trim()
             .min(1, "O Hostname é obrigatório")
             .max(63, "Hostname muito longo"),
 
-        // Alocação & Responsabilidades
+        // Alocação
         departmentId: lenientOptionalString,
         unitId: lenientOptionalString,
         locationId: lenientOptionalString,
@@ -66,9 +33,9 @@ export const computerFormSchema = z
         memory: lenientOptionalString,
         diskId: lenientOptionalString,
         osId: lenientOptionalString,
+        anydesk: lenientOptionalString, // 👈 Adicionado AnyDesk
         notes: lenientOptionalString,
 
-        // Validação de MAC
         mac: lenientOptionalString.refine(
             (val) => !val || macRegex.test(val),
             "Endereço MAC inválido. Ex: 00:1A:3F:F1:4C:C2",
@@ -85,7 +52,6 @@ export const computerFormSchema = z
         selectedIpId: lenientOptionalString,
     })
     .superRefine((data, ctx) => {
-        // 1. REGRA DE ALOCAÇÃO: Exige APENAS UM (Departamento OU Localidade/Unit)
         const hasDepartment = Boolean(
             data.departmentId && data.departmentId.trim() !== "",
         );
@@ -94,7 +60,6 @@ export const computerFormSchema = z
             (data.locationId && data.locationId.trim() !== ""),
         );
 
-        // Se NÃO tiver nenhum dos dois, aí sim gera o erro
         if (!hasDepartment && !hasUnit) {
             ctx.addIssue({
                 code: z.ZodIssueCode.custom,
@@ -108,7 +73,6 @@ export const computerFormSchema = z
             });
         }
 
-        // 2. REGRA DE IP MANUAL
         if (data.isManualMode && data.manualIpValue) {
             if (!ipv4Regex.test(data.manualIpValue.trim())) {
                 ctx.addIssue({
@@ -119,7 +83,6 @@ export const computerFormSchema = z
             }
         }
 
-        // 3. REGRA DE IP AUTOMÁTICO
         if (
             !data.isManualMode &&
             data.selectedNetworkId &&
@@ -135,7 +98,6 @@ export const computerFormSchema = z
             }
         }
 
-        // 4. REGRA DE CONEXÃO SWITCH / PORTA
         const hasSwitch = Boolean(data.switchId && data.switchId.trim() !== "");
         const hasPort = Boolean(
             data.switchPort && `${data.switchPort}`.trim() !== "",
@@ -159,4 +121,3 @@ export const computerFormSchema = z
     });
 
 export type ComputerFormValues = z.infer<typeof computerFormSchema>;
-export type CreateAssetFormValues = z.infer<typeof createAssetSchema>;

@@ -58,6 +58,7 @@ export default function AddComputerPage() {
         defaultValues: {
             hostname: "",
             username: "",
+            anydesk: "",
             patrimony: "",
             osId: "",
             processorId: "",
@@ -140,7 +141,6 @@ export default function AddComputerPage() {
     };
 
     async function onSubmit(data: z.input<typeof computerFormSchema>) {
-        console.log("🔥 PAYLOAD DISPARADO:", data);
         setIsSubmitting(true);
         setIpFieldErrors({});
 

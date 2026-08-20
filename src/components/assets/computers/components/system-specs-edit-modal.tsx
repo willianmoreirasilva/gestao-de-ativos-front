@@ -39,10 +39,10 @@ import { FieldError } from "@/components/users/field-error";
 
 const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 
-// Schema simplificado - deixa a responsabilidade do nulo com a Action
 const hardwareSchema = z.object({
     hostname: z.string().trim().min(1, "Hostname é obrigatório"),
     username: z.string().trim().min(1, "Usuário é obrigatório"),
+    anydesk: z.string().nullable().optional(), // 👈 Campo AnyDesk adicionado ao schema
     processorId: z.string().optional(),
     osId: z.string().optional(),
     diskId: z.string().optional(),
@@ -56,6 +56,7 @@ const hardwareSchema = z.object({
         }),
     notes: z.string().nullable().optional(),
 });
+
 type HardwareFormValues = z.infer<typeof hardwareSchema>;
 type OptionItem = { id: string; name: string };
 
@@ -87,6 +88,7 @@ export function SystemSpecsEditModal({
         defaultValues: {
             hostname: computer?.hostname || "",
             username: computer?.username || "",
+            anydesk: computer?.anydesk || "",
             processorId: computer?.processor?.id || computer?.processorId || "",
             osId:
                 computer?.operatingSystem?.id ||
@@ -105,6 +107,7 @@ export function SystemSpecsEditModal({
             form.reset({
                 hostname: computer?.hostname || "",
                 username: computer?.username || "",
+                anydesk: computer?.anydesk || "",
                 processorId:
                     computer?.processor?.id || computer?.processorId || "",
                 osId:
@@ -119,21 +122,29 @@ export function SystemSpecsEditModal({
         }
     }, [isOpen, computer, form]);
 
+    // Converte strings vazias ou com apenas espaços em `null` para o banco
+    const normalizeNullableString = (val?: string | null) => {
+        if (!val) return null;
+        const trimmed = val.trim();
+        return trimmed === "" ? null : trimmed;
+    };
+
     async function onSubmit(data: HardwareFormValues) {
         setApiError(null);
 
         startTransition(async () => {
-            // Mapeia os dados locais para as chaves exatas esperadas pela Action/Backend
             const payload = {
                 hostname: data.hostname,
                 username: data.username || "Utilizador Padrão",
-                processorId: data.processorId || null,
-                osId: data.osId || null,
-                diskId: data.diskId || null,
-                memory: data.memory || null,
-                mac: data.mac || null,
-                notes: data.notes || null,
+                anydesk: normalizeNullableString(data.anydesk),
+                processorId: normalizeNullableString(data.processorId),
+                osId: normalizeNullableString(data.osId),
+                diskId: normalizeNullableString(data.diskId),
+                memory: normalizeNullableString(data.memory),
+                mac: normalizeNullableString(data.mac),
+                notes: normalizeNullableString(data.notes),
             };
+
             const response = await updateComputerSpecsAction(assetId, payload);
 
             if (response.success) {
@@ -206,6 +217,63 @@ export function SystemSpecsEditModal({
                                                 className="h-9 text-xs"
                                             />
                                         </FormControl>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+
+                        {/* Código AnyDesk e Endereço MAC em 2 Colunas */}
+                        <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                                control={form.control}
+                                name="anydesk"
+                                render={({ field, fieldState }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                                            Código AnyDesk
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                value={field.value || ""}
+                                                placeholder="Ex: 123 456 789"
+                                                className="h-9 text-xs font-mono"
+                                            />
+                                        </FormControl>
+                                        <FieldError
+                                            errors={
+                                                fieldState.error?.message
+                                                    ? [fieldState.error.message]
+                                                    : undefined
+                                            }
+                                        />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <FormField
+                                control={form.control}
+                                name="mac"
+                                render={({ field, fieldState }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                            Endereço MAC
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                value={field.value || ""}
+                                                placeholder="Ex: 00:1A:3F:F1:4C:C2"
+                                                className="h-9 text-xs font-mono uppercase"
+                                            />
+                                        </FormControl>
+                                        <FieldError
+                                            errors={
+                                                fieldState.error?.message
+                                                    ? [fieldState.error.message]
+                                                    : undefined
+                                            }
+                                        />
                                     </FormItem>
                                 )}
                             />
@@ -297,34 +365,6 @@ export function SystemSpecsEditModal({
                             />
                         </div>
 
-                        {/* MAC Address */}
-                        <FormField
-                            control={form.control}
-                            name="mac"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Endereço MAC
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            value={field.value || ""}
-                                            placeholder="Ex: 00:1A:3F:F1:4C:C2"
-                                            className="h-9 text-xs font-mono uppercase"
-                                        />
-                                    </FormControl>
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
                         {/* Sistema Operacional */}
                         <FormField
                             control={form.control}
@@ -344,7 +384,7 @@ export function SystemSpecsEditModal({
                             )}
                         />
 
-                        {/* Notas / Observações com botão de exclusão */}
+                        {/* Notas / Observações */}
                         <FormField
                             control={form.control}
                             name="notes"

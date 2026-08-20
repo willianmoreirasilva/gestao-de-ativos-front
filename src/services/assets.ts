@@ -27,6 +27,16 @@ interface ActionResponse<T> {
 }
 
 /**
+ * Auxiliar para revalidar todos os caminhos afetados por modificações
+ */
+function revalidateAllAssetPaths() {
+    revalidatePath("/assets");
+    revalidatePath("/assets/computers");
+    revalidatePath("/assets/printers");
+    revalidatePath("/assets/cameras");
+}
+
+/**
  * Busca a listagem de ativos filtrada com base nos parâmetros informados
  */
 export async function getAssets(
@@ -98,11 +108,14 @@ export async function getAssetById(
     }
 }
 
+/**
+ * Remove um ativo pelo ID (suporta Fastify 200/204)
+ */
 export async function deleteAssetAction(id: string) {
     try {
         const api = await getServerApi();
 
-        // 🌟 Enviando um payload vazio no delete para contornar problemas no parser do Fastify
+        // 🌟 Payload vazio para contornar limitações de parser em endpoints DELETE
         const response = await api.delete(`/api/assets/${id}`, {
             headers: {
                 "Content-Type": "application/json",
@@ -111,7 +124,7 @@ export async function deleteAssetAction(id: string) {
         });
 
         if (response.status === 204 || response.status === 200) {
-            revalidatePath("/assets/computers");
+            revalidateAllAssetPaths();
             return { error: "", fieldErrors: {} };
         }
 
@@ -120,7 +133,7 @@ export async function deleteAssetAction(id: string) {
         console.error("❌ [DELETE_ASSET_ACTION_ERROR]:", error);
 
         if (error.response?.status === 204 || error.response?.status === 200) {
-            revalidatePath("/assets/computers");
+            revalidateAllAssetPaths();
             return { error: "", fieldErrors: {} };
         }
 
@@ -129,15 +142,17 @@ export async function deleteAssetAction(id: string) {
         return {
             error:
                 errorMessage ||
-                "Erro interno do servidor (500) ao tentar remover o ativo.",
+                "Erro interno do servidor ao tentar remover o ativo.",
             fieldErrors: {},
         };
     }
 }
 
+/**
+ * Agrega dados para preenchimento de formulários e selects em telas de criação/edição
+ */
 export async function getAssetOptionsAction() {
     try {
-        // Executa todas as chamadas em paralelo
         const [
             processorsRes,
             osRes,
@@ -173,13 +188,18 @@ export async function getAssetOptionsAction() {
                     name: loc.name,
                 })),
 
-                // Mapeia Switches (usa name, hostname ou ip como nome de exibição)
-                switches: (switchesRes.data ?? []).map((sw) => ({
+                // Mapeia Switches com suporte a múltiplos atributos de nome
+                switches: (switchesRes.data ?? []).map((sw: any) => ({
                     id: sw.id,
-                    name: sw.hostname || "Switch Sem Nome",
+                    name:
+                        sw.switch?.hostname ||
+                        sw.hostname ||
+                        sw.switch?.model ||
+                        sw.model ||
+                        sw.ip?.address ||
+                        "Switch Sem Nome",
                 })),
 
-                // Lista de usuários (adicione seu service de usuários quando disponível)
                 users: [],
             },
         };

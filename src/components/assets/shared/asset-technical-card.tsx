@@ -38,6 +38,7 @@ interface AssetData {
     computer?: {
         id: string;
         username?: string | null;
+        anydesk?: string | null; // 👈 1. Tipagem adicionada aqui
         processorId?: string | null;
         operatingSystemId?: string | null;
         ramMemory?: string | null;
@@ -95,12 +96,16 @@ export function AssetTechnicalCard({
             ? asset.computer?.username
             : "Utilizador Padrão";
 
-    // MODO VISUALIZAÇÃO DETALHADA (Layout Corrigido)
+    // Extrai o valor do AnyDesk caso o ativo seja um computador
+    const resolvedAnyDesk =
+        asset.type === "COMPUTER" ? asset.computer?.anydesk : null;
+
+    // MODO VISUALIZAÇÃO DETALHADA
     return (
         <div className="flex flex-col gap-6 w-full">
             {/* 🌟 SEÇÃO SUPERIOR: Especificações e Rede lado a lado */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
-                {/* CARD DE ESPECIFICAÇÕES DO SISTEMA (Ocupa 2 colunas para melhor legibilidade dos dados) */}
+                {/* CARD DE ESPECIFICAÇÕES DO SISTEMA */}
                 <div className="lg:col-span-2 h-full">
                     {asset.type === "COMPUTER" && asset.computer && (
                         <ComputerHardwareCard
@@ -116,7 +121,7 @@ export function AssetTechnicalCard({
                     )}
                 </div>
 
-                {/* CARD DE CONECTIVIDADE IP & REDE (Ocupa 1 coluna ao lado) */}
+                {/* CARD DE CONECTIVIDADE IP & REDE */}
                 <div className="lg:col-span-1 h-full">
                     <AssetConnectivityCard
                         assetId={asset.id}
@@ -130,12 +135,13 @@ export function AssetTechnicalCard({
                 </div>
             </div>
 
-            {/* 🌟 SEÇÃO INFERIOR: Alocação ocupando todo o espaço horizontal disponível */}
+            {/* 🌟 SEÇÃO INFERIOR: Alocação */}
             <div className="w-full">
                 <AssetAllocationCard
                     assetId={asset.id}
                     patrimony={asset.patrimony}
                     username={resolvedUsername}
+                    anydesk={resolvedAnyDesk} // 👈 2. Repassado para o card de alocação
                     department={asset.department}
                     location={asset.location}
                     options={{

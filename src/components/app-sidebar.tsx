@@ -4,60 +4,56 @@ import {
     ChevronDown,
     ChevronRight,
     LogOut,
-    User,
+    Monitor,
     Moon,
     Sun,
-    Monitor,
+    User,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 
-import {
-    Sidebar,
-    SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
-    SidebarGroup,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuButton,
-    SidebarMenuItem,
-    useSidebar,
-} from "@/components/ui/sidebar";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     Collapsible,
     CollapsibleContent,
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuTrigger,
     DropdownMenuSub,
-    DropdownMenuSubTrigger,
     DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    useSidebar,
+} from "@/components/ui/sidebar";
 import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
-import { UserSession } from "@/services/auth";
+import { sidebarMenuConfig } from "@/config/sidebar-menu";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useTheme } from "next-themes";
+import { UserSession } from "@/services/auth";
 
 import { SidebarLogoFull, SidebarLogoIcon } from "./sidebar-logo";
-import { sidebarMenuConfig } from "@/config/sidebar-menu";
 
 interface AppSidebarProps {
     user: UserSession;

@@ -9,7 +9,6 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { updateAssetAllocationAction } from "@/actions/asset-shared.actions";
-import { updateComputerSpecsAction } from "@/actions/asset-specs.actions";
 import { Button } from "@/components/ui/button";
 import { ComboboxSearch } from "@/components/ui/combobox-search";
 import {
@@ -31,7 +30,6 @@ import { Input } from "@/components/ui/input";
 import { FieldError } from "@/components/users/field-error";
 import { OptionItem } from "@/types/assets";
 
-// ✅ 1. Schema ajustado: todos os campos aceitam string vazia ou null
 const allocationSchema = z.object({
     patrimony: z.string().trim().nullable().optional(),
     username: z.string().trim().nullable().optional(),
@@ -78,6 +76,7 @@ export function AllocationEditModal({
         },
     });
 
+    // ⚡ useEffect corrigido: executa o reset sempre que o modal abre (isOpen)
     useEffect(() => {
         if (isOpen) {
             setApiError(null);
@@ -88,16 +87,8 @@ export function AllocationEditModal({
                 locationId: currentLocationId || "",
             });
         }
-    }, [
-        isOpen,
-        patrimony,
-        username,
-        currentDepartmentId,
-        currentLocationId,
-        form,
-    ]);
+    }, [isOpen]); // Dependência enxuta e estável para evitar erros de renderização
 
-    // Função auxiliar para converter strings vazias em null
     const normalizeNullableString = (val?: string | null) => {
         if (!val) return null;
         const trimmed = val.trim();
@@ -108,62 +99,25 @@ export function AllocationEditModal({
         setIsPending(true);
         setApiError(null);
 
-        // ✅ 2. Converte explicitamente qualquer string vazia em NULL
-        const allocationPayload = {
+        const payload = {
             patrimony: normalizeNullableString(data.patrimony),
+            username: normalizeNullableString(data.username),
             departmentId: normalizeNullableString(data.departmentId),
             locationId: normalizeNullableString(data.locationId),
         };
 
-        const specsPayload = {
-            username: normalizeNullableString(data.username) || "", // Ou null dependendo de como o backend Computer trata
-        };
-
         try {
-            const allocationPromise = updateAssetAllocationAction(
-                assetId,
-                allocationPayload,
-            );
-            const specsPromise = updateComputerSpecsAction(
-                assetId,
-                specsPayload,
-            );
+            const res = await updateAssetAllocationAction(assetId, payload);
 
-            const [allocationRes, specsRes] = await Promise.all([
-                allocationPromise,
-                specsPromise,
-            ]);
-
-            if (allocationRes.success && specsRes.success) {
-                toast.success(
-                    "Informações de alocação e responsabilidade salvas!",
-                );
+            if (res.success) {
+                toast.success("Informações de alocação salvas!");
                 router.refresh();
                 onClose();
             } else {
-                const failedRes = !allocationRes.success
-                    ? allocationRes
-                    : specsRes;
-
-                if (failedRes.fieldErrors) {
-                    Object.entries(failedRes.fieldErrors).forEach(
-                        ([key, messages]) => {
-                            form.setError(key as any, {
-                                type: "server",
-                                message: messages[0],
-                            });
-                        },
-                    );
-                }
-
-                setApiError(
-                    failedRes.error ||
-                        "Erro ao salvar as configurações de alocação.",
-                );
+                setApiError(res.error || "Erro ao salvar alocação.");
             }
         } catch (error) {
-            console.error("[ALLOCATION_SUBMIT_ERROR]:", error);
-            setApiError("Não foi possível processar as alterações no momento.");
+            setApiError("Não foi possível processar a alteração.");
         } finally {
             setIsPending(false);
         }
@@ -178,75 +132,76 @@ export function AllocationEditModal({
                         Modificar Alocação & Setor
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                        Defina a nova localização física e o colaborador
-                        encarregado pelo ativo.
+                        Defina a localização física, patrimônio e o responsável
+                        direto por este ativo.
                     </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4 pt-2"
+                        className="space-y-3 pt-2"
                     >
-                        {/* Campo: Código de Patrimônio */}
-                        <FormField
-                            control={form.control}
-                            name="patrimony"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Código do Patrimônio
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            value={field.value || ""}
-                                            placeholder="Ex: PAT-2024-8832 (deixe em branco para remover)"
-                                            disabled={isPending}
-                                            className="h-9 text-xs uppercase tracking-wider font-mono"
+                        {/* Código do Patrimônio e Usuário Responsável Lado a Lado */}
+                        <div className="grid grid-cols-2 gap-3">
+                            <FormField
+                                control={form.control}
+                                name="patrimony"
+                                render={({ field, fieldState }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                            Código do Patrimônio
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                value={field.value || ""}
+                                                placeholder="Ex: PAT-2024-8832"
+                                                disabled={isPending}
+                                                className="h-9 text-xs uppercase tracking-wider font-mono"
+                                            />
+                                        </FormControl>
+                                        <FieldError
+                                            errors={
+                                                fieldState.error?.message
+                                                    ? [fieldState.error.message]
+                                                    : undefined
+                                            }
                                         />
-                                    </FormControl>
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
+                                    </FormItem>
+                                )}
+                            />
 
-                        {/* Campo: Usuário Responsável */}
-                        <FormField
-                            control={form.control}
-                            name="username"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Usuário Responsável
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            value={field.value || ""}
-                                            placeholder="Ex: João Silva ou Operador"
-                                            disabled={isPending}
-                                            className="h-9 text-xs font-medium"
+                            <FormField
+                                control={form.control}
+                                name="username"
+                                render={({ field, fieldState }) => (
+                                    <FormItem>
+                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                            Usuário Responsável
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                {...field}
+                                                value={field.value || ""}
+                                                placeholder="Ex: João Silva"
+                                                disabled={isPending}
+                                                className="h-9 text-xs font-medium"
+                                            />
+                                        </FormControl>
+                                        <FieldError
+                                            errors={
+                                                fieldState.error?.message
+                                                    ? [fieldState.error.message]
+                                                    : undefined
+                                            }
                                         />
-                                    </FormControl>
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
 
-                        {/* Campo: Departamento */}
+                        {/* Departamento / Setor */}
                         <FormField
                             control={form.control}
                             name="departmentId"
@@ -261,7 +216,7 @@ export function AllocationEditModal({
                                         onChange={(val) =>
                                             field.onChange(val || "")
                                         }
-                                        placeholder="Selecionar departamento (ou desmarcar)..."
+                                        placeholder="Selecionar departamento..."
                                     />
                                     <FieldError
                                         errors={
@@ -274,7 +229,7 @@ export function AllocationEditModal({
                             )}
                         />
 
-                        {/* Campo: Localidade Principal */}
+                        {/* Localidade Principal */}
                         <FormField
                             control={form.control}
                             name="locationId"
@@ -289,7 +244,7 @@ export function AllocationEditModal({
                                         onChange={(val) =>
                                             field.onChange(val || "")
                                         }
-                                        placeholder="Selecionar localidade (ou desmarcar)..."
+                                        placeholder="Selecionar localidade..."
                                     />
                                     <FieldError
                                         errors={
@@ -302,27 +257,22 @@ export function AllocationEditModal({
                             )}
                         />
 
-                        {/* Erro global padronizado */}
-                        {apiError && (
-                            <div className="pt-1">
-                                <FieldError errors={[apiError]} />
-                            </div>
-                        )}
+                        {apiError && <FieldError errors={[apiError]} />}
 
-                        <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5 gap-2 sm:gap-0">
+                        <DialogFooter className="pt-3 border-t border-zinc-100 dark:border-zinc-900 mt-4 gap-2 sm:gap-0">
                             <Button
                                 type="button"
                                 variant="ghost"
                                 onClick={onClose}
                                 disabled={isPending}
-                                className="h-9 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+                                className="h-9 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900"
                             >
                                 Cancelar
                             </Button>
                             <Button
                                 type="submit"
                                 disabled={isPending}
-                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900"
                             >
                                 {isPending ? (
                                     <Loader2

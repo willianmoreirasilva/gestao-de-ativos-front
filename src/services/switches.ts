@@ -11,7 +11,7 @@ export const switchService = {
             const response = await api.get("/api/switches", {
                 params: {
                     page: params?.page || 1,
-                    limit: params?.limit || 10,
+                    limit: params?.limit || 8,
                     search: params?.search,
                 },
             });

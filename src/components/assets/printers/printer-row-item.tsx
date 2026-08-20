@@ -1,13 +1,6 @@
 "use client";
 
-import {
-    Copy,
-    Eye,
-    HardDrive,
-    Link2,
-    Monitor,
-    MonitorSmartphone,
-} from "lucide-react";
+import { Eye, Link2, Printer as PrinterIcon, Tag } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -25,31 +18,17 @@ import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
 import { deleteAssetAction } from "@/services/assets";
 import { AssetItem } from "@/types/assets";
 
-interface ComputerRowItemProps {
+interface PrinterRowItemProps {
     asset: AssetItem;
 }
 
-export function ComputerRowItem({ asset }: ComputerRowItemProps) {
+export function PrinterRowItem({ asset }: PrinterRowItemProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
 
-    const diskInfo = asset.computer?.disk
-        ? `${asset.computer.disk.name} ${(asset.computer.disk as any).size || ""}`.trim()
-        : "Sem Disco";
-
     const identifier =
-        asset.computer?.hostname || asset.patrimony || "Este ativo";
-
-    const anyDeskCode = asset.computer?.anydesk;
-
-    const copyAnyDesk = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        if (!anyDeskCode) return;
-
-        navigator.clipboard.writeText(anyDeskCode);
-        toast.success(`AnyDesk ${anyDeskCode} copiado!`);
-    };
+        asset.printer?.model || asset.patrimony || "Impressora sem nome";
 
     const handleDelete = async () => {
         setIsDeleting(true);
@@ -62,11 +41,11 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                 setActionError(result.error);
                 setIsDeleting(false);
             } else {
-                toast.success("Ativo removido com sucesso.");
+                toast.success("Impressora removida com sucesso.");
                 setModalOpen(false);
                 setIsDeleting(false);
             }
-        } catch (err) {
+        } catch {
             setActionError("Falha de comunicação com o servidor.");
             setIsDeleting(false);
         }
@@ -75,19 +54,34 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
     return (
         <TooltipProvider delayDuration={200}>
             <TableRow className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
-                {/* Hostname / Patrimônio */}
+                {/* Modelo / Patrimônio */}
                 <TableCell className="py-3.5 pl-5">
                     <div className="flex flex-col">
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 text-sm">
-                            <Monitor
-                                size={14}
-                                className="text-zinc-400 shrink-0"
+                            <PrinterIcon
+                                size={15}
+                                className="text-purple-600 dark:text-purple-400 shrink-0"
                             />
-                            {asset.computer?.hostname || "Sem Hostname"}
+                            {asset.printer?.model || "Modelo não informado"}
                         </span>
-                        <span className="text-xs text-zinc-400 font-mono mt-0.5">
-                            {asset.patrimony || "S/ PATRIMÔNIO"}
-                        </span>
+                        <div className="flex items-center gap-2 mt-0.5">
+                            <span className="text-xs text-zinc-400 font-mono">
+                                {asset.patrimony || "S/ PATRIMÔNIO"}
+                            </span>
+                            {asset.printer?.code && (
+                                <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400 font-mono">
+                                    Cód: {asset.printer.code}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                </TableCell>
+
+                {/* Número de Série */}
+                <TableCell className="py-3.5 hidden md:table-cell">
+                    <div className="flex items-center gap-1 text-xs font-mono text-zinc-600 dark:text-zinc-400">
+                        <Tag size={12} className="text-zinc-400 shrink-0" />
+                        {asset.printer?.serial || "N/A"}
                     </div>
                 </TableCell>
 
@@ -113,8 +107,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                                     size={12}
                                     className="text-blue-500 shrink-0"
                                 />
-                                {asset.connectedToSwitch.hostname ||
-                                    "Switch s/ Hostname"}
+                                {asset.connectedToSwitch.model || "Switch"}
                             </span>
                             <span className="text-zinc-400 text-[10px] uppercase font-mono mt-0.5">
                                 Porta {asset.switchPort || "N/A"}
@@ -127,63 +120,6 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                     )}
                 </TableCell>
 
-                {/* Usuário Responsável + AnyDesk (Compacto) */}
-                <TableCell className="py-3.5 hidden md:table-cell">
-                    <div className="flex flex-col items-start gap-1">
-                        <span className="text-sm font-medium text-zinc-700 dark:text-zinc-300">
-                            {asset.computer?.username || "Padrão"}
-                        </span>
-
-                        {anyDeskCode ? (
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <button
-                                        onClick={copyAnyDesk}
-                                        type="button"
-                                        className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-medium bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/50 transition-colors border border-rose-200/60 dark:border-rose-900/50 group cursor-pointer"
-                                    >
-                                        <MonitorSmartphone
-                                            size={11}
-                                            className="text-rose-500 shrink-0"
-                                        />
-                                        <span>{anyDeskCode}</span>
-                                        <Copy
-                                            size={9}
-                                            className="text-rose-400 group-hover:text-rose-600 opacity-70 group-hover:opacity-100 shrink-0"
-                                        />
-                                    </button>
-                                </TooltipTrigger>
-                                <TooltipContent side="top">
-                                    <p className="text-[10px] font-semibold">
-                                        Copiar AnyDesk
-                                    </p>
-                                </TooltipContent>
-                            </Tooltip>
-                        ) : null}
-                    </div>
-                </TableCell>
-
-                {/* Especificações Técnicas de Hardware */}
-                <TableCell className="py-3.5 hidden lg:table-cell">
-                    <div className="flex flex-col text-xs text-zinc-500">
-                        <span className="font-medium text-zinc-700 dark:text-zinc-300">
-                            {asset.computer?.operatingSystem?.name || "N/A"}
-                        </span>
-                        <span className="text-[10px] text-zinc-400 mt-0.5 flex items-center gap-1 flex-wrap">
-                            <span>
-                                {asset.computer?.processor?.name || "Sem CPU"}
-                            </span>
-                            <span>•</span>
-                            <span>{asset.computer?.memory || "Sem RAM"}</span>
-                            <span>•</span>
-                            <span className="flex items-center gap-0.5 bg-zinc-100 dark:bg-zinc-800 px-1 py-0.5 rounded text-[9px] font-medium text-zinc-600 dark:text-zinc-300">
-                                <HardDrive size={9} className="shrink-0" />
-                                {diskInfo}
-                            </span>
-                        </span>
-                    </div>
-                </TableCell>
-
                 {/* Alocação Operacional */}
                 <TableCell className="py-3.5 hidden sm:table-cell">
                     <div className="flex flex-col text-xs">
@@ -191,7 +127,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                             {asset.department?.name || "Não Vinculado"}
                         </span>
                         <span className="text-[10px] text-zinc-400 mt-0.5">
-                            {asset.location?.name || "Sem Prédio"}
+                            {asset.location?.name || "Sem Localização"}
                         </span>
                     </div>
                 </TableCell>
@@ -199,7 +135,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                 {/* Ações Técnicas */}
                 <TableCell className="py-3.5 pr-5 text-center">
                     <div className="flex items-center justify-center gap-1.5">
-                        <NotesPopover notes={asset.computer?.notes} />
+                        <NotesPopover notes={asset.printer?.notes} />
 
                         <ConfirmDeleteDialog
                             name={identifier}
@@ -212,7 +148,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
 
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Link href={`/assets/computers/${asset.id}`}>
+                                <Link href={`/assets/printers/${asset.id}`}>
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -224,7 +160,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                             </TooltipTrigger>
                             <TooltipContent side="top">
                                 <p className="text-[10px] font-semibold">
-                                    Visualizar Ativo
+                                    Visualizar Impressora
                                 </p>
                             </TooltipContent>
                         </Tooltip>

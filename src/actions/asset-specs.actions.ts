@@ -67,6 +67,7 @@ export async function updateComputerSpecsAction(
         username: string;
         hostname: string;
         mac?: string | null;
+        anydesk?: string | null;
         processorId?: string | null;
         osId?: string | null;
         diskId?: string | null;
@@ -81,6 +82,12 @@ export async function updateComputerSpecsAction(
         const payload = {
             hostname: specs.hostname?.trim(),
             username: specs.username?.trim() || "Utilizador Padrão",
+
+            anydesk:
+                !specs.anydesk || specs.anydesk.trim() === ""
+                    ? null
+                    : specs.anydesk.trim(),
+
             mac:
                 !specs.mac || specs.mac.trim() === "" ? null : specs.mac.trim(),
             notes:
