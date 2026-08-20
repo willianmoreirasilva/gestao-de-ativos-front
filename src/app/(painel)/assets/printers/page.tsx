@@ -90,7 +90,7 @@ export default async function PrintersPage({ searchParams }: PageProps) {
                         <TableHeader>
                             <TableRow className="bg-zinc-50/40 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800">
                                 <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 pl-5">
-                                    Modelo / Patrimônio
+                                    Modelo / Patrimônio / código
                                 </TableHead>
                                 <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 hidden md:table-cell">
                                     Nº de Série

@@ -1,6 +1,13 @@
 "use client";
 
-import { Eye, Link2, Printer as PrinterIcon, Tag } from "lucide-react";
+import {
+    Check,
+    Copy,
+    Eye,
+    Link2,
+    Printer as PrinterIcon,
+    Tag,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -26,9 +33,20 @@ export function PrinterRowItem({ asset }: PrinterRowItemProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
 
     const identifier =
         asset.printer?.model || asset.patrimony || "Impressora sem nome";
+
+    const handleCopyCode = (code: string) => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        toast.success(`Código ${code} copiado!`, {
+            position: "bottom-right",
+        });
+
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     const handleDelete = async () => {
         setIsDeleting(true);
@@ -54,7 +72,7 @@ export function PrinterRowItem({ asset }: PrinterRowItemProps) {
     return (
         <TooltipProvider delayDuration={200}>
             <TableRow className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-colors">
-                {/* Modelo / Patrimônio */}
+                {/* Modelo / Patrimônio / Código de Chamado */}
                 <TableCell className="py-3.5 pl-5">
                     <div className="flex flex-col">
                         <span className="font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5 text-sm">
@@ -64,14 +82,50 @@ export function PrinterRowItem({ asset }: PrinterRowItemProps) {
                             />
                             {asset.printer?.model || "Modelo não informado"}
                         </span>
-                        <div className="flex items-center gap-2 mt-0.5">
+
+                        <div className="flex items-center gap-2 mt-1">
+                            {/* Patrimônio */}
                             <span className="text-xs text-zinc-400 font-mono">
                                 {asset.patrimony || "S/ PATRIMÔNIO"}
                             </span>
+
+                            {/* Badge Interativo com Copiar do Código de Chamado */}
                             {asset.printer?.code && (
-                                <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-600 dark:text-zinc-400 font-mono">
-                                    Cód: {asset.printer.code}
-                                </span>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                handleCopyCode(
+                                                    asset.printer!.code!,
+                                                )
+                                            }
+                                            className="inline-flex items-center gap-1 text-[10px] bg-purple-50 hover:bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:hover:bg-purple-900/50 dark:text-purple-300 px-1.5 py-0.5 rounded border border-purple-200/60 dark:border-purple-800/40 font-mono transition-colors group cursor-pointer"
+                                        >
+                                            <span>
+                                                Cód: {asset.printer.code}
+                                            </span>
+                                            {copied ? (
+                                                <Check
+                                                    size={10}
+                                                    className="text-emerald-500"
+                                                />
+                                            ) : (
+                                                <Copy
+                                                    size={10}
+                                                    className="opacity-60 group-hover:opacity-100 transition-opacity"
+                                                />
+                                            )}
+                                        </button>
+                                    </TooltipTrigger>
+                                    <TooltipContent side="right">
+                                        <p className="text-[10px] font-semibold">
+                                            {copied
+                                                ? "Copiado!"
+                                                : "Copiar Código do Chamado"}
+                                        </p>
+                                    </TooltipContent>
+                                </Tooltip>
                             )}
                         </div>
                     </div>

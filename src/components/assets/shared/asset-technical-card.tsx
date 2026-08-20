@@ -2,6 +2,7 @@
 
 // Importações dos Cards de Especificidades Técnicas
 import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
+import { PrinterHardwareCard } from "@/components/assets/printers/printer-hardware-card"; // 🟢 Importado
 import { OptionItem } from "@/types/assets";
 
 // Importações dos Cards Compartilhados
@@ -38,11 +39,20 @@ interface AssetData {
     computer?: {
         id: string;
         username?: string | null;
-        anydesk?: string | null; // 👈 1. Tipagem adicionada aqui
+        anydesk?: string | null;
         processorId?: string | null;
         operatingSystemId?: string | null;
         ramMemory?: string | null;
         storageDiskId?: string | null;
+        notes?: string | null;
+    } | null;
+
+    // 🟢 Tipagem adicionada para Impressora
+    printer?: {
+        id?: string;
+        model?: string | null;
+        serial?: string | null;
+        code?: string | null;
         notes?: string | null;
     } | null;
 }
@@ -105,8 +115,9 @@ export function AssetTechnicalCard({
         <div className="flex flex-col gap-6 w-full">
             {/* 🌟 SEÇÃO SUPERIOR: Especificações e Rede lado a lado */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start w-full">
-                {/* CARD DE ESPECIFICAÇÕES DO SISTEMA */}
+                {/* CARD DE ESPECIFICAÇÕES DO SISTEMA / HARDWARE */}
                 <div className="lg:col-span-2 h-full">
+                    {/* 💻 Computadores */}
                     {asset.type === "COMPUTER" && asset.computer && (
                         <ComputerHardwareCard
                             assetId={asset.id}
@@ -117,6 +128,14 @@ export function AssetTechnicalCard({
                                     options.operatingSystems || [],
                                 disks: options.disks || [],
                             }}
+                        />
+                    )}
+
+                    {/* 🖨️ Impressoras (Adicionado aqui) */}
+                    {asset.type === "PRINTER" && asset.printer && (
+                        <PrinterHardwareCard
+                            assetId={asset.id}
+                            printer={asset.printer}
                         />
                     )}
                 </div>
@@ -141,7 +160,7 @@ export function AssetTechnicalCard({
                     assetId={asset.id}
                     patrimony={asset.patrimony}
                     username={resolvedUsername}
-                    anydesk={resolvedAnyDesk} // 👈 2. Repassado para o card de alocação
+                    anydesk={resolvedAnyDesk}
                     department={asset.department}
                     location={asset.location}
                     options={{
