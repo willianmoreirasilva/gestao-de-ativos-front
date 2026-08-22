@@ -5,6 +5,7 @@ import { Cpu, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -84,7 +85,7 @@ export function SystemSpecsEditModal({
     const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<HardwareFormValues>({
-        resolver: zodResolver(hardwareSchema),
+        resolver: zodResolver(hardwareSchema) as Resolver<HardwareFormValues>,
         defaultValues: {
             hostname: computer?.hostname || "",
             username: computer?.username || "",

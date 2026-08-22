@@ -5,6 +5,7 @@ import { Link2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -64,7 +65,7 @@ export function SwitchConnectionEditModal({
     const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<SwitchConnectionFormValues>({
-        resolver: zodResolver(switchConnectionSchema),
+        resolver: zodResolver(switchConnectionSchema) as Resolver<SwitchConnectionFormValues>,
         defaultValues: {
             connectedToSwitchId: currentSwitchId || "",
             switchPort: currentPort || "",

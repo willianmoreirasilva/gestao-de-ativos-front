@@ -154,6 +154,7 @@ export async function updatePrinterSpecsAction(
 export async function updatePhoneSpecsAction(
     id: string,
     specs: {
+        hostname?: string | null;
         phoneNumber: string;
         model?: string | null;
         notes?: string | null;

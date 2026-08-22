@@ -43,11 +43,11 @@ export function ComputerHardwareFields({ form }: { form: UseFormReturn<any> }) {
                             </FormControl>
                             <FieldError
                                 errors={
-                                    form.formState.errors.computer?.hostname
-                                        ?.message
+                                    (form.formState.errors as any)
+                                        .computer?.hostname?.message
                                         ? [
-                                              form.formState.errors.computer
-                                                  .hostname.message,
+                                              (form.formState.errors as any)
+                                                  .computer.hostname.message,
                                           ]
                                         : undefined
                                 }
@@ -72,11 +72,11 @@ export function ComputerHardwareFields({ form }: { form: UseFormReturn<any> }) {
                             </FormControl>
                             <FieldError
                                 errors={
-                                    form.formState.errors.computer?.username
-                                        ?.message
+                                    (form.formState.errors as any)
+                                        .computer?.username?.message
                                         ? [
-                                              form.formState.errors.computer
-                                                  .username.message,
+                                              (form.formState.errors as any)
+                                                  .computer.username.message,
                                           ]
                                         : undefined
                                 }

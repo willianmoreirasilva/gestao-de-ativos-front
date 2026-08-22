@@ -5,6 +5,7 @@ import { Layout, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
+import type { Resolver } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -67,7 +68,7 @@ export function AllocationEditModal({
     const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<AllocationFormValues>({
-        resolver: zodResolver(allocationSchema),
+        resolver: zodResolver(allocationSchema) as Resolver<AllocationFormValues>,
         defaultValues: {
             patrimony: patrimony || "",
             username: username || "",

@@ -1,4 +1,4 @@
-import { Phone, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 import { PhoneRowItem } from "@/components/assets/phones/phone-row-item";
@@ -38,7 +38,7 @@ export default async function PhonesPage({ searchParams }: PageProps) {
     const hasIpQuery = params.hasIp || undefined;
 
     const { data, meta, error } = await getAssets({
-        type: "PHONE", // 📞 Tipo de Ativo
+        type: "PHONE",
         search: searchQuery,
         hasIp: hasIpQuery,
         page: currentPage,
@@ -81,7 +81,7 @@ export default async function PhonesPage({ searchParams }: PageProps) {
         <div className="space-y-6 px-1.5 md:px-0">
             {pageTitle}
 
-            <AssetFilters searchPlaceholder="Buscar por ramal, número, modelo ou IP..." />
+            <AssetFilters searchPlaceholder="Buscar por hostname, ramal, modelo, patrimônio ou IP..." />
 
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm overflow-hidden">
                 <div className="overflow-x-auto w-full">
@@ -89,10 +89,10 @@ export default async function PhonesPage({ searchParams }: PageProps) {
                         <TableHeader>
                             <TableRow className="bg-zinc-50/40 dark:bg-zinc-900/20 border-b border-zinc-200 dark:border-zinc-800">
                                 <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5 pl-5">
-                                    Ramal / Patrimônio
+                                    Hostname / Ramal
                                 </TableHead>
                                 <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
-                                    Modelo Aparelho
+                                    Modelo / Patrimônio
                                 </TableHead>
                                 <TableHead className="text-xs font-bold text-zinc-500 uppercase tracking-wider py-3.5">
                                     Endereço IP

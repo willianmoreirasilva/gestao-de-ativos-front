@@ -46,6 +46,7 @@ export interface PrinterDetails {
 
 export interface PhoneDetails {
     id: string;
+    hostname?: string | null;
     phoneNumber: string;
     model?: string | null;
     notes?: string | null;

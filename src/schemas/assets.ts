@@ -78,7 +78,7 @@ const computerData = z.object({
     username: z.string().min(2, "Username muito curto"),
     hostname: emptyToNull.optional(),
     mac: macSchema,
-    anyDesk: emptyToNull.optional(), // 👈 Adicionado AnyDesk
+    anydesk: emptyToNull.optional(), // 👈 AnyDesk (padronizado como `anydesk`)
     processorId: emptyUuidToNull.optional(),
     memory: emptyToNull.optional(),
     diskId: emptyUuidToNull.optional(),
@@ -154,3 +154,17 @@ export const UpdateComputerSpecsSchema = z.object({
     osId: emptyUuidToNull.optional(),
     notes: emptyToNull.optional(),
 });
+
+export type CreateAssetInput = z.infer<typeof CreateAssetSchema>;
+
+export type UpdateAssetInput = {
+    patrimony?: string | null;
+    departmentId?: string | null;
+    locationId?: string | null;
+    ipId?: string | null;
+    connectedToSwitchId?: string | null;
+    switchPort?: number | null;
+    vlanType?: string;
+    vlanTag?: number | null;
+    computer?: z.infer<typeof UpdateComputerSpecsSchema> | null;
+};

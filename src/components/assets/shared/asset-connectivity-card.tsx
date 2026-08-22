@@ -21,6 +21,7 @@ type VlanType = "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
 
 interface AssetConnectivityCardProps {
     assetId: string;
+    patrimony?: string | null;
     ip?: { address: string } | null;
     vlanType: VlanType;
     vlanTag?: number | null; // 🌟 Propriedade adicionada para exibir a tag numérica

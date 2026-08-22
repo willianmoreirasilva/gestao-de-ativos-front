@@ -19,23 +19,10 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import type { ComputerDetails, OptionItem } from "@/types/assets";
 
 import { AssetNotesCard } from "../assets-notes-card";
 import { SystemSpecsEditModal } from "./components/system-specs-edit-modal";
-
-type OptionItem = { id: string; name: string };
-
-type ComputerDetails = {
-    hostname?: string | null;
-    username: string | null;
-    anydesk?: string | null; // 👈 AnyDesk integrado ao modelo
-    memory?: string | null;
-    mac?: string | null;
-    processor?: OptionItem | null;
-    disk?: OptionItem | null;
-    operatingSystem?: OptionItem | null;
-    notes?: string | null;
-};
 
 type Props = {
     assetId: string;

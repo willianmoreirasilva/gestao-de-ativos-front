@@ -18,12 +18,14 @@ interface AssetNetworkFieldsProps {
     form: UseFormReturn<any>;
     assetId: string;
     initialData: any; // Recebe o objeto completo para repassar as informações de IP/VLAN
+    switches?: any[];
 }
 
 export function AssetNetworkFields({
     form,
     assetId,
     initialData,
+    switches,
 }: AssetNetworkFieldsProps) {
     return (
         <div className="space-y-6">
@@ -70,6 +72,7 @@ export function AssetNetworkFields({
                 patrimony={initialData?.patrimony}
                 ip={initialData?.ip}
                 vlanType={initialData?.vlanType || "GENERAL_DATA"}
+                switches={switches || []}
             />
         </div>
     );

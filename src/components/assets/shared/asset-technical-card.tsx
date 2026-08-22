@@ -2,64 +2,17 @@
 
 // Importações dos Cards de Especificidades Técnicas
 import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
-import { PrinterHardwareCard } from "@/components/assets/printers/printer-hardware-card"; // 🟢 Importado
-import { OptionItem } from "@/types/assets";
+import { PhoneHardwareCard } from "@/components/assets/phones/phone-hardware-card";
+import { PrinterHardwareCard } from "@/components/assets/printers/printer-hardware-card";
+import type { AssetItem, OptionItem } from "@/types/assets";
 
 // Importações dos Cards Compartilhados
 import { AssetAllocationCard } from "./asset-allocation-card";
 import { AssetConnectivityCard } from "./asset-connectivity-card";
 
-interface AssetData {
-    id: string;
-    type: "COMPUTER" | "PRINTER" | "PHONE" | "CAMERA";
-    patrimony?: string | null;
-    vlanType: "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
-    vlanTag?: number | null;
-    switchPort?: number | null;
-    ip?: {
-        id: string;
-        address: string;
-    } | null;
-    connectedToSwitch?: {
-        id: string;
-        name: string;
-    } | null;
-    department?: {
-        id: string;
-        name: string;
-    } | null;
-    location?: {
-        id: string;
-        name: string;
-        building?: string | null;
-        floor?: string | null;
-        room?: string | null;
-    } | null;
-
-    computer?: {
-        id: string;
-        username?: string | null;
-        anydesk?: string | null;
-        processorId?: string | null;
-        operatingSystemId?: string | null;
-        ramMemory?: string | null;
-        storageDiskId?: string | null;
-        notes?: string | null;
-    } | null;
-
-    // 🟢 Tipagem adicionada para Impressora
-    printer?: {
-        id?: string;
-        model?: string | null;
-        serial?: string | null;
-        code?: string | null;
-        notes?: string | null;
-    } | null;
-}
-
 interface AssetTechnicalCardProps {
     mode: "create" | "view";
-    asset?: AssetData;
+    asset?: AssetItem;
     options: {
         departments: OptionItem[];
         locations: OptionItem[];
@@ -106,10 +59,6 @@ export function AssetTechnicalCard({
             ? asset.computer?.username
             : "Utilizador Padrão";
 
-    // Extrai o valor do AnyDesk caso o ativo seja um computador
-    const resolvedAnyDesk =
-        asset.type === "COMPUTER" ? asset.computer?.anydesk : null;
-
     // MODO VISUALIZAÇÃO DETALHADA
     return (
         <div className="flex flex-col gap-6 w-full">
@@ -131,11 +80,19 @@ export function AssetTechnicalCard({
                         />
                     )}
 
-                    {/* 🖨️ Impressoras (Adicionado aqui) */}
+                    {/* 🖨️ Impressoras */}
                     {asset.type === "PRINTER" && asset.printer && (
                         <PrinterHardwareCard
                             assetId={asset.id}
                             printer={asset.printer}
+                        />
+                    )}
+
+                    {/* 📞 Telefones / Ramais */}
+                    {asset.type === "PHONE" && asset.phone && (
+                        <PhoneHardwareCard
+                            assetId={asset.id}
+                            phone={asset.phone}
                         />
                     )}
                 </div>
@@ -145,7 +102,7 @@ export function AssetTechnicalCard({
                     <AssetConnectivityCard
                         assetId={asset.id}
                         ip={asset.ip}
-                        vlanType={asset.vlanType}
+                        vlanType={asset.vlanType as any}
                         vlanTag={asset.vlanTag}
                         connectedToSwitch={asset.connectedToSwitch}
                         switchPort={asset.switchPort?.toString() || null}
@@ -160,7 +117,6 @@ export function AssetTechnicalCard({
                     assetId={asset.id}
                     patrimony={asset.patrimony}
                     username={resolvedUsername}
-                    anydesk={resolvedAnyDesk}
                     department={asset.department}
                     location={asset.location}
                     options={{
