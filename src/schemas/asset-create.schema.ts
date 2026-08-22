@@ -143,6 +143,20 @@ export const printerFormSchema = z
     })
     .superRefine(refineAssetBase);
 
+// 4. Schema de Telefones / Ramais
+export const phoneFormSchema = z
+    .object({
+        hostname: lenientOptionalString,
+        phoneNumber: z.string().trim().min(1, "O número/ramal é obrigatório."),
+        model: lenientOptionalString,
+        notes: lenientOptionalString,
+
+        // Herda os campos comuns
+        ...baseAssetObject,
+    })
+    .superRefine(refineAssetBase);
+
 // Export das Tipagens
 export type ComputerFormValues = z.infer<typeof computerFormSchema>;
 export type PrinterFormValues = z.infer<typeof printerFormSchema>;
+export type PhoneFormValues = z.infer<typeof phoneFormSchema>;
