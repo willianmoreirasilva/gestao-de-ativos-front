@@ -52,3 +52,13 @@ export function sanitizePayloadForBackend(obj: any): any {
 
     return obj;
 }
+
+/**
+ * Helper para converter strings vazias ou com apenas espaços em NULL
+ */
+
+export function sanitizeNullable(value?: string | null): string | null {
+    if (!value || typeof value !== "string") return null;
+    const trimmed = value.trim();
+    return trimmed === "" ? null : trimmed;
+}

@@ -169,7 +169,7 @@ export function PrinterRowItem({ asset }: PrinterRowItemProps) {
                         </div>
                     ) : (
                         <span className="text-xs text-zinc-400 italic">
-                            Desconectado
+                            Não Informado
                         </span>
                     )}
                 </TableCell>

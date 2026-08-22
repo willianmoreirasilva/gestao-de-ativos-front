@@ -5,25 +5,25 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FieldErrors, useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type z } from "zod";
 
-import { createPrinterAssetAction } from "@/actions/assets";
-import { PrinterSpecsFormBlock } from "@/components/assets/printers/printer-specs-form-block";
+import { createPhoneAssetAction } from "@/actions/assets/phones.actions";
+import { PhoneSpecsFormBlock } from "@/components/assets/phones/phone-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import {
-    printerFormSchema,
-    type PrinterFormValues,
+    phoneFormSchema,
+    type PhoneFormValues,
 } from "@/schemas/asset-create.schema";
 import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
-export default function AddPrinterPage() {
+export default function AddPhonePage() {
     const router = useRouter();
     const [isLoadingOptions, setIsLoadingOptions] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,12 +48,12 @@ export default function AddPrinterPage() {
         [key: string]: string[];
     }>({});
 
-    const form = useForm<PrinterFormValues>({
-        resolver: zodResolver(printerFormSchema) as Resolver<PrinterFormValues>,
+    const form = useForm<PhoneFormValues>({
+        resolver: zodResolver(phoneFormSchema) as Resolver<PhoneFormValues>,
         defaultValues: {
+            hostname: "",
+            phoneNumber: "",
             model: "",
-            serial: "",
-            code: "",
             patrimony: "",
             notes: "",
             switchId: "",
@@ -122,11 +122,11 @@ export default function AddPrinterPage() {
         form.setValue("manualIpValue", value, { shouldValidate: true });
     };
 
-    const onError = (errors: FieldErrors<PrinterFormValues>) => {
+    const onError = (errors: FieldErrors<PhoneFormValues>) => {
         console.warn("❌ [ERROS DE VALIDAÇÃO CLIENT-SIDE]:", errors);
     };
 
-    async function onSubmit(data: z.input<typeof printerFormSchema>) {
+    async function onSubmit(data: z.input<typeof phoneFormSchema>) {
         setIsSubmitting(true);
         setIpFieldErrors({});
 
@@ -135,7 +135,7 @@ export default function AddPrinterPage() {
             targetIpId = data.selectedIpId || null;
         }
 
-        const payload: PrinterFormValues = {
+        const payload: PhoneFormValues = {
             ...data,
             locationId: data.unitId || data.locationId || null,
             selectedIpId: targetIpId,
@@ -146,13 +146,13 @@ export default function AddPrinterPage() {
         };
 
         try {
-            const result = await createPrinterAssetAction(payload as any);
+            const result = await createPhoneAssetAction(payload as any);
 
             if (result.success) {
-                toast.success("Impressora cadastrada com sucesso!", {
+                toast.success("Telefone/Ramal cadastrado com sucesso!", {
                     position: "bottom-right",
                 });
-                router.push("/assets/printers");
+                router.push("/assets/phones");
                 return;
             }
 
@@ -180,7 +180,7 @@ export default function AddPrinterPage() {
                                 key === "locationId" ? "unitId" : key;
 
                             form.setError(
-                                targetField as keyof PrinterFormValues,
+                                targetField as keyof PhoneFormValues,
                                 {
                                     type: "server",
                                     message: errMsgs[0],
@@ -197,8 +197,8 @@ export default function AddPrinterPage() {
                 });
             }
         } catch (error) {
-            console.error("[CREATE_PRINTER_ERROR]:", error);
-            toast.error("Ocorreu um erro inesperado ao salvar o ativo.", {
+            console.error("[CREATE_PHONE_ERROR]:", error);
+            toast.error("Ocorreu um erro inesperado ao salvar o ramal.", {
                 position: "bottom-right",
             });
         } finally {
@@ -216,16 +216,16 @@ export default function AddPrinterPage() {
                         asChild
                         className="h-9 w-9 rounded-lg border-zinc-200 dark:border-zinc-800"
                     >
-                        <Link href="/assets/printers">
+                        <Link href="/assets/phones">
                             <ArrowLeft size={16} />
                         </Link>
                     </Button>
                     <div>
                         <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
-                            Nova Impressora
+                            Novo Ramal / Telefone
                         </h1>
                         <p className="text-xs text-muted-foreground">
-                            Cadastre uma nova impressora de rede no inventário
+                            Cadastre um novo telefone IP ou ramal no inventário
                         </p>
                     </div>
                 </div>
@@ -238,7 +238,7 @@ export default function AddPrinterPage() {
                         disabled={isSubmitting}
                         className="h-9 text-xs font-semibold"
                     >
-                        <Link href="/assets/printers">Cancelar</Link>
+                        <Link href="/assets/phones">Cancelar</Link>
                     </Button>
                     <Button
                         onClick={form.handleSubmit(onSubmit, onError)}
@@ -253,7 +253,7 @@ export default function AddPrinterPage() {
                         ) : (
                             <>
                                 <Save size={14} />
-                                Salvar Impressora
+                                Salvar Telefone
                             </>
                         )}
                     </Button>
@@ -267,7 +267,7 @@ export default function AddPrinterPage() {
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         <div className="lg:col-span-7 h-full">
-                            <PrinterSpecsFormBlock
+                            <PhoneSpecsFormBlock
                                 control={form.control}
                                 disabled={isSubmitting || isLoadingOptions}
                             />

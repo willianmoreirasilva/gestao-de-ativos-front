@@ -5,8 +5,8 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FieldErrors, useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type z } from "zod";
 
@@ -55,7 +55,9 @@ export default function AddComputerPage() {
     }>({});
 
     const form = useForm<ComputerFormValues>({
-        resolver: zodResolver(computerFormSchema) as Resolver<ComputerFormValues>,
+        resolver: zodResolver(
+            computerFormSchema,
+        ) as Resolver<ComputerFormValues>,
         defaultValues: {
             hostname: "",
             username: "",

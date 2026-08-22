@@ -5,10 +5,10 @@
 import { revalidatePath } from "next/cache";
 
 import { getServerApi } from "@/lib/server-api";
+import { sanitizeNullable } from "@/lib/utils";
 import { ComputerFormValues } from "@/schemas/asset-create.schema";
 import { ActionResult } from "@/types/assets";
 
-import { sanitizeNullable } from "./helpers";
 import { findIpByAddressAction } from "./shared.actions";
 
 export async function createComputerAssetAction(

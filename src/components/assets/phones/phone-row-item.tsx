@@ -117,7 +117,7 @@ export function PhoneRowItem({ asset }: PhoneRowItemProps) {
                         </div>
                     ) : (
                         <span className="text-xs text-zinc-400 italic">
-                            Desconectado
+                            Não Informado
                         </span>
                     )}
                 </TableCell>

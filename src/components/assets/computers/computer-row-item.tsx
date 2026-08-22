@@ -122,7 +122,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
                         </div>
                     ) : (
                         <span className="text-xs text-zinc-400 italic">
-                            Desconectado
+                            Não Informado
                         </span>
                     )}
                 </TableCell>
