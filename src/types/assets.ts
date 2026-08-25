@@ -29,7 +29,7 @@ export interface CameraDetails {
     id: string;
     model: string;
     hostname?: string | null; // Hostname/Nome amigável
-    channel?: string | null; // Canal DVR/NVR
+    channel?: number | null; // Canal DVR/NVR
     serial?: string | null;
     mac?: string | null;
     notes?: string | null;

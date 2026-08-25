@@ -1,6 +1,6 @@
 "use client";
 
-import { Cpu, HardDrive, Laptop, Monitor, Trash2 } from "lucide-react";
+import { Cpu, HardDrive, Laptop, Monitor, Trash2, User } from "lucide-react";
 import {
     Control,
     FieldValues,
@@ -61,34 +61,8 @@ export function ComputerSpecsFormBlock<TFieldValues extends FieldValues>({
                 </h3>
             </div>
 
-            {/* Grid de 2 Colunas (Perfeitamente alinhado) */}
+            {/* Grid de 2 Colunas */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {/* Sistema Operacional */}
-                <FormField
-                    control={control}
-                    name={"osId" as Path<TFieldValues>}
-                    render={({ field, fieldState }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                Sistema Operacional
-                            </FormLabel>
-                            <ComboboxSearch
-                                options={options.operatingSystems}
-                                value={field.value || ""}
-                                onChange={(val) => field.onChange(val || "")}
-                                placeholder="Selecionar sistema operacional..."
-                            />
-                            <FieldError
-                                errors={
-                                    fieldState.error?.message
-                                        ? [fieldState.error.message]
-                                        : undefined
-                                }
-                            />
-                        </FormItem>
-                    )}
-                />
-
                 {/* Hostname */}
                 <FormField
                     control={control}
@@ -107,6 +81,62 @@ export function ComputerSpecsFormBlock<TFieldValues extends FieldValues>({
                                     className="h-8 text-xs font-mono bg-zinc-50/50 dark:bg-zinc-900/50"
                                 />
                             </FormControl>
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Usuário / Utilizador Operador */}
+                <FormField
+                    control={control}
+                    name={"username" as Path<TFieldValues>}
+                    render={({ field, fieldState }) => (
+                        <FormItem>
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                                <User size={14} className="text-zinc-400" />
+                                Usuário / Operador *
+                            </FormLabel>
+                            <FormControl>
+                                <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    placeholder="Ex: João Silva ou operador"
+                                    disabled={disabled}
+                                    className="h-8 text-xs font-medium bg-zinc-50/50 dark:bg-zinc-900/50"
+                                />
+                            </FormControl>
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Sistema Operacional */}
+                <FormField
+                    control={control}
+                    name={"osId" as Path<TFieldValues>}
+                    render={({ field, fieldState }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Sistema Operacional
+                            </FormLabel>
+                            <ComboboxSearch
+                                options={options.operatingSystems}
+                                value={field.value || ""}
+                                onChange={(val) => field.onChange(val || "")}
+                                placeholder="Selecionar sistema operacional..."
+                            />
                             <FieldError
                                 errors={
                                     fieldState.error?.message
@@ -263,36 +293,34 @@ export function ComputerSpecsFormBlock<TFieldValues extends FieldValues>({
                     )}
                 />
 
-                {/* Endereço MAC Físico (Span 2 para preencher toda a largura se for ímpar) */}
-                <div className="md:col-span-2">
-                    <FormField
-                        control={control}
-                        name={"mac" as Path<TFieldValues>}
-                        render={({ field, fieldState }) => (
-                            <FormItem>
-                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                    Endereço MAC Físico
-                                </FormLabel>
-                                <FormControl>
-                                    <Input
-                                        {...field}
-                                        value={field.value || ""}
-                                        placeholder="Ex: 00:1B:44:11:33:40"
-                                        disabled={disabled}
-                                        className="h-8 text-xs font-mono uppercase bg-zinc-50/50 dark:bg-zinc-900/50"
-                                    />
-                                </FormControl>
-                                <FieldError
-                                    errors={
-                                        fieldState.error?.message
-                                            ? [fieldState.error.message]
-                                            : undefined
-                                    }
+                {/* Endereço MAC Físico */}
+                <FormField
+                    control={control}
+                    name={"mac" as Path<TFieldValues>}
+                    render={({ field, fieldState }) => (
+                        <FormItem>
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Endereço MAC Físico
+                            </FormLabel>
+                            <FormControl>
+                                <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    placeholder="Ex: 00:1B:44:11:33:40"
+                                    disabled={disabled}
+                                    className="h-8 text-xs font-mono uppercase bg-zinc-50/50 dark:bg-zinc-900/50"
                                 />
-                            </FormItem>
-                        )}
-                    />
-                </div>
+                            </FormControl>
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
             </div>
 
             {/* Notas e Observações */}

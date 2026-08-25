@@ -4,12 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Layout, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { updateAssetAllocationAction } from "@/actions/asset-shared.actions";
+import { updateAssetAllocationAction } from "@/actions/assets/shared.actions";
 import { Button } from "@/components/ui/button";
 import { ComboboxSearch } from "@/components/ui/combobox-search";
 import {
@@ -33,7 +33,6 @@ import { OptionItem } from "@/types/assets";
 
 const allocationSchema = z.object({
     patrimony: z.string().trim().nullable().optional(),
-    username: z.string().trim().nullable().optional(),
     departmentId: z.string().uuid().or(z.literal("")).nullable().optional(),
     locationId: z.string().uuid().or(z.literal("")).nullable().optional(),
 });
@@ -45,7 +44,6 @@ interface AllocationEditModalProps {
     onClose: () => void;
     assetId: string;
     patrimony?: string | null;
-    username?: string | null;
     currentDepartmentId?: string | null;
     currentLocationId?: string | null;
     departments: OptionItem[];
@@ -57,7 +55,6 @@ export function AllocationEditModal({
     onClose,
     assetId,
     patrimony,
-    username,
     currentDepartmentId,
     currentLocationId,
     departments,
@@ -68,27 +65,26 @@ export function AllocationEditModal({
     const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<AllocationFormValues>({
-        resolver: zodResolver(allocationSchema) as Resolver<AllocationFormValues>,
+        resolver: zodResolver(
+            allocationSchema,
+        ) as Resolver<AllocationFormValues>,
         defaultValues: {
             patrimony: patrimony || "",
-            username: username || "",
             departmentId: currentDepartmentId || "",
             locationId: currentLocationId || "",
         },
     });
 
-    // ⚡ useEffect corrigido: executa o reset sempre que o modal abre (isOpen)
     useEffect(() => {
         if (isOpen) {
             setApiError(null);
             form.reset({
                 patrimony: patrimony || "",
-                username: username || "",
                 departmentId: currentDepartmentId || "",
                 locationId: currentLocationId || "",
             });
         }
-    }, [isOpen]); // Dependência enxuta e estável para evitar erros de renderização
+    }, [isOpen]);
 
     const normalizeNullableString = (val?: string | null) => {
         if (!val) return null;
@@ -102,7 +98,6 @@ export function AllocationEditModal({
 
         const payload = {
             patrimony: normalizeNullableString(data.patrimony),
-            username: normalizeNullableString(data.username),
             departmentId: normalizeNullableString(data.departmentId),
             locationId: normalizeNullableString(data.locationId),
         };
@@ -126,81 +121,51 @@ export function AllocationEditModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
-            <DialogContent className="sm:max-w-115 bg-white dark:bg-zinc-950 p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-visible">
+            <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-950 p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-visible">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-base font-bold text-zinc-900 dark:text-zinc-100">
                         <Layout className="text-purple-500" size={18} />{" "}
-                        Modificar Alocação & Setor
+                        Modificar Alocação
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                        Defina a localização física, patrimônio e o responsável
-                        direto por este ativo.
+                        Defina a localização física, setor e código de
+                        patrimônio do ativo.
                     </DialogDescription>
                 </DialogHeader>
 
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-3 pt-2"
+                        className="space-y-4 pt-2"
                     >
-                        {/* Código do Patrimônio e Usuário Responsável Lado a Lado */}
-                        <div className="grid grid-cols-2 gap-3">
-                            <FormField
-                                control={form.control}
-                                name="patrimony"
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Código do Patrimônio
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                value={field.value || ""}
-                                                placeholder="Ex: PAT-2024-8832"
-                                                disabled={isPending}
-                                                className="h-9 text-xs uppercase tracking-wider font-mono"
-                                            />
-                                        </FormControl>
-                                        <FieldError
-                                            errors={
-                                                fieldState.error?.message
-                                                    ? [fieldState.error.message]
-                                                    : undefined
-                                            }
+                        {/* Código do Patrimônio */}
+                        <FormField
+                            control={form.control}
+                            name="patrimony"
+                            render={({ field, fieldState }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                        Código do Patrimônio
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            value={field.value || ""}
+                                            placeholder="Ex: PAT-2024-8832"
+                                            disabled={isPending}
+                                            className="h-9 text-xs uppercase tracking-wider font-mono"
                                         />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="username"
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Usuário Responsável
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                value={field.value || ""}
-                                                placeholder="Ex: João Silva"
-                                                disabled={isPending}
-                                                className="h-9 text-xs font-medium"
-                                            />
-                                        </FormControl>
-                                        <FieldError
-                                            errors={
-                                                fieldState.error?.message
-                                                    ? [fieldState.error.message]
-                                                    : undefined
-                                            }
-                                        />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
+                                    </FormControl>
+                                    <FieldError
+                                        errors={
+                                            fieldState.error?.message
+                                                ? [fieldState.error.message]
+                                                : undefined
+                                        }
+                                    />
+                                </FormItem>
+                            )}
+                        />
 
                         {/* Departamento / Setor */}
                         <FormField

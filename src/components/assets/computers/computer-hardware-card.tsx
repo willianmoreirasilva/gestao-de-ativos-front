@@ -7,6 +7,7 @@ import {
     Monitor,
     MonitorSmartphone,
     Pencil,
+    User,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -58,14 +59,15 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                 </CardHeader>
 
                 <CardContent className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-y-5 gap-x-4">
-                    {/* 1. Sistema Operacional */}
+                    {/* 👤 Novo Item: Usuário Utilizador do Computador */}
                     <div className="space-y-1">
                         <span className="text-xs text-muted-foreground block">
-                            Sistema Operacional
+                            Usuário Principal
                         </span>
-                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
-                            {computer?.operatingSystem?.name || "Não Informado"}
-                        </span>
+                        <div className="flex items-center gap-1.5 font-semibold text-zinc-900 dark:text-zinc-100">
+                            <User size={14} className="text-blue-500" />
+                            <span>{computer?.username || "Não Vinculado"}</span>
+                        </div>
                     </div>
 
                     {/* 2. Hostname Interno */}
@@ -78,7 +80,17 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                         </span>
                     </div>
 
-                    {/* 3. Processador */}
+                    {/* 3. Sistema Operacional */}
+                    <div className="space-y-1">
+                        <span className="text-xs text-muted-foreground block">
+                            Sistema Operacional
+                        </span>
+                        <span className="font-semibold text-zinc-900 dark:text-zinc-100">
+                            {computer?.operatingSystem?.name || "Não Informado"}
+                        </span>
+                    </div>
+
+                    {/* 4. Processador */}
                     <div className="space-y-1">
                         <span className="text-xs text-muted-foreground block">
                             Processador (CPU)
@@ -89,7 +101,7 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                         </div>
                     </div>
 
-                    {/* 4. Memória RAM */}
+                    {/* 5. Memória RAM */}
                     <div className="space-y-1">
                         <span className="text-xs text-muted-foreground block">
                             Memória RAM Instalada
@@ -99,7 +111,7 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                         </span>
                     </div>
 
-                    {/* 5. Armazenamento */}
+                    {/* 6. Armazenamento */}
                     <div className="space-y-1">
                         <span className="text-xs text-muted-foreground block">
                             Armazenamento (Disco)
@@ -110,7 +122,7 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                         </div>
                     </div>
 
-                    {/* 6. Código AnyDesk (Com visual acionável para cópia) */}
+                    {/* 7. Código AnyDesk */}
                     <div className="space-y-1">
                         <span className="text-xs font-medium text-rose-600 dark:text-rose-400 flex items-center gap-1">
                             <MonitorSmartphone size={13} />
@@ -151,8 +163,8 @@ export function ComputerHardwareCard({ assetId, computer, options }: Props) {
                         )}
                     </div>
 
-                    {/* 7. Endereço MAC */}
-                    <div className="space-y-1 sm:col-span-2">
+                    {/* 8. Endereço MAC */}
+                    <div className="space-y-1">
                         <span className="text-xs text-muted-foreground block">
                             Endereço MAC físico
                         </span>

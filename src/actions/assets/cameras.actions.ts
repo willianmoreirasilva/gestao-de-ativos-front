@@ -2,21 +2,23 @@
 
 import { getServerApi } from "@/lib/server-api";
 import { sanitizeNullable, sanitizePayloadForBackend } from "@/lib/utils";
-import { PhoneFormValues } from "@/schemas/asset-create.schema";
+import { CameraFormValues } from "@/schemas/asset-create.schema";
 import { ActionResult } from "@/types/assets";
 
 import { ActionResponse, handleError, revalidateAssetPaths } from "./helpers";
 import { findIpByAddressAction } from "./shared.actions";
 
 /**
- * 🔄 ATUALIZAR ESPECIFICAÇÕES DO TELEFONE / RAMAL (PUT)
+ * 🔄 ATUALIZAR ESPECIFICAÇÕES DA CÂMERA (PUT)
  */
-export async function updatePhoneSpecsAction(
+export async function updateCameraSpecsAction(
     assetId: string,
     payload: {
         hostname?: string | null;
-        phoneNumber: string;
-        model?: string | null;
+        channel?: number | string | null;
+        model: string;
+        serial?: string | null;
+        mac?: string | null;
         notes?: string | null;
     },
 ): Promise<ActionResponse> {
@@ -25,25 +27,25 @@ export async function updatePhoneSpecsAction(
         const sanitized = sanitizePayloadForBackend(payload);
 
         const response = await api.put(
-            `/api/assets/${assetId}/specs/phone`,
+            `/api/assets/${assetId}/specs/camera`,
             sanitized,
         );
-        await revalidateAssetPaths(assetId, "phones");
+        await revalidateAssetPaths(assetId, "cameras");
 
         return { success: true, data: response.data?.data };
     } catch (error: any) {
         return handleError(
             error,
-            "Erro ao atualizar as especificações do telefone.",
+            "Erro ao atualizar as especificações da câmera.",
         );
     }
 }
 
 /**
- * ➕ CADASTRAR NOVO TELEFONE / RAMAL (POST)
+ * ➕ CADASTRAR NOVA CÂMERA (POST)
  */
-export async function createPhoneAssetAction(
-    formData: PhoneFormValues,
+export async function createCameraAssetAction(
+    formData: CameraFormValues,
 ): Promise<ActionResult> {
     try {
         const api = await getServerApi();
@@ -53,7 +55,7 @@ export async function createPhoneAssetAction(
             const cleanIp = formData.manualIpValue.trim();
             const ipLookup = await findIpByAddressAction(
                 cleanIp,
-                "GENERAL_DATA",
+                "CAMERA_VLAN",
             );
 
             if (!ipLookup.success || !ipLookup.data?.id) {
@@ -62,7 +64,7 @@ export async function createPhoneAssetAction(
                     fieldErrors: {
                         manualIpValue: [
                             ipLookup.error ||
-                                "Endereço IP indisponível ou incompatível.",
+                                "Endereço IP indisponível para a VLAN de Câmeras.",
                         ],
                     },
                 };
@@ -78,8 +80,15 @@ export async function createPhoneAssetAction(
             if (!Number.isNaN(num) && num > 0) parsedSwitchPort = num;
         }
 
+        let parsedChannel: number | null = null;
+        if (formData.channel && `${formData.channel}`.trim() !== "") {
+            const numChannel = Number(formData.channel);
+            if (!Number.isNaN(numChannel) && numChannel >= 0)
+                parsedChannel = numChannel;
+        }
+
         const payload = {
-            type: "PHONE",
+            type: "CAMERA",
             patrimony: sanitizeNullable(formData.patrimony),
             departmentId: sanitizeNullable(formData.departmentId),
             locationId: sanitizeNullable(
@@ -88,19 +97,23 @@ export async function createPhoneAssetAction(
             ipId: resolvedIpId,
             connectedToSwitchId: sanitizeNullable(formData.switchId),
             switchPort: parsedSwitchPort,
-            phone: {
+            camera: {
+                //CORRIGIDO: sanitizeNullable evita o crash do .trim() e envia null/string limpa
                 hostname: sanitizeNullable(formData.hostname),
-                phoneNumber: formData.phoneNumber.trim(),
-                model: sanitizeNullable(formData.model),
+                model: formData.model.trim(), // Model é obrigatório, portanto .trim() é seguro aqui
+                channel: parsedChannel,
+                serial: sanitizeNullable(formData.serial),
+                mac: sanitizeNullable(formData.mac),
                 notes: sanitizeNullable(formData.notes),
             },
         };
 
+        console.log("PAYLOAD:", payload);
         const response = await api.post("/api/assets", payload);
-        await revalidateAssetPaths(undefined, "phones");
+        await revalidateAssetPaths(undefined, "cameras");
 
         return { success: true, data: response.data };
     } catch (error: any) {
-        return handleError(error, "Erro ao cadastrar o telefone.") as any;
+        return handleError(error, "Erro ao cadastrar câmera.") as any;
     }
 }

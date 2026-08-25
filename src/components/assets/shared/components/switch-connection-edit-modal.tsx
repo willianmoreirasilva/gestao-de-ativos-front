@@ -4,12 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { updateAssetConnectivityAction } from "@/actions/asset-shared.actions";
+import { updateAssetConnectivityAction } from "@/actions/assets/shared.actions";
 import { Button } from "@/components/ui/button";
 import { ComboboxSearch } from "@/components/ui/combobox-search";
 import {
@@ -65,7 +65,9 @@ export function SwitchConnectionEditModal({
     const [apiError, setApiError] = useState<string | null>(null);
 
     const form = useForm<SwitchConnectionFormValues>({
-        resolver: zodResolver(switchConnectionSchema) as Resolver<SwitchConnectionFormValues>,
+        resolver: zodResolver(
+            switchConnectionSchema,
+        ) as Resolver<SwitchConnectionFormValues>,
         defaultValues: {
             connectedToSwitchId: currentSwitchId || "",
             switchPort: currentPort || "",

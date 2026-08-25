@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { z } from "zod";
 
-import { updateAssetConnectivityAction } from "@/actions/asset-shared.actions";
 import { findIpByAddressAction } from "@/actions/assets";
+import { updateAssetConnectivityAction } from "@/actions/assets/shared.actions";
 import { Button } from "@/components/ui/button";
 import {
     Dialog,

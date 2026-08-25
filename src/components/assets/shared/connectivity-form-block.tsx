@@ -56,35 +56,40 @@ export function ConnectivityFormBlock<TFieldValues extends FieldValues>({
     const isSwitchDisconnected = !watchedSwitchId || watchedSwitchId === "";
 
     return (
-        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 shadow-sm space-y-5">
-            <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-900">
-                <Terminal className="text-emerald-500" size={18} />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                    Conectividade IP & Rede
-                </h3>
+        <div className="h-full rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 shadow-sm flex flex-col justify-between space-y-5">
+            <div className="space-y-5">
+                {/* Header */}
+                <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-900">
+                    <Terminal className="text-emerald-500" size={18} />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
+                        Conectividade IP & Rede
+                    </h3>
+                </div>
+
+                {/* Bloco IP */}
+                <div className="space-y-2.5">
+                    <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+                        <Network size={14} className="text-zinc-400" />
+                        Atribuição de Endereço IPv4
+                    </span>
+
+                    <NetworkSelectorFields
+                        vlanType={vlanType}
+                        selectedNetworkId={selectedNetworkId}
+                        onNetworkChange={onNetworkChange}
+                        selectedIpId={selectedIpId}
+                        onIpChange={onIpChange}
+                        isManualMode={isManualMode}
+                        setIsManualMode={setIsManualMode}
+                        manualIpValue={manualIpValue}
+                        onManualIpChange={onManualIpChange}
+                        fieldErrors={fieldErrors}
+                    />
+                </div>
             </div>
 
-            <div className="space-y-2">
-                <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                    <Network size={14} className="text-zinc-400" />
-                    Atribuição de Endereço IPv4
-                </span>
-
-                <NetworkSelectorFields
-                    vlanType={vlanType}
-                    selectedNetworkId={selectedNetworkId}
-                    onNetworkChange={onNetworkChange}
-                    selectedIpId={selectedIpId}
-                    onIpChange={onIpChange}
-                    isManualMode={isManualMode}
-                    setIsManualMode={setIsManualMode}
-                    manualIpValue={manualIpValue}
-                    onManualIpChange={onManualIpChange}
-                    fieldErrors={fieldErrors}
-                />
-            </div>
-
-            <div className="pt-4 border-t border-dashed border-zinc-200 dark:border-zinc-800 space-y-4">
+            {/* Mapeamento de Switch */}
+            <div className="pt-4 border-t border-dashed border-zinc-200 dark:border-zinc-800 space-y-3 mt-auto">
                 <span className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                     <Link2 size={14} className="text-zinc-400" />
                     Mapeamento Físico de Switch
@@ -105,7 +110,8 @@ export function ConnectivityFormBlock<TFieldValues extends FieldValues>({
                                     onChange={(val) =>
                                         field.onChange(val || "")
                                     }
-                                    placeholder="Pesquisar e selecionar switch..."
+                                    placeholder="Pesquisar switch..."
+                                    disabled={disabled}
                                 />
                                 <FieldError
                                     errors={
@@ -124,7 +130,7 @@ export function ConnectivityFormBlock<TFieldValues extends FieldValues>({
                         render={({ field, fieldState }) => (
                             <FormItem>
                                 <FormLabel className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                                    Porta Física do Switch
+                                    Porta Física
                                 </FormLabel>
                                 <FormControl>
                                     <Input
@@ -132,8 +138,8 @@ export function ConnectivityFormBlock<TFieldValues extends FieldValues>({
                                         value={field.value || ""}
                                         placeholder={
                                             isSwitchDisconnected
-                                                ? "Selecione um switch antes"
-                                                : "Ex: 24 ou 5"
+                                                ? "Selecione um switch"
+                                                : "Ex: 24"
                                         }
                                         disabled={
                                             isSwitchDisconnected || disabled

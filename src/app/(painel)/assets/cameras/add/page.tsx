@@ -10,36 +10,30 @@ import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type z } from "zod";
 
-import { createComputerAssetAction } from "@/actions/assets";
-import { ComputerSpecsFormBlock } from "@/components/assets/computers/computer-specs-form-block";
+import { createCameraAssetAction } from "@/actions/assets/cameras.actions";
+import { CameraSpecsFormBlock } from "@/components/assets/cameras/camera-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import {
-    computerFormSchema,
-    type ComputerFormValues,
+    cameraFormSchema,
+    type CameraFormValues,
 } from "@/schemas/asset-create.schema";
 import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
-export default function AddComputerPage() {
+export default function AddCameraPage() {
     const router = useRouter();
     const [isLoadingOptions, setIsLoadingOptions] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [options, setOptions] = useState<{
-        processors: OptionItem[];
-        operatingSystems: OptionItem[];
-        disks: OptionItem[];
         departments: OptionItem[];
         units: OptionItem[];
         users: OptionItem[];
         switches: OptionItem[];
     }>({
-        processors: [],
-        operatingSystems: [],
-        disks: [],
         departments: [],
         units: [],
         users: [],
@@ -54,20 +48,15 @@ export default function AddComputerPage() {
         [key: string]: string[];
     }>({});
 
-    const form = useForm<ComputerFormValues>({
-        resolver: zodResolver(
-            computerFormSchema,
-        ) as Resolver<ComputerFormValues>,
+    const form = useForm<CameraFormValues>({
+        resolver: zodResolver(cameraFormSchema) as Resolver<CameraFormValues>,
         defaultValues: {
             hostname: "",
-            username: "",
-            anydesk: "",
-            patrimony: "",
-            osId: "",
-            processorId: "",
-            memory: "",
-            diskId: "",
+            model: "",
+            channel: "",
+            serial: "",
             mac: "",
+            patrimony: "",
             notes: "",
             switchId: "",
             switchPort: "",
@@ -88,9 +77,6 @@ export default function AddComputerPage() {
                 const res = await getAssetOptionsAction();
                 if (res.success && res.data) {
                     setOptions({
-                        processors: res.data.processors ?? [],
-                        operatingSystems: res.data.operatingSystems ?? [],
-                        disks: res.data.disks ?? [],
                         departments: res.data.departments ?? [],
                         units: res.data.units ?? [],
                         users: res.data.users ?? [],
@@ -138,11 +124,11 @@ export default function AddComputerPage() {
         form.setValue("manualIpValue", value, { shouldValidate: true });
     };
 
-    const onError = (errors: FieldErrors<ComputerFormValues>) => {
+    const onError = (errors: FieldErrors<CameraFormValues>) => {
         console.warn("❌ [ERROS DE VALIDAÇÃO CLIENT-SIDE]:", errors);
     };
 
-    async function onSubmit(data: z.input<typeof computerFormSchema>) {
+    async function onSubmit(data: z.input<typeof cameraFormSchema>) {
         setIsSubmitting(true);
         setIpFieldErrors({});
 
@@ -151,7 +137,7 @@ export default function AddComputerPage() {
             targetIpId = data.selectedIpId || null;
         }
 
-        const payload: ComputerFormValues = {
+        const payload: CameraFormValues = {
             ...data,
             locationId: data.unitId || data.locationId || null,
             selectedIpId: targetIpId,
@@ -162,13 +148,13 @@ export default function AddComputerPage() {
         };
 
         try {
-            const result = await createComputerAssetAction(payload as any);
+            const result = await createCameraAssetAction(payload as any);
 
             if (result.success) {
-                toast.success("Computador cadastrado com sucesso!", {
+                toast.success("Câmera cadastrada com sucesso!", {
                     position: "bottom-right",
                 });
-                router.push("/assets/computers");
+                router.push("/assets/cameras");
                 return;
             }
 
@@ -196,7 +182,7 @@ export default function AddComputerPage() {
                                 key === "locationId" ? "unitId" : key;
 
                             form.setError(
-                                targetField as keyof ComputerFormValues,
+                                targetField as keyof CameraFormValues,
                                 {
                                     type: "server",
                                     message: errMsgs[0],
@@ -213,7 +199,7 @@ export default function AddComputerPage() {
                 });
             }
         } catch (error) {
-            console.error("[CREATE_COMPUTER_ERROR]:", error);
+            console.error("[CREATE_CAMERA_ERROR]:", error);
             toast.error("Ocorreu um erro inesperado ao salvar o ativo.", {
                 position: "bottom-right",
             });
@@ -224,7 +210,6 @@ export default function AddComputerPage() {
 
     return (
         <div className="max-w-7xl mx-auto space-y-6 pb-12 px-4 sm:px-6">
-            {/* Header */}
             <div className="flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <Button
@@ -233,16 +218,17 @@ export default function AddComputerPage() {
                         asChild
                         className="h-9 w-9 rounded-lg border-zinc-200 dark:border-zinc-800"
                     >
-                        <Link href="/assets/computers">
+                        <Link href="/assets/cameras">
                             <ArrowLeft size={16} />
                         </Link>
                     </Button>
                     <div>
                         <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
-                            Novo Computador
+                            Nova Câmera
                         </h1>
                         <p className="text-xs text-muted-foreground">
-                            Cadastre um novo ativo de computação na rede
+                            Cadastre uma nova câmera ou dispositivo DVR no
+                            inventário
                         </p>
                     </div>
                 </div>
@@ -255,7 +241,7 @@ export default function AddComputerPage() {
                         disabled={isSubmitting}
                         className="h-9 text-xs font-semibold"
                     >
-                        <Link href="/assets/computers">Cancelar</Link>
+                        <Link href="/assets/cameras">Cancelar</Link>
                     </Button>
                     <Button
                         onClick={form.handleSubmit(onSubmit, onError)}
@@ -270,7 +256,7 @@ export default function AddComputerPage() {
                         ) : (
                             <>
                                 <Save size={14} />
-                                Salvar Computador
+                                Salvar Câmera
                             </>
                         )}
                     </Button>
@@ -282,26 +268,19 @@ export default function AddComputerPage() {
                     onSubmit={form.handleSubmit(onSubmit, onError)}
                     className="space-y-6"
                 >
-                    {/* Grid Principal com 2 Colunas de mesma altura */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
-                        <div className="h-full">
-                            <ComputerSpecsFormBlock
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                        <div className="lg:col-span-7 h-full">
+                            <CameraSpecsFormBlock
                                 control={form.control}
-                                setValue={form.setValue}
-                                options={{
-                                    processors: options.processors,
-                                    operatingSystems: options.operatingSystems,
-                                    disks: options.disks,
-                                }}
                                 disabled={isSubmitting || isLoadingOptions}
                             />
                         </div>
 
-                        <div className="h-full">
+                        <div className="lg:col-span-5 h-full">
                             <ConnectivityFormBlock
                                 control={form.control}
                                 switches={options.switches}
-                                vlanType="GENERAL_DATA"
+                                vlanType="CAMERA_VLAN"
                                 selectedNetworkId={selectedNetworkId}
                                 onNetworkChange={handleNetworkChange}
                                 selectedIpId={selectedIpId}
@@ -316,13 +295,13 @@ export default function AddComputerPage() {
                         </div>
                     </div>
 
-                    {/* Bloco Inferior de Alocação */}
                     <div className="w-full">
                         <AllocationFormBlock
                             control={form.control}
                             options={{
                                 departments: options.departments,
                                 units: options.units,
+                                users: options.users,
                             }}
                             disabled={isSubmitting || isLoadingOptions}
                         />

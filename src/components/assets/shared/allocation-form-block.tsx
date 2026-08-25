@@ -1,6 +1,6 @@
 "use client";
 
-import { Building2, MapPin, Tag, User } from "lucide-react";
+import { Building2, MapPin, Tag } from "lucide-react";
 import { Control, FieldValues, Path } from "react-hook-form";
 
 import { ComboboxSearch } from "@/components/ui/combobox-search";
@@ -21,7 +21,6 @@ interface AllocationFormBlockProps<
     options?: {
         departments?: OptionItem[];
         units?: OptionItem[];
-        users?: OptionItem[];
     };
     disabled?: boolean;
 }
@@ -38,17 +37,17 @@ export function AllocationFormBlock<
 
     return (
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-5 shadow-sm space-y-4">
-            {/* Cabeçalho do Card */}
+            {/* Header */}
             <div className="flex items-center gap-2 pb-3 border-b border-zinc-100 dark:border-zinc-900">
                 <Building2 className="text-purple-500" size={18} />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-900 dark:text-zinc-100">
-                    Alocação de Infraestrutura e Responsabilidade
+                    Alocação de Infraestrutura e Localização
                 </h3>
             </div>
 
-            {/* Grid com os campos de alocação */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Campo: Código de Patrimônio */}
+            {/* Layout compacto em 3 Colunas */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Código de Patrimônio */}
                 <FormField
                     control={control}
                     name={"patrimony" as Path<TFieldValues>}
@@ -78,37 +77,7 @@ export function AllocationFormBlock<
                     )}
                 />
 
-                {/* Campo: Usuário Responsável */}
-                <FormField
-                    control={control}
-                    name={"username" as Path<TFieldValues>}
-                    render={({ field, fieldState }) => (
-                        <FormItem>
-                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
-                                <User size={14} className="text-zinc-400" />
-                                Usuário Responsável
-                            </FormLabel>
-                            <FormControl>
-                                <Input
-                                    {...field}
-                                    value={field.value || ""}
-                                    placeholder="Ex: João Silva ou operador"
-                                    disabled={disabled}
-                                    className="h-9 text-xs font-medium bg-zinc-50/50 dark:bg-zinc-900/50"
-                                />
-                            </FormControl>
-                            <FieldError
-                                errors={
-                                    fieldState.error?.message
-                                        ? [fieldState.error.message]
-                                        : undefined
-                                }
-                            />
-                        </FormItem>
-                    )}
-                />
-
-                {/* Campo: Departamento / Setor */}
+                {/* Departamento / Setor */}
                 <FormField
                     control={control}
                     name={"departmentId" as Path<TFieldValues>}
@@ -119,10 +88,7 @@ export function AllocationFormBlock<
                                     size={14}
                                     className="text-zinc-400"
                                 />
-                                <span>Departamento / Setor Destino</span>
-                                <span className="text-[10px] text-zinc-400 font-normal lowercase">
-                                    (opcional se tiver localidade)
-                                </span>
+                                <span>Departamento / Setor</span>
                             </FormLabel>
                             <ComboboxSearch
                                 options={safeDepartments}
@@ -142,7 +108,7 @@ export function AllocationFormBlock<
                     )}
                 />
 
-                {/* Campo: Localidade Principal / Unidade */}
+                {/* Localidade / Unidade */}
                 <FormField
                     control={control}
                     name={"unitId" as Path<TFieldValues>}
@@ -151,9 +117,6 @@ export function AllocationFormBlock<
                             <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
                                 <MapPin size={14} className="text-zinc-400" />
                                 <span>Localidade Física Principal</span>
-                                <span className="text-[10px] text-zinc-400 font-normal lowercase">
-                                    (opcional se tiver departamento)
-                                </span>
                             </FormLabel>
                             <ComboboxSearch
                                 options={safeLocations}

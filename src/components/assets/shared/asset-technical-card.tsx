@@ -1,6 +1,7 @@
 "use client";
 
 // Importações dos Cards de Especificidades Técnicas
+import { CameraHardwareCard } from "@/components/assets/cameras/camera-hardware-card";
 import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
 import { PhoneHardwareCard } from "@/components/assets/phones/phone-hardware-card";
 import { PrinterHardwareCard } from "@/components/assets/printers/printer-hardware-card";
@@ -93,6 +94,14 @@ export function AssetTechnicalCard({
                         <PhoneHardwareCard
                             assetId={asset.id}
                             phone={asset.phone}
+                        />
+                    )}
+
+                    {/* 📹 Câmeras */}
+                    {asset.type === "CAMERA" && asset.camera && (
+                        <CameraHardwareCard
+                            assetId={asset.id}
+                            camera={asset.camera}
                         />
                     )}
                 </div>

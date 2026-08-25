@@ -5,11 +5,52 @@
 import { revalidatePath } from "next/cache";
 
 import { getServerApi } from "@/lib/server-api";
-import { sanitizeNullable } from "@/lib/utils";
+import { sanitizeNullable, sanitizePayloadForBackend } from "@/lib/utils";
 import { ComputerFormValues } from "@/schemas/asset-create.schema";
 import { ActionResult } from "@/types/assets";
 
+import { ActionResponse, handleError, revalidateAssetPaths } from "./helpers";
 import { findIpByAddressAction } from "./shared.actions";
+
+/**
+ * 🔄 ATUALIZAR ESPECIFICAÇÕES DO COMPUTADOR (PUT)
+ */
+export async function updateComputerSpecsAction(
+    assetId: string,
+    payload: {
+        username?: string | null;
+        hostname?: string | null;
+        anydesk?: string | null;
+        mac?: string | null;
+        processorId?: string | null;
+        memory?: string | null;
+        diskId?: string | null;
+        osId?: string | null;
+        notes?: string | null;
+    },
+): Promise<ActionResponse> {
+    try {
+        const api = await getServerApi();
+        const sanitized = sanitizePayloadForBackend(payload);
+
+        const response = await api.put(
+            `/api/assets/${assetId}/specs/computer`,
+            sanitized,
+        );
+        await revalidateAssetPaths(assetId, "computers");
+
+        return { success: true, data: response.data?.data };
+    } catch (error: any) {
+        return handleError(
+            error,
+            "Erro ao atualizar as especificações do computador.",
+        );
+    }
+}
+
+/**
+ * ➕ CADASTRAR NOVO COMPUTADOR (POST)
+ */
 
 export async function createComputerAssetAction(
     formData: ComputerFormValues,

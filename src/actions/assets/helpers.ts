@@ -30,11 +30,28 @@ export async function handleError(
 }
 
 /**
- * Auxiliar para revalidar caminhos de ativos de forma genérica
+ * Auxiliar para revalidar caminhos de ativos de forma flexível
+ * @param assetId - ID do ativo (opcional)
+ * @param typePath - Sub-rota do tipo de ativo ex: "computers", "cameras", "phones" (opcional)
  */
-export async function revalidateAssetPaths(assetId?: string): Promise<void> {
+export async function revalidateAssetPaths(
+    assetId?: string,
+    typePath?: string,
+): Promise<void> {
+    // 1. Revalida a listagem geral
     revalidatePath("/assets");
+
+    // 2. Se informou o tipo de ativo (ex: /assets/computers)
+    if (typePath) {
+        revalidatePath(`/assets/${typePath}`);
+    }
+
+    // 3. Se informou o ID do ativo
     if (assetId) {
         revalidatePath(`/assets/${assetId}`);
+        // Se também tiver o tipo, revalida a página detalhada da categoria
+        if (typePath) {
+            revalidatePath(`/assets/${typePath}/${assetId}`);
+        }
     }
 }

@@ -1,8 +1,4 @@
-//(Ações de Impressoras)
-
 "use server";
-
-import { revalidatePath } from "next/cache";
 
 import { getServerApi } from "@/lib/server-api";
 import { sanitizeNullable, sanitizePayloadForBackend } from "@/lib/utils";
@@ -13,26 +9,26 @@ import { ActionResponse, handleError, revalidateAssetPaths } from "./helpers";
 import { findIpByAddressAction } from "./shared.actions";
 
 /**
- * 🔄 ATUALIZAR ESPECIFICAÇÕES DA IMPRESSORA (PATCH)
+ * 🔄 ATUALIZAR ESPECIFICAÇÕES DA IMPRESSORA (PUT)
  */
-export async function updatePrinterAction(
+export async function updatePrinterSpecsAction(
     assetId: string,
     payload: {
-        model?: string;
-        serial?: string;
-        code?: string;
-        notes?: string;
+        model: string;
+        serial?: string | null;
+        code?: string | null;
+        notes?: string | null;
     },
 ): Promise<ActionResponse> {
     try {
         const api = await getServerApi();
         const sanitized = sanitizePayloadForBackend(payload);
 
-        const response = await api.patch(
-            `/api/assets/${assetId}/printer`,
+        const response = await api.put(
+            `/api/assets/${assetId}/specs/printer`,
             sanitized,
         );
-        revalidateAssetPaths(assetId);
+        await revalidateAssetPaths(assetId, "printers");
 
         return { success: true, data: response.data?.data };
     } catch (error: any) {
@@ -51,12 +47,10 @@ export async function createPrinterAssetAction(
 ): Promise<ActionResult> {
     try {
         const api = await getServerApi();
-
         let resolvedIpId: string | null = null;
 
         if (formData.isManualMode && formData.manualIpValue) {
             const cleanIp = formData.manualIpValue.trim();
-
             const ipLookup = await findIpByAddressAction(
                 cleanIp,
                 "GENERAL_DATA",
@@ -73,7 +67,6 @@ export async function createPrinterAssetAction(
                     },
                 };
             }
-
             resolvedIpId = ipLookup.data.id;
         } else if (!formData.isManualMode && formData.selectedIpId) {
             resolvedIpId = sanitizeNullable(formData.selectedIpId);
@@ -82,9 +75,7 @@ export async function createPrinterAssetAction(
         let parsedSwitchPort: number | null = null;
         if (formData.switchPort && `${formData.switchPort}`.trim() !== "") {
             const num = Number(formData.switchPort);
-            if (!Number.isNaN(num) && num > 0) {
-                parsedSwitchPort = num;
-            }
+            if (!Number.isNaN(num) && num > 0) parsedSwitchPort = num;
         }
 
         const payload = {
@@ -97,7 +88,6 @@ export async function createPrinterAssetAction(
             ipId: resolvedIpId,
             connectedToSwitchId: sanitizeNullable(formData.switchId),
             switchPort: parsedSwitchPort,
-
             printer: {
                 model: formData.model.trim(),
                 serial: sanitizeNullable(formData.serial),
@@ -107,52 +97,10 @@ export async function createPrinterAssetAction(
         };
 
         const response = await api.post("/api/assets", payload);
-        revalidatePath("/assets");
-        revalidatePath("/assets/printers");
+        await revalidateAssetPaths(undefined, "printers");
 
-        return {
-            success: true,
-            data: response.data,
-        };
+        return { success: true, data: response.data };
     } catch (error: any) {
-        if (error.response?.data) {
-            const apiData = error.response.data;
-
-            if (
-                apiData.fieldErrors &&
-                Object.keys(apiData.fieldErrors).length > 0
-            ) {
-                return {
-                    success: false,
-                    fieldErrors: apiData.fieldErrors,
-                };
-            }
-
-            const errorMsg =
-                apiData.message ||
-                apiData.error ||
-                "Erro ao salvar a impressora.";
-
-            if (
-                errorMsg.toLowerCase().includes("switch") ||
-                errorMsg.toLowerCase().includes("porta")
-            ) {
-                return {
-                    success: false,
-                    fieldErrors: { switchPort: [errorMsg] },
-                };
-            }
-
-            return {
-                success: false,
-                fieldErrors: { manualIpValue: [errorMsg] },
-                error: errorMsg,
-            };
-        }
-
-        return {
-            success: false,
-            error: "Falha de comunicação com o servidor.",
-        };
+        return handleError(error, "Erro ao salvar a impressora.") as any;
     }
 }

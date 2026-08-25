@@ -8,7 +8,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
-import { updatePhoneSpecsAction } from "@/actions/asset-specs.actions";
+import { updatePhoneSpecsAction } from "@/actions/assets/phones.actions";
 import { Button } from "@/components/ui/button";
 import {
     Form,

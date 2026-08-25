@@ -112,7 +112,6 @@ export const computerFormSchema = z
             .min(1, "O Hostname é obrigatório")
             .max(63, "Hostname muito longo"),
 
-        // Especificações específicas de PC
         processorId: lenientOptionalString,
         memory: lenientOptionalString,
         diskId: lenientOptionalString,
@@ -125,7 +124,6 @@ export const computerFormSchema = z
             "Endereço MAC inválido. Ex: 00:1A:3F:F1:4C:C2",
         ),
 
-        // Herda os campos comuns
         ...baseAssetObject,
     })
     .superRefine(refineAssetBase);
@@ -138,20 +136,52 @@ export const printerFormSchema = z
         code: lenientOptionalString,
         notes: lenientOptionalString,
 
-        // Herda os campos comuns
         ...baseAssetObject,
     })
     .superRefine(refineAssetBase);
 
-// 4. Schema de Telefones / Ramais
+// 4. Schema de Câmeras
+export const cameraFormSchema = z
+    .object({
+        // 📹 Hostname agora é OPCIONAL (alinhado com o backend)
+        hostname: lenientOptionalString.refine(
+            (val) => !val || val.length <= 63,
+            "Hostname muito longo (máximo de 63 caracteres)",
+        ),
+
+        // 📹 Model agora é OBRIGATÓRIO (alinhado com o backend)
+        model: z.string().trim().min(1, "O modelo da câmera é obrigatório"),
+
+        channel: lenientOptionalString.refine(
+            (val) => !val || (!isNaN(Number(val)) && Number(val) > 0),
+            "O canal deve ser um número maior que 0",
+        ),
+        serial: lenientOptionalString,
+        mac: lenientOptionalString.refine(
+            (val) => !val || macRegex.test(val),
+            "Endereço MAC inválido. Ex: 00:1A:3F:F1:4C:C2",
+        ),
+        notes: lenientOptionalString,
+
+        ...baseAssetObject,
+    })
+    .superRefine(refineAssetBase);
+
+// 5. Schema de Telefones / Ramais
 export const phoneFormSchema = z
     .object({
-        hostname: lenientOptionalString,
-        phoneNumber: z.string().trim().min(1, "O número/ramal é obrigatório."),
+        hostname: z
+            .string()
+            .trim()
+            .min(1, "O hostname do telefone é obrigatório")
+            .max(63, "Hostname muito longo"),
+        phoneNumber: z
+            .string()
+            .trim()
+            .min(1, "O número de telefone / ramal é obrigatório"),
         model: lenientOptionalString,
         notes: lenientOptionalString,
 
-        // Herda os campos comuns
         ...baseAssetObject,
     })
     .superRefine(refineAssetBase);
@@ -159,4 +189,5 @@ export const phoneFormSchema = z
 // Export das Tipagens
 export type ComputerFormValues = z.infer<typeof computerFormSchema>;
 export type PrinterFormValues = z.infer<typeof printerFormSchema>;
+export type CameraFormValues = z.infer<typeof cameraFormSchema>;
 export type PhoneFormValues = z.infer<typeof phoneFormSchema>;
