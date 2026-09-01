@@ -8,22 +8,21 @@ import { useEffect, useState } from "react";
 import type { Resolver } from "react-hook-form";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { type z } from "zod";
 
-import { createCameraAssetAction } from "@/actions/assets/cameras.actions";
-import { CameraSpecsFormBlock } from "@/components/assets/cameras/camera-specs-form-block";
+import { createSwitchAction } from "@/actions/switches";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
+import { SwitchSpecsFormBlock } from "@/components/assets/switches/switch-specs-form-block";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import {
-    cameraFormSchema,
-    type CameraFormValues,
+    switchFormSchema,
+    SwitchFormValues,
 } from "@/schemas/asset-create.schema";
 import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
-export default function AddCameraPage() {
+export default function AddSwitchPage() {
     const router = useRouter();
     const [isLoadingOptions, setIsLoadingOptions] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,18 +47,16 @@ export default function AddCameraPage() {
         [key: string]: string[];
     }>({});
 
-    const form = useForm<CameraFormValues>({
-        resolver: zodResolver(cameraFormSchema) as Resolver<CameraFormValues>,
+    const form = useForm<SwitchFormValues>({
+        resolver: zodResolver(switchFormSchema) as Resolver<SwitchFormValues>,
         defaultValues: {
             hostname: "",
             model: "",
-            channel: "",
-            serial: "",
+            vendor: "",
+            totalPorts: 24,
             mac: "",
             patrimony: "",
             notes: "",
-            switchId: "",
-            switchPort: "",
             departmentId: "",
             locationId: "",
             unitId: "",
@@ -85,9 +82,7 @@ export default function AddCameraPage() {
                 }
             } catch (err) {
                 console.error("Erro ao carregar opções do formulário:", err);
-                toast.error("Erro ao carregar opções para o cadastro.", {
-                    position: "bottom-right",
-                });
+                toast.error("Erro ao carregar opções para o cadastro.");
             } finally {
                 setIsLoadingOptions(false);
             }
@@ -124,11 +119,11 @@ export default function AddCameraPage() {
         form.setValue("manualIpValue", value, { shouldValidate: true });
     };
 
-    const onError = (errors: FieldErrors<CameraFormValues>) => {
+    const onError = (errors: FieldErrors<SwitchFormValues>) => {
         console.warn("❌ [ERROS DE VALIDAÇÃO CLIENT-SIDE]:", errors);
     };
 
-    async function onSubmit(data: z.input<typeof cameraFormSchema>) {
+    async function onSubmit(data: SwitchFormValues) {
         setIsSubmitting(true);
         setIpFieldErrors({});
 
@@ -137,72 +132,35 @@ export default function AddCameraPage() {
             targetIpId = data.selectedIpId || null;
         }
 
-        const payload: CameraFormValues = {
-            ...data,
+        // Mapeia os dados do formulário para o payload esperado pela rota POST /api/switches
+        const payload = {
+            patrimony: data.patrimony || null,
+            departmentId: data.departmentId || null,
             locationId: data.unitId || data.locationId || null,
-            selectedIpId: targetIpId,
-            isManualMode: Boolean(data.isManualMode),
-            manualIpValue: data.isManualMode
-                ? data.manualIpValue || null
-                : null,
+            ipId: targetIpId,
+            hostname: data.hostname || null,
+            model: data.model,
+            vendor: data.vendor || null,
+            totalPorts: Number(data.totalPorts) || 24,
+            mac: data.mac || null,
+            notes: data.notes || null,
         };
 
         try {
-            const result = await createCameraAssetAction(payload as any);
+            const result = await createSwitchAction(payload as any);
 
             if (result.success) {
-                toast.success("Câmera cadastrada com sucesso!", {
-                    position: "bottom-right",
-                });
-                router.push("/assets/cameras");
+                toast.success("Switch cadastrado com sucesso!");
+                router.push("/assets/switches");
                 return;
             }
 
-            if (result.fieldErrors) {
-                Object.entries(result.fieldErrors).forEach(
-                    ([key, messages]) => {
-                        const errMsgs = messages as string[];
-
-                        if (
-                            [
-                                "manualIpValue",
-                                "manualIpAddress",
-                                "selectedIpId",
-                                "ipId",
-                                "newIpAddress",
-                                "ipAddress",
-                            ].includes(key)
-                        ) {
-                            setIpFieldErrors((prev) => ({
-                                ...prev,
-                                [key]: errMsgs,
-                            }));
-                        } else {
-                            const targetField =
-                                key === "locationId" ? "unitId" : key;
-
-                            form.setError(
-                                targetField as keyof CameraFormValues,
-                                {
-                                    type: "server",
-                                    message: errMsgs[0],
-                                },
-                            );
-                        }
-                    },
-                );
-            }
-
             if (result.error) {
-                toast.error(result.error, {
-                    position: "bottom-right",
-                });
+                toast.error(result.error);
             }
         } catch (error) {
-            console.error("[CREATE_CAMERA_ERROR]:", error);
-            toast.error("Ocorreu um erro inesperado ao salvar o ativo.", {
-                position: "bottom-right",
-            });
+            console.error("[CREATE_SWITCH_ERROR]:", error);
+            toast.error("Ocorreu um erro inesperado ao salvar o switch.");
         } finally {
             setIsSubmitting(false);
         }
@@ -218,17 +176,16 @@ export default function AddCameraPage() {
                         asChild
                         className="h-9 w-9 rounded-lg border-zinc-200 dark:border-zinc-800"
                     >
-                        <Link href="/assets/cameras">
+                        <Link href="/assets/switches">
                             <ArrowLeft size={16} />
                         </Link>
                     </Button>
                     <div>
                         <h1 className="text-lg font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
-                            Nova Câmera
+                            Novo Switch
                         </h1>
                         <p className="text-xs text-muted-foreground">
-                            Cadastre uma nova câmera ou dispositivo DVR no
-                            inventário
+                            Cadastre um novo switch de rede no inventário
                         </p>
                     </div>
                 </div>
@@ -241,7 +198,7 @@ export default function AddCameraPage() {
                         disabled={isSubmitting}
                         className="h-9 text-xs font-semibold"
                     >
-                        <Link href="/assets/cameras">Cancelar</Link>
+                        <Link href="/assets/switches">Cancelar</Link>
                     </Button>
                     <Button
                         onClick={form.handleSubmit(onSubmit, onError)}
@@ -256,7 +213,7 @@ export default function AddCameraPage() {
                         ) : (
                             <>
                                 <Save size={14} />
-                                Salvar Câmera
+                                Salvar Switch
                             </>
                         )}
                     </Button>
@@ -270,7 +227,7 @@ export default function AddCameraPage() {
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                         <div className="lg:col-span-7 h-full">
-                            <CameraSpecsFormBlock
+                            <SwitchSpecsFormBlock
                                 control={form.control}
                                 disabled={isSubmitting || isLoadingOptions}
                             />
@@ -280,7 +237,7 @@ export default function AddCameraPage() {
                             <ConnectivityFormBlock
                                 control={form.control}
                                 switches={options.switches}
-                                vlanType="CAMERA_VLAN"
+                                vlanType="SWITCH_MGMT"
                                 selectedNetworkId={selectedNetworkId}
                                 onNetworkChange={handleNetworkChange}
                                 selectedIpId={selectedIpId}

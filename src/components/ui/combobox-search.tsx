@@ -40,6 +40,7 @@ export function ComboboxSearch({
     const [isOpen, setIsOpen] = React.useState(false);
     const [search, setSearch] = React.useState("");
     const [focusedIndex, setFocusedIndex] = React.useState<number>(-1);
+    const [openUpward, setOpenUpward] = React.useState(false);
 
     const containerRef = React.useRef<HTMLDivElement>(null);
     const inputRef = React.useRef<HTMLInputElement>(null);
@@ -62,6 +63,31 @@ export function ComboboxSearch({
         );
     }, [safeOptions, search]);
 
+    // Calcula a posição (para cima ou para baixo) antes de abrir o dropdown
+    const calculatePosition = React.useCallback(() => {
+        if (!containerRef.current) return;
+        const rect = containerRef.current.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+
+        // Estimativa da altura máxima do dropdown (pode ajustar se necessário)
+        const dropdownMaxHeight = 260;
+        const spaceBelow = viewportHeight - rect.bottom;
+
+        // Se o espaço abaixo for menor que a altura do dropdown e houver espaço acima
+        if (spaceBelow < dropdownMaxHeight && rect.top > dropdownMaxHeight) {
+            setOpenUpward(true);
+        } else {
+            setOpenUpward(false);
+        }
+    }, []);
+
+    const toggleOpen = () => {
+        if (!isOpen) {
+            calculatePosition();
+        }
+        setIsOpen((prev) => !prev);
+    };
+
     // Trata clique fora do container
     React.useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -83,7 +109,6 @@ export function ComboboxSearch({
             setSearch("");
             setFocusedIndex(-1);
         } else {
-            // Focus imediato sem dependência de setTimeout
             requestAnimationFrame(() => {
                 inputRef.current?.focus();
             });
@@ -114,6 +139,7 @@ export function ComboboxSearch({
         if (!isOpen) {
             if (["ArrowDown", "ArrowUp", "Enter", " "].includes(e.key)) {
                 e.preventDefault();
+                calculatePosition();
                 setIsOpen(true);
             }
             return;
@@ -159,7 +185,7 @@ export function ComboboxSearch({
                     type="button"
                     variant="outline"
                     disabled={disabled}
-                    onClick={() => setIsOpen((prev) => !prev)}
+                    onClick={toggleOpen}
                     className={cn(
                         "w-full h-9 justify-between text-xs font-normal bg-zinc-50/50 dark:bg-zinc-900/50 border-zinc-200 dark:border-zinc-800 transition-all text-left pr-12",
                         isOpen &&
@@ -193,7 +219,14 @@ export function ComboboxSearch({
 
             {/* Painel Dropdown */}
             {isOpen && (
-                <div className="absolute z-50 w-full mt-1.5 p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl animate-in fade-in-50 slide-in-from-top-1 duration-150">
+                <div
+                    className={cn(
+                        "absolute z-50 w-full p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl animate-in fade-in-50 duration-150",
+                        openUpward
+                            ? "bottom-full mb-1.5 slide-in-from-bottom-1"
+                            : "top-full mt-1.5 slide-in-from-top-1",
+                    )}
+                >
                     {/* Campo de Busca */}
                     <div className="flex items-center gap-2 border-b border-zinc-100 dark:border-zinc-900 px-2 pb-2 mb-1">
                         <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />

@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 
 interface LogoProps {
     width?: number;
@@ -21,6 +21,7 @@ export function SidebarLogoFull({ width = 28, height = 28 }: LogoProps) {
                     alt="DI"
                     width={width}
                     height={height}
+                    style={{ height: "auto" }}
                     priority
                 />
             </div>
@@ -49,6 +50,7 @@ export function SidebarLogoIcon({ width = 24, height = 24 }: LogoProps) {
                     alt="DI"
                     width={width}
                     height={height}
+                    style={{ height: "auto" }}
                     priority
                 />
             </Link>

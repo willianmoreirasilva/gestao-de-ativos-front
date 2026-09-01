@@ -7,6 +7,12 @@ export type AssetType =
     | "CAMERA"
     | "OTHER";
 
+export type VlanType =
+    | "GENERAL_DATA"
+    | "CAMERA_VLAN"
+    | "SWITCH_MGMT"
+    | "WIFI_MGMT";
+
 export type OptionItem = {
     id: string;
     name: string;
@@ -64,9 +70,17 @@ export interface SwitchDetails {
 
 export interface AccessPointDetails {
     id: string;
+    name?: string | null;
     model: string;
     vendor?: string | null;
     mac?: string | null;
+    ssid?: string | null;
+    wifiPassword?: string | null;
+    securityType?: string | null;
+    frequencyBand?: string | null;
+    adminUsername?: string | null;
+    adminPassword?: string | null;
+    firmwareVersion?: string | null;
     notes?: string | null;
 }
 
@@ -79,9 +93,9 @@ export interface AssetItem {
     ipId: string | null;
 
     connectedToSwitchId: string | null;
-    switchPort: number | null;
+    switchPort: number | null; // ⚠️ Espera number ou null
 
-    vlanType: string;
+    vlanType: VlanType | string; // 👈 Tipagem flexibilizada
     vlanTag: number | null;
 
     createdAt: string;

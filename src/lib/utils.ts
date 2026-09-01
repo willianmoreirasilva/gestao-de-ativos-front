@@ -2,6 +2,8 @@ import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { ZodError } from "zod";
 
+import { VlanType } from "@/types/assets";
+
 export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
@@ -61,4 +63,32 @@ export function sanitizeNullable(value?: string | null): string | null {
     if (!value || typeof value !== "string") return null;
     const trimmed = value.trim();
     return trimmed === "" ? null : trimmed;
+}
+
+/**
+ * Define o vlanType correto para um Access Point com base no Fabricante (Vendor)
+ */
+export function getApVlanType(
+    vendor?: string | null,
+    explicitVlanType?: string | null,
+): VlanType {
+    // 1. Se já veio um vlanType explicitamente válido da rede/banco, ele tem prioridade
+    const normalizedExplicit = explicitVlanType?.toUpperCase();
+    if (
+        normalizedExplicit === "WIFI_MGMT" ||
+        normalizedExplicit === "GENERAL_DATA"
+    ) {
+        return normalizedExplicit as VlanType;
+    }
+
+    // 2. Regra de Negócio por Fabricante:
+    const normalizedVendor = (vendor || "").trim().toUpperCase();
+
+    // Se o Fabricante for Ruckus (ou variações como Ruckus Wireless / CommScope)
+    if (normalizedVendor.includes("RUCKUS")) {
+        return "WIFI_MGMT";
+    }
+
+    // Para todas as outras marcas de AP (Ubiquiti, Aruba, TP-Link, etc.)
+    return "GENERAL_DATA";
 }

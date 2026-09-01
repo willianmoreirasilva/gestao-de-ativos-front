@@ -1,3 +1,4 @@
+// src/config/sidebar-menu.ts
 import {
     BookHeadphones,
     BookMinus,
@@ -6,6 +7,7 @@ import {
     Cpu,
     FileDown,
     FileText,
+    History,
     Home,
     Layers,
     LayoutDashboard,
@@ -16,22 +18,23 @@ import {
     Phone,
     Printer,
     Radio,
-    Search,
-    UserSearch,
-    Workflow,
+    ShieldAlert,
+    Wifi,
     Zap,
 } from "lucide-react";
 
 export type MenuItem = {
     title: string;
-    url: string;
+    url?: string;
     icon: React.ElementType;
     allowedRoles?: ("ADMIN" | "USER" | "SECURITY_OPERATOR")[];
+    isQuickSearch?: boolean; // Dispara a Command Palette (modal)
+    shortcut?: string;
 };
 
 export type GroupMenu = {
     title: string;
-    url: string;
+    url?: string;
     icon: React.ElementType;
     items: MenuItem[];
 };
@@ -56,7 +59,7 @@ export const sidebarMenuConfig: GroupMenu[] = [
         icon: Layers,
         items: [
             {
-                title: "Redes, Subredes (CIDR)",
+                title: "Redes e Subredes",
                 url: "/infra/networks",
                 icon: Network,
                 allowedRoles: ["ADMIN", "USER"],
@@ -105,30 +108,29 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 allowedRoles: ["ADMIN", "USER", "SECURITY_OPERATOR"],
             },
             {
-                title: "Switches & APs",
+                title: "Switches",
                 url: "/assets/switches",
                 icon: Radio,
+                allowedRoles: ["ADMIN", "USER"],
+            },
+            {
+                title: "Access Points",
+                url: "/assets/access-points",
+                icon: Wifi,
                 allowedRoles: ["ADMIN", "USER"],
             },
         ],
     },
     {
-        title: "Consulta Rápida",
-        url: "/search",
+        title: "Ferramentas",
+        url: "/tools",
         icon: Zap,
         items: [
-            { title: "Buscar por IP", url: "/search/ip", icon: Search },
             {
-                title: "Buscar por Hostname",
-                url: "/search/hostname",
-                icon: UserSearch,
-                allowedRoles: ["ADMIN", "USER"],
-            },
-            {
-                title: "Buscar por MAC Address",
-                url: "/search/mac",
-                icon: Workflow,
-                allowedRoles: ["ADMIN", "USER"],
+                title: "Consulta Rápida",
+                icon: Zap,
+                isQuickSearch: true,
+                shortcut: "⌘K",
             },
         ],
     },
@@ -148,6 +150,18 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 url: "/reports/departments",
                 icon: BookMinus,
                 allowedRoles: ["ADMIN", "USER"],
+            },
+            {
+                title: "Logs de Operações",
+                url: "/reports/audit-logs",
+                icon: History,
+                allowedRoles: ["ADMIN"],
+            },
+            {
+                title: "Divergências de Rede",
+                url: "/reports/conflicts",
+                icon: ShieldAlert,
+                allowedRoles: ["ADMIN"],
             },
             {
                 title: "Exportar Dados",

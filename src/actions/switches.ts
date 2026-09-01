@@ -45,7 +45,6 @@ export async function updateSwitchAction(
 
         revalidatePath("/assets/switches");
         revalidatePath(`/assets/switches/${id}`);
-        revalidatePath("/assets/computers"); // Revalida a tabela de computadores caso precise ver dados alterados
 
         return { success: true, data: response.data?.data, error: null };
     } catch (err: any) {
@@ -63,10 +62,16 @@ export async function updateSwitchAction(
 /**
  * Deleta um switch físico de rede do sistema
  */
+// No seu deleteSwitchAction (Next.js)
+
 export async function deleteSwitchAction(id: string) {
     try {
         const api = await getServerApi();
-        await api.delete(`/api/switches/${id}`);
+
+        // Passar data: {} impede o Axios/Fastify de chiar sobre payload ausente
+        await api.delete(`/api/switches/${id}`, {
+            data: {},
+        });
 
         revalidatePath("/assets/switches");
         revalidatePath("/assets/computers");
@@ -76,9 +81,11 @@ export async function deleteSwitchAction(id: string) {
         console.error(`Erro ao deletar switch ${id}:`, err);
         return {
             success: false,
+            // 💡 Busca a propriedade "error" do formato do seu errorHandler
             error:
+                err.response?.data?.error ||
                 err.response?.data?.message ||
-                "Não foi possível remover o switch. Verifique se existem ativos conectados a ele.",
+                "Não foi possível remover o switch. Tente novamente.",
         };
     }
 }

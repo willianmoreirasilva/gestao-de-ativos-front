@@ -1,12 +1,14 @@
 "use client";
 
 // Importações dos Cards de Especificidades Técnicas
+import { AccessPointHardwareCard } from "@/components/assets/access-points/access-point-hardware-card";
 import { CameraHardwareCard } from "@/components/assets/cameras/camera-hardware-card";
 import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
 import { PhoneHardwareCard } from "@/components/assets/phones/phone-hardware-card";
 import { PrinterHardwareCard } from "@/components/assets/printers/printer-hardware-card";
 import type { AssetItem, OptionItem } from "@/types/assets";
 
+import { SwitchHardwareCard } from "../switches/switch-hardware-card";
 // Importações dos Cards Compartilhados
 import { AssetAllocationCard } from "./asset-allocation-card";
 import { AssetConnectivityCard } from "./asset-connectivity-card";
@@ -55,11 +57,6 @@ export function AssetTechnicalCard({
         );
     }
 
-    const resolvedUsername =
-        asset.type === "COMPUTER"
-            ? asset.computer?.username
-            : "Utilizador Padrão";
-
     // MODO VISUALIZAÇÃO DETALHADA
     return (
         <div className="flex flex-col gap-6 w-full">
@@ -104,14 +101,31 @@ export function AssetTechnicalCard({
                             camera={asset.camera}
                         />
                     )}
+
+                    {/* 🔌 Switches */}
+                    {asset.type === "SWITCH" && asset.switch && (
+                        <SwitchHardwareCard
+                            assetId={asset.id}
+                            switchData={asset.switch}
+                        />
+                    )}
+
+                    {/* 📡 Access Points */}
+                    {asset.type === "ACCESS_POINT" && asset.accessPoint && (
+                        <AccessPointHardwareCard
+                            assetId={asset.id}
+                            apData={asset.accessPoint}
+                        />
+                    )}
                 </div>
 
                 {/* CARD DE CONECTIVIDADE IP & REDE */}
                 <div className="lg:col-span-1 h-full">
                     <AssetConnectivityCard
                         assetId={asset.id}
+                        assetType={asset.type}
                         ip={asset.ip}
-                        vlanType={asset.vlanType as any}
+                        vlanType={asset.vlanType as any} // 👈 Receberá WIFI_MGMT se Ruckus, ou GENERAL_DATA se for outro
                         vlanTag={asset.vlanTag}
                         connectedToSwitch={asset.connectedToSwitch}
                         switchPort={asset.switchPort?.toString() || null}
@@ -125,7 +139,6 @@ export function AssetTechnicalCard({
                 <AssetAllocationCard
                     assetId={asset.id}
                     patrimony={asset.patrimony}
-                    username={resolvedUsername}
                     department={asset.department}
                     location={asset.location}
                     options={{

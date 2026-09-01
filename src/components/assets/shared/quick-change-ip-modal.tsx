@@ -33,16 +33,29 @@ const ipValidationSchema = z
         },
     );
 
+type VlanType = "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
+
 type Props = {
     assetId: string;
     currentIp: string | null;
-    vlanType: "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
+    vlanType?: VlanType | string | null;
 };
 
 export function QuickChangeIpModal({ assetId, currentIp, vlanType }: Props) {
     const router = useRouter();
     const [open, setOpen] = useState(false);
     const [isPending, setIsPending] = useState(false);
+
+    // 💡 Sanitização interna: Garante uma das 4 opções permitidas pelo Zod no backend
+    const normalizedVlanType = (vlanType?.toUpperCase() || "") as VlanType;
+    const validVlanType: VlanType = [
+        "GENERAL_DATA",
+        "CAMERA_VLAN",
+        "SWITCH_MGMT",
+        "WIFI_MGMT",
+    ].includes(normalizedVlanType)
+        ? normalizedVlanType
+        : "GENERAL_DATA";
 
     // Estados do Formulário
     const [isManualMode, setIsManualMode] = useState(false);
@@ -78,38 +91,36 @@ export function QuickChangeIpModal({ assetId, currentIp, vlanType }: Props) {
         setFieldErrors(undefined);
 
         let targetIpId: string | null = null;
-
         if (isManualMode) {
             // 1. Validação local de formato IP (IPv4)
             const validationResult =
                 ipValidationSchema.safeParse(manualIpValue);
             if (!validationResult.success) {
                 setFieldErrors({
-                    newIpAddress: [validationResult.error.issues[0].message],
+                    manualIpValue: [validationResult.error.issues[0].message],
                 });
                 setIsPending(false);
                 return;
             }
 
-            // 2. Consulta a nova rota via Server Action
+            // 2. Consulta via Server Action com o vlanType sanitizado
             const ipLookup = await findIpByAddressAction(
                 manualIpValue,
-                vlanType,
+                validVlanType,
             );
 
-            // ✅ AJUSTADO: Verifica a flag `success` retornada pela nova Server Action
+            // ✅ Trava de Validação: Verifica sucesso e pertinência do IP à VLAN
             if (!ipLookup.success || !ipLookup.data?.id) {
                 setFieldErrors({
-                    newIpAddress: [
+                    manualIpValue: [
                         ipLookup.error ||
-                            "Endereço IP indisponível ou fora do escopo.",
+                            `O IP ${manualIpValue} é inválido, está indisponível ou não pertence à rede ${validVlanType}.`,
                     ],
                 });
                 setIsPending(false);
                 return;
             }
 
-            // Captura o UUID retornado pela rota /api/ip-addresses/verify
             targetIpId = ipLookup.data.id;
         } else {
             targetIpId =
@@ -185,7 +196,7 @@ export function QuickChangeIpModal({ assetId, currentIp, vlanType }: Props) {
                     </div>
 
                     <NetworkSelectorFields
-                        vlanType={vlanType}
+                        vlanType={validVlanType}
                         selectedNetworkId={selectedNetworkId}
                         onNetworkChange={setSelectedNetworkId}
                         selectedIpId={selectedIpId}
@@ -210,7 +221,6 @@ export function QuickChangeIpModal({ assetId, currentIp, vlanType }: Props) {
                         </div>
                     )}
 
-                    {/* Uso do FieldError nativo para erros globais da API */}
                     {submitError && (
                         <div className="pt-1">
                             <FieldError errors={[submitError]} />

@@ -135,6 +135,9 @@ export function ConnectivityFormBlock<TFieldValues extends FieldValues>({
                                 <FormControl>
                                     <Input
                                         {...field}
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
                                         value={field.value || ""}
                                         placeholder={
                                             isSwitchDisconnected
@@ -144,6 +147,15 @@ export function ConnectivityFormBlock<TFieldValues extends FieldValues>({
                                         disabled={
                                             isSwitchDisconnected || disabled
                                         }
+                                        onChange={(e) => {
+                                            // Remove tudo que NÃO for dígito numérico (letras, símbolos, hífens, etc.)
+                                            const sanitizedValue =
+                                                e.target.value.replace(
+                                                    /\D/g,
+                                                    "",
+                                                );
+                                            field.onChange(sanitizedValue);
+                                        }}
                                         className="h-9 text-xs font-mono disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 disabled:text-zinc-400 dark:disabled:text-zinc-500 bg-zinc-50/50 dark:bg-zinc-900/50 transition-colors"
                                     />
                                 </FormControl>

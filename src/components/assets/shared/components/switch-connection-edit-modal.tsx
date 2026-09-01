@@ -31,15 +31,57 @@ import { Input } from "@/components/ui/input";
 import { FieldError } from "@/components/users/field-error";
 import { OptionItem } from "@/types/assets";
 
-const switchConnectionSchema = z.object({
-    connectedToSwitchId: z
-        .string()
-        .uuid()
-        .or(z.literal(""))
-        .nullable()
-        .optional(),
-    switchPort: z.string().trim().nullable().optional(),
-});
+const switchConnectionSchema = z
+    .object({
+        connectedToSwitchId: z
+            .string()
+            .uuid()
+            .or(z.literal(""))
+            .nullable()
+            .optional(),
+        switchPort: z.string().trim().nullable().optional(),
+    })
+    .superRefine((data, ctx) => {
+        const hasSwitch = Boolean(
+            data.connectedToSwitchId && data.connectedToSwitchId.trim() !== "",
+        );
+        const rawPort = data.switchPort ? `${data.switchPort}`.trim() : "";
+        const hasPort = Boolean(rawPort !== "");
+
+        if (hasSwitch && !hasPort) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Informe a porta do switch.",
+                path: ["switchPort"],
+            });
+        }
+
+        if (hasPort) {
+            if (!hasSwitch) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message: "Selecione o switch concentrador.",
+                    path: ["connectedToSwitchId"],
+                });
+            }
+
+            const portNumber = Number(rawPort);
+
+            if (
+                !/^\d+$/.test(rawPort) ||
+                isNaN(portNumber) ||
+                portNumber <= 0 ||
+                portNumber > 128
+            ) {
+                ctx.addIssue({
+                    code: z.ZodIssueCode.custom,
+                    message:
+                        "A porta deve ser um número inteiro entre 1 e 128.",
+                    path: ["switchPort"],
+                });
+            }
+        }
+    });
 
 type SwitchConnectionFormValues = z.infer<typeof switchConnectionSchema>;
 
@@ -70,7 +112,7 @@ export function SwitchConnectionEditModal({
         ) as Resolver<SwitchConnectionFormValues>,
         defaultValues: {
             connectedToSwitchId: currentSwitchId || "",
-            switchPort: currentPort || "",
+            switchPort: currentPort ? String(currentPort) : "",
         },
     });
 
@@ -82,7 +124,7 @@ export function SwitchConnectionEditModal({
             setApiError(null);
             form.reset({
                 connectedToSwitchId: currentSwitchId || "",
-                switchPort: currentPort || "",
+                switchPort: currentPort ? String(currentPort) : "",
             });
         }
     }, [isOpen, currentSwitchId, currentPort, form]);
@@ -216,6 +258,9 @@ export function SwitchConnectionEditModal({
                                     <FormControl>
                                         <Input
                                             {...field}
+                                            type="text"
+                                            inputMode="numeric"
+                                            pattern="[0-9]*"
                                             value={field.value || ""}
                                             placeholder={
                                                 isSwitchDisconnected
@@ -226,6 +271,19 @@ export function SwitchConnectionEditModal({
                                                 isSwitchDisconnected ||
                                                 isPending
                                             }
+                                            onChange={(e) => {
+                                                const sanitizedValue =
+                                                    e.target.value.replace(
+                                                        /\D/g,
+                                                        "",
+                                                    );
+                                                field.onChange(sanitizedValue);
+                                                if (fieldState.error) {
+                                                    form.clearErrors(
+                                                        "switchPort",
+                                                    );
+                                                }
+                                            }}
                                             className="h-9 text-xs font-mono disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 disabled:text-zinc-400 dark:disabled:text-zinc-500 transition-colors"
                                             onFocus={() =>
                                                 form.clearErrors("switchPort")

@@ -22,9 +22,10 @@ type VlanType = "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
 interface AssetConnectivityCardProps {
     assetId: string;
     patrimony?: string | null;
+    assetType?: string | null;
     ip?: { address: string } | null;
-    vlanType: VlanType;
-    vlanTag?: number | null; // 🌟 Propriedade adicionada para exibir a tag numérica
+    vlanType?: VlanType | string | null; // Flexibilizado para aceitar nulos ou string genérica sem quebrar
+    vlanTag?: number | null;
     connectedToSwitch?: {
         id: string;
         hostname?: string | null;
@@ -60,6 +61,7 @@ const vlanConfig: Record<VlanType, { label: string; className: string }> = {
 
 export function AssetConnectivityCard({
     assetId,
+    assetType, // 🌟 1. Adicionado aqui
     ip,
     vlanType,
     vlanTag,
@@ -67,9 +69,41 @@ export function AssetConnectivityCard({
     switchPort,
     switches,
 }: AssetConnectivityCardProps) {
-    const currentVlan = vlanConfig[vlanType] || vlanConfig.GENERAL_DATA;
     const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false);
 
+    // 💡 2. Sanitização e Resolução Inteligente por Tipo de Ativo
+    const getVlanTypeByAsset = (): VlanType => {
+        // Se a VLAN recebida já for uma opção válida, usa ela
+        const normalizedPropVlan = (vlanType?.toUpperCase() || "") as VlanType;
+        if (
+            [
+                "GENERAL_DATA",
+                "CAMERA_VLAN",
+                "SWITCH_MGMT",
+                "WIFI_MGMT",
+            ].includes(normalizedPropVlan)
+        ) {
+            return normalizedPropVlan;
+        }
+
+        // Se for nulo/inválido, descobre pelo TIPO do Ativo (assetType)
+        const normalizedType = assetType?.toUpperCase() || "";
+
+        if (normalizedType.includes("SWITCH")) return "SWITCH_MGMT";
+        if (
+            normalizedType.includes("CAMERA") ||
+            normalizedType.includes("CFTV")
+        )
+            return "CAMERA_VLAN";
+        if (normalizedType.includes("WIFI") || normalizedType.includes("AP"))
+            return "WIFI_MGMT";
+
+        return "GENERAL_DATA";
+    };
+
+    const validVlanType = getVlanTypeByAsset();
+
+    const currentVlan = vlanConfig[validVlanType];
     return (
         <TooltipProvider delayDuration={200}>
             <Card className="shadow-sm border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col justify-between h-full min-h-[280px]">
@@ -197,7 +231,7 @@ export function AssetConnectivityCard({
                         <QuickChangeIpModal
                             assetId={assetId}
                             currentIp={ip?.address || null}
-                            vlanType={vlanType}
+                            vlanType={validVlanType}
                         />
                     </div>
                 </CardContent>

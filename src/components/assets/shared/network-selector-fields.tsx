@@ -15,8 +15,10 @@ import {
 import { FieldError } from "@/components/users/field-error";
 import { useAvailableIps } from "@/hooks/use-availableIps";
 
+type VlanType = "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
+
 interface NetworkSelectorFieldsProps {
-    vlanType: "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
+    vlanType?: VlanType | string | null;
     selectedNetworkId: string;
     onNetworkChange: (id: string) => void;
     selectedIpId: string;
@@ -40,11 +42,22 @@ export function NetworkSelectorFields({
     onManualIpChange,
     fieldErrors,
 }: NetworkSelectorFieldsProps) {
+    // 💡 Normalização e fallback seguro da propriedade vlanType
+    const normalizedVlanType = (vlanType?.toUpperCase() || "") as VlanType;
+    const validVlanType: VlanType = [
+        "GENERAL_DATA",
+        "CAMERA_VLAN",
+        "SWITCH_MGMT",
+        "WIFI_MGMT",
+    ].includes(normalizedVlanType)
+        ? normalizedVlanType
+        : "GENERAL_DATA";
+
     const {
         networks,
         isLoading,
         error: apiError,
-    } = useAvailableIps(vlanType, 5, !isManualMode);
+    } = useAvailableIps(validVlanType, 5, !isManualMode);
 
     const currentSelectedNetwork = networks.find(
         (n) => n.networkId === selectedNetworkId,
@@ -110,7 +123,6 @@ export function NetworkSelectorFields({
                                 : ""
                         }`}
                     />
-                    {/* Renderiza erro de Zod ou da API */}
                     <FieldError errors={manualIpErrors} />
                 </div>
             ) : (
@@ -207,7 +219,6 @@ export function NetworkSelectorFields({
                                 </SelectContent>
                             </Select>
 
-                            {/* Renderiza erro de Zod ou da API */}
                             <FieldError errors={autoIpErrors} />
                         </div>
                     )}
