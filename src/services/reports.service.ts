@@ -1,0 +1,56 @@
+"use server";
+
+import { isAxiosError } from "axios";
+
+import { getServerApi } from "@/lib/server-api";
+import { AssetReportResponse, ReportQueryPayload } from "@/types/report";
+
+/**
+ * Envia o payload dinâmico de filtros via POST para gerar o relatório de ativos
+ */
+export async function getAssetReportAction(
+    payload: ReportQueryPayload,
+): Promise<AssetReportResponse> {
+    const defaultPage = payload.page ?? 1;
+    const defaultLimit = payload.limit ?? 20;
+
+    try {
+        const api = await getServerApi();
+        const response = await api.post("/api/reports/assets", payload);
+
+        return {
+            data: response.data?.data ?? [],
+            meta: response.data?.meta ?? {
+                total: 0,
+                page: defaultPage,
+                limit: defaultLimit,
+                totalPages: 0,
+            },
+            error: null,
+        };
+    } catch (error: unknown) {
+        console.error("Erro na Server Action getAssetReportAction:", error);
+
+        let errorMessage = "Falha ao carregar o relatório de ativos.";
+
+        if (isAxiosError(error)) {
+            errorMessage =
+                error.response?.data?.message ||
+                error.response?.data?.error ||
+                errorMessage;
+        } else if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+
+        return {
+            data: [],
+            meta: {
+                total: 0,
+                page: defaultPage,
+                limit: defaultLimit,
+                totalPages: 0,
+            },
+            error: errorMessage,
+        };
+    }
+}
