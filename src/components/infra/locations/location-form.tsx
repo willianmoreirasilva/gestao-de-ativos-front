@@ -1,5 +1,6 @@
 "use client";
 
+import { AlertCircle, Loader2, Plus, Save } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useEffect } from "react";
 
@@ -7,166 +8,209 @@ import { upsertLocationAction } from "@/actions/locations";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/users/field-error";
 import { Location } from "@/types/location";
 
 type Props = {
-  location?: Location;
-  onSuccess?: (newId: string) => void;
+    location?: Location;
+    onSuccess?: (newId: string) => void;
+    onCancel?: () => void;
 };
 
 type ActionState = {
-  error: string;
-  fieldErrors: Record<string, string[]>;
-  data?: Location;
+    error: string;
+    fieldErrors: Record<string, string[]>;
+    data?: Location;
 };
 
 const initialState: ActionState = {
-  error: "",
-  fieldErrors: {},
+    error: "",
+    fieldErrors: {},
 };
 
-export const LocationForm = ({ location, onSuccess }: Props) => {
-  const router = useRouter();
-  const [state, formAction, isPending] = useActionState(
-    upsertLocationAction,
-    initialState,
-  );
+export const LocationForm = ({ location, onSuccess, onCancel }: Props) => {
+    const router = useRouter();
+    const [state, formAction, isPending] = useActionState(
+        upsertLocationAction,
+        initialState,
+    );
 
-  // 🎯 Captura o sucesso da Server Action
-  useEffect(() => {
-    const hasId = !!state?.data?.id;
-    const hasErrors =
-      !!state?.error ||
-      (state?.fieldErrors && Object.keys(state.fieldErrors).length > 0);
+    const isEditing = !!location;
 
-    if (hasId && !hasErrors) {
-      const novoId = String(state.data!.id);
+    useEffect(() => {
+        const hasId = !!state?.data?.id;
+        const hasErrors =
+            !!state?.error ||
+            (state?.fieldErrors && Object.keys(state.fieldErrors).length > 0);
 
-      if (onSuccess) {
-        onSuccess(novoId); // Se for modal, passa o ID limpo pro Combobox
-      } else {
-        router.push("/infra/locations"); // Se for página cheia, redireciona
-        router.refresh();
-      }
-    }
-  }, [state, onSuccess, router]);
+        if (hasId && !hasErrors) {
+            const newId = String(state.data!.id);
 
-  // 🌟 INTERCEPTADOR CRUCIAL: Controla o envio via transição isolada do React 19
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
+            if (onSuccess) {
+                onSuccess(newId);
+            } else {
+                router.push("/infra/locations");
+                router.refresh();
+            }
+        }
+    }, [state, onSuccess, router]);
 
-    // Dispara a action de forma atômica, forçando o retorno do objeto completo
-    startTransition(() => {
-      formAction(formData);
-    });
-  };
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
 
-  return (
-    <div className="w-full bg-white dark:bg-zinc-950 rounded-lg border border-zinc-200 dark:border-zinc-800 shadow-sm p-6">
-      {/* Trocamos action={action} pelo onSubmit controlado */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {location && <input type="hidden" name="id" value={location.id} />}
+        startTransition(() => {
+            formAction(formData);
+        });
+    };
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="name" className="flex items-center gap-1">
-              Nome do Local <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="name"
-              name="name"
-              placeholder="Ex: Laboratório de Informática, Almoxarifado"
-              defaultValue={location?.name || ""}
-              required
-            />
-            <FieldError errors={state?.fieldErrors?.name} />
-          </div>
+    return (
+        <div className="w-full bg-card text-card-foreground rounded-xl border border-border/60 shadow-sm p-6 sm:p-8 transition-all">
+            <form onSubmit={handleSubmit} className="space-y-6">
+                {location && (
+                    <input type="hidden" name="id" value={location.id} />
+                )}
 
-          <div className="space-y-2">
-            <Label htmlFor="building">
-              Prédio / Bloco{" "}
-              <span className="text-muted-foreground text-xs">(Opcional)</span>
-            </Label>
-            <Input
-              id="building"
-              name="building"
-              placeholder="Ex: Bloco A, Prédio Central"
-              defaultValue={location?.building || ""}
-            />
-            <FieldError errors={state?.fieldErrors?.building} />
-          </div>
+                <div className="space-y-4">
+                    {/* Nome do Local */}
+                    <div className="space-y-2">
+                        <Label
+                            htmlFor="name"
+                            className="text-sm font-medium flex items-center gap-1"
+                        >
+                            Nome do Local / Sala{" "}
+                            <span className="text-destructive">*</span>
+                        </Label>
+                        <Input
+                            id="name"
+                            name="name"
+                            placeholder="Ex: Laboratório de Informática 01, Auditório Principal"
+                            defaultValue={location?.name || ""}
+                            disabled={isPending}
+                            autoFocus
+                            className={
+                                state?.fieldErrors?.name
+                                    ? "border-destructive focus-visible:ring-destructive"
+                                    : ""
+                            }
+                        />
+                        <FieldError errors={state?.fieldErrors?.name} />
+                    </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="floor">
-              Andar{" "}
-              <span className="text-muted-foreground text-xs">(Opcional)</span>
-            </Label>
-            <Input
-              id="floor"
-              name="floor"
-              placeholder="Ex: 3º andar, Térreo"
-              defaultValue={location?.floor || ""}
-            />
-            <FieldError errors={state?.fieldErrors?.floor} />
-          </div>
+                    {/* Bloco / Andar / Sala agrupados */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="building"
+                                className="text-sm font-medium"
+                            >
+                                Prédio / Bloco
+                            </Label>
+                            <Input
+                                id="building"
+                                name="building"
+                                placeholder="Ex: Bloco A"
+                                defaultValue={location?.building || ""}
+                                disabled={isPending}
+                            />
+                        </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="room">
-              Sala{" "}
-              <span className="text-muted-foreground text-xs">(Opcional)</span>
-            </Label>
-            <Input
-              id="room"
-              name="room"
-              placeholder="Ex: Sala 302, Auditório"
-              defaultValue={location?.room || ""}
-            />
-            <FieldError errors={state?.fieldErrors?.room} />
-          </div>
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="floor"
+                                className="text-sm font-medium"
+                            >
+                                Andar
+                            </Label>
+                            <Input
+                                id="floor"
+                                name="floor"
+                                placeholder="Ex: 2"
+                                defaultValue={location?.floor || ""}
+                                disabled={isPending}
+                            />
+                        </div>
 
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="notes">
-              Observações{" "}
-              <span className="text-muted-foreground text-xs">(Opcional)</span>
-            </Label>
-            <Textarea
-              id="notes"
-              name="notes"
-              placeholder="Diretrizes de acesso, chaves ou detalhes extras sobre este local..."
-              defaultValue={location?.notes || ""}
-              className="min-h-[100px] resize-y"
-            />
-            <FieldError errors={state?.fieldErrors?.notes} />
-          </div>
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="room"
+                                className="text-sm font-medium"
+                            >
+                                Nº da Sala
+                            </Label>
+                            <Input
+                                id="room"
+                                name="room"
+                                placeholder="Ex: 204"
+                                defaultValue={location?.room || ""}
+                                disabled={isPending}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Observações / Notas */}
+                    <div className="space-y-2">
+                        <Label htmlFor="notes" className="text-sm font-medium">
+                            Observações
+                        </Label>
+                        <textarea
+                            id="notes"
+                            name="notes"
+                            rows={3}
+                            placeholder="Informações adicionais como chave de acesso, pontos de referência..."
+                            defaultValue={location?.notes || ""}
+                            disabled={isPending}
+                            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                        />
+                    </div>
+                </div>
+
+                {/* Banner de Erro Global */}
+                {state?.error && (
+                    <div className="flex items-start gap-3 text-destructive text-sm p-3.5 bg-destructive/10 rounded-lg border border-destructive/20 animate-in fade-in-50 duration-200">
+                        <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+                        <span>{state.error}</span>
+                    </div>
+                )}
+
+                {/* Ações / Rodapé */}
+                <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/60">
+                    {onCancel && (
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={onCancel}
+                            disabled={isPending}
+                        >
+                            Cancelar
+                        </Button>
+                    )}
+
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="w-full sm:w-auto min-w-35 gap-2 shadow-xs"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {isPending ? (
+                            <>
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                                <span>Salvando...</span>
+                            </>
+                        ) : isEditing ? (
+                            <>
+                                <Save className="h-4 w-4" />
+                                <span>Salvar Alterações</span>
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="h-4 w-4" />
+                                <span>Cadastrar</span>
+                            </>
+                        )}
+                    </Button>
+                </div>
+            </form>
         </div>
-
-        {state?.error && (
-          <div className="text-destructive text-sm p-3 bg-red-50 dark:bg-red-950/20 rounded-md border border-red-200 dark:border-red-900/50">
-            {state.error}
-          </div>
-        )}
-
-        <div className="flex items-center gap-3 border-t pt-4">
-          <Button
-            type="submit"
-            disabled={isPending}
-            className="w-full sm:w-auto"
-            onClick={(e) => {
-              // 🌟 ISSO AQUI EVITA QUE O FORMULÁRIO DO COMPUTADOR SEJA ENVIADO JUNTO!
-              e.stopPropagation();
-            }}
-          >
-            {isPending
-              ? "Salvando..."
-              : location
-                ? "Salvar Alterações"
-                : "Cadastrar Local"}
-          </Button>
-        </div>
-      </form>
-    </div>
-  );
+    );
 };

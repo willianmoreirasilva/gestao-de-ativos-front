@@ -164,9 +164,9 @@ export async function getAssetOptionsAction() {
             getProcessorsAction().catch(() => ({ data: [] })),
             getOperatingSystemsAction().catch(() => ({ data: [] })),
             getDisksAction().catch(() => ({ data: [] })),
-            departmentService.getDepartments(0, 100),
+            departmentService.getDepartments(1, 1000),
             locationService.getLocations(0, 100),
-            switchService.getSwitches({ page: 1, limit: 100 }),
+            switchService.getSwitches({ page: 1, limit: 1000 }),
         ]);
 
         return {

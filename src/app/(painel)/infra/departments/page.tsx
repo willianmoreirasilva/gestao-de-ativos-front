@@ -22,32 +22,36 @@ type Props = {
     searchParams: Promise<{ page?: string; q?: string }>;
 };
 
-export default async function Page({ searchParams }: Props) {
+export default async function DepartmentPage({ searchParams }: Props) {
     const params = await searchParams;
-    const page = parseInt(params.page || "1");
-    const query = params.q || ""; //  O SearchInput joga "q" na URL
-    const limit = 10;
-    const offset = (page - 1) * limit;
+    const page = Math.max(1, parseInt(params.page || "1", 10));
+    const query = params.q || "";
+    const limit = 8;
 
-    // 1. Busca os dados já paginados direto da API
+    // Busca os dados passando paginação nativa (page/limit/search)
     const departmentsRes = await departmentService.getDepartments(
-        offset,
+        page,
         limit,
-        query, // Passa o "q" capturado da URL como a query para o service
+        query,
     );
 
     const departments = departmentsRes?.data ?? [];
-    const total = departmentsRes?.total ?? 0;
-    const emptyMessage = `Nenhum departamento foi encontrado com o nome "${query}".`;
+    const meta = departmentsRes?.meta ?? {
+        total: 0,
+        page: 1,
+        limit: 8,
+        totalPages: 0,
+    };
 
-    //PADRÃO: Título da página isolado em uma constante
+    const emptyMessage = `Nenhum departamento foi encontrado para "${query}".`;
+
     const pageTitle = (
         <PageTitle
             title="Departamentos"
             leftSide={<BackButton />}
             rightSide={
                 <Link href="/infra/departments/add">
-                    <Button className="flex items-center gap-2">
+                    <Button className="flex items-center gap-2 shadow-sm">
                         <Plus size={16} />
                         Novo Departamento
                     </Button>
@@ -56,14 +60,14 @@ export default async function Page({ searchParams }: Props) {
         />
     );
 
-    // Empty state global: banco zerado real (página 1, sem busca, sem dados)
+    // Estado limpo/vazio quando não há nenhum departamento cadastrado no sistema
     if (page === 1 && departments.length === 0 && !query) {
         return (
             <div className="space-y-6">
                 {pageTitle}
                 <EmptyState
-                    message="Nenhum departamento cadastrado ou base de dados desconectada."
-                    label="Novo Departamento"
+                    message="Nenhum departamento cadastrado até o momento."
+                    label="Cadastrar Primeiro Departamento"
                     href="/infra/departments/add"
                 />
             </div>
@@ -71,63 +75,95 @@ export default async function Page({ searchParams }: Props) {
     }
 
     return (
-        <div>
+        <div className="space-y-6">
             {pageTitle}
-            {/* Usa o padrão 'q' que já configuramos */}
-            <SearchInput
-                placeholder="Buscar departamentos ..."
-                queryParamName="q"
-            />
 
-            {departments.length === 0 && query ? (
-                <Table>
-                    <TableRow className="hover:bg-transparent">
-                        <TableCell colSpan={6} className="py-4">
-                            <EmptyState
-                                message={emptyMessage}
-                                label="Cadastrar Novo Departamento"
-                                href="/infra/departments/add"
-                            />
-                        </TableCell>
-                    </TableRow>
-                </Table>
-            ) : (
-                <>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Nome</TableHead>
-                                <TableHead className="w-37.5">Ações</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {departments.length > 0 ? (
-                                departments.map((item) => (
-                                    <DepartmentItem
-                                        key={item.id}
-                                        department={item}
-                                    />
-                                ))
-                            ) : (
-                                <TableRow className="hover:bg-transparent">
-                                    <TableCell colSpan={6} className="py-4">
-                                        <EmptyState
-                                            message="Nenhum departamento encontrado nesta página."
-                                            label="Voltar para pagina 1"
-                                            href="?page=1"
-                                        />
-                                    </TableCell>
-                                </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-
-                    {/* PAGINAÇÃO LIMPA E INTELIGENTE */}
-                    <Pagination
-                        disablePrev={page <= 1}
-                        disableNext={offset + departments.length >= total}
+            <div className="flex items-center justify-between gap-4">
+                <div className="w-full max-w-sm">
+                    <SearchInput
+                        placeholder="Buscar por nome do departamento..."
+                        queryParamName="q"
                     />
-                </>
+                </div>
+                {meta.total > 0 && (
+                    <span className="text-sm text-muted-foreground hidden sm:inline-block">
+                        Total:{" "}
+                        <strong className="text-foreground">
+                            {meta.total}
+                        </strong>{" "}
+                        registro(s)
+                    </span>
+                )}
+            </div>
+
+            <div className="rounded-lg border bg-card shadow-sm overflow-hidden">
+                <Table>
+                    <TableHeader className="bg-muted/50">
+                        <TableRow>
+                            <TableHead className="font-semibold">
+                                Nome
+                            </TableHead>
+                            <TableHead className="font-semibold hidden sm:table-cell">
+                                Criado em
+                            </TableHead>
+                            <TableHead className="font-semibold hidden md:table-cell">
+                                Atualizado em
+                            </TableHead>
+                            <TableHead className="w-24 text-right font-semibold pr-4">
+                                Ações
+                            </TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {departments.length > 0 ? (
+                            departments.map((department) => (
+                                <DepartmentItem
+                                    key={department.id}
+                                    department={department}
+                                />
+                            ))
+                        ) : (
+                            <TableRow className="hover:bg-transparent">
+                                <TableCell
+                                    colSpan={4}
+                                    className="h-48 text-center"
+                                >
+                                    <EmptyState
+                                        message={
+                                            query
+                                                ? emptyMessage
+                                                : "Nenhum resultado nesta página."
+                                        }
+                                        label={
+                                            query
+                                                ? "Cadastrar Departamento"
+                                                : "Voltar para Página 1"
+                                        }
+                                        href={
+                                            query
+                                                ? "/infra/departments/add"
+                                                : "?page=1"
+                                        }
+                                    />
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+
+            {/* Componente de paginação usando as propriedades calculadas do meta */}
+            {meta.totalPages > 1 && (
+                <div className="flex items-center justify-between pt-2">
+                    <p className="text-sm text-muted-foreground">
+                        Página <strong>{meta.page}</strong> de{" "}
+                        <strong>{meta.totalPages}</strong>
+                    </p>
+                    <Pagination
+                        disablePrev={meta.page <= 1}
+                        disableNext={meta.page >= meta.totalPages}
+                    />
+                </div>
             )}
         </div>
     );

@@ -11,6 +11,7 @@ import {
     Home,
     Layers,
     LayoutDashboard,
+    LayoutGrid,
     MapPin,
     Network,
     PanelsTopLeft,
@@ -27,7 +28,7 @@ export type MenuItem = {
     title: string;
     url?: string;
     icon: React.ElementType;
-    allowedRoles?: ("ADMIN" | "USER" | "SECURITY_OPERATOR")[];
+    allowedRoles?: ("ADMIN" | "USER" | "CAM_OPERATOR")[];
     isQuickSearch?: boolean; // Dispara a Command Palette (modal)
     shortcut?: string;
 };
@@ -105,7 +106,7 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Câmeras CFTV",
                 url: "/assets/cameras",
                 icon: Cctv,
-                allowedRoles: ["ADMIN", "USER", "SECURITY_OPERATOR"],
+                allowedRoles: ["ADMIN", "USER", "CAM_OPERATOR"],
             },
             {
                 title: "Switches",
@@ -123,7 +124,7 @@ export const sidebarMenuConfig: GroupMenu[] = [
     },
     {
         title: "Ferramentas",
-        url: "/tools",
+
         icon: Zap,
         items: [
             {
@@ -140,8 +141,14 @@ export const sidebarMenuConfig: GroupMenu[] = [
         icon: FileText,
         items: [
             {
-                title: "IPs por Ativo",
+                title: "Construtor de Relatórios",
                 url: "/reports/assets",
+                icon: LayoutGrid, // ou SlidersHorizontal
+                allowedRoles: ["ADMIN", "USER"],
+            },
+            {
+                title: "IPs por Ativo",
+                url: "/reports/ip-assets",
                 icon: BookHeadphones,
                 allowedRoles: ["ADMIN", "USER"],
             },
@@ -155,13 +162,13 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Logs de Operações",
                 url: "/reports/audit-logs",
                 icon: History,
-                allowedRoles: ["ADMIN"],
+                allowedRoles: ["ADMIN", "USER"],
             },
             {
                 title: "Divergências de Rede",
                 url: "/reports/conflicts",
                 icon: ShieldAlert,
-                allowedRoles: ["ADMIN"],
+                allowedRoles: ["ADMIN", "USER"],
             },
             {
                 title: "Exportar Dados",

@@ -13,6 +13,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { toast } from "sonner"; // 👈 Toast de notificação
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -103,7 +104,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     )}
                 </SidebarHeader>
 
-                {/* CONTEÚDO COM EFEITOS E BALÕES DE TEXTO (TOOLTIPS) */}
+                {/* CONTEÚDO DA SIDEBAR */}
                 <SidebarContent className="p-2 gap-2 overflow-x-hidden">
                     {sidebarMenuConfig.map((group) => {
                         const allowedItems = group.items.filter(
@@ -124,19 +125,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
                             );
                         const isOpen = openGroups[group.title] ?? false;
 
-                        const headerLinkContent = (
-                            <Link
-                                href={group.url || "#"}
-                                className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors ${
-                                    isCollapsed
-                                        ? "justify-center p-2 cursor-pointer w-full text-zinc-500 hover:text-zinc-900"
-                                        : `px-3 py-2 cursor-pointer flex-1 ${
-                                              isGroupActive
-                                                  ? "text-zinc-900 dark:text-zinc-50 font-extrabold"
-                                                  : "text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200"
-                                          }`
-                                }`}
-                            >
+                        // 💡 Se o grupo não possuir URL configurada (ex: Ferramentas sem rota)
+                        const hasNoUrl = !group.url;
+
+                        const headerContentInner = (
+                            <>
                                 <group.icon
                                     size={15}
                                     className={`shrink-0 transition-transform duration-200 hover:scale-110 ${
@@ -150,6 +143,38 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                         {group.title}
                                     </span>
                                 )}
+                            </>
+                        );
+
+                        // Define se renderiza o botão com Toast no clique ou o Link de rota
+                        const headerLinkContent = hasNoUrl ? (
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    toast.info(`Mais ${group.title} em breve!`)
+                                }
+                                className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors w-full cursor-pointer ${
+                                    isCollapsed
+                                        ? "justify-center p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                        : "px-3 py-2 text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200"
+                                }`}
+                            >
+                                {headerContentInner}
+                            </button>
+                        ) : (
+                            <Link
+                                href={group.url}
+                                className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors ${
+                                    isCollapsed
+                                        ? "justify-center p-2 cursor-pointer w-full text-zinc-500 hover:text-zinc-900"
+                                        : `px-3 py-2 cursor-pointer flex-1 ${
+                                              isGroupActive
+                                                  ? "text-zinc-900 dark:text-zinc-50 font-extrabold"
+                                                  : "text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200"
+                                          }`
+                                }`}
+                            >
+                                {headerContentInner}
                             </Link>
                         );
 
@@ -293,7 +318,11 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                                                                 size={
                                                                                     18
                                                                                 }
-                                                                                className={`shrink-0 transition-transform duration-200 hover:scale-110 ${isActive ? "text-white" : "text-zinc-400"}`}
+                                                                                className={`shrink-0 transition-transform duration-200 hover:scale-110 ${
+                                                                                    isActive
+                                                                                        ? "text-white"
+                                                                                        : "text-zinc-400"
+                                                                                }`}
                                                                             />
                                                                             <span>
                                                                                 {
