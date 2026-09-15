@@ -1,243 +1,370 @@
 "use client";
 
-import {
-    Box,
-    Camera,
-    Globe,
-    Monitor,
-    Network,
-    Phone,
-    Printer,
-    Search,
-    ShieldAlert,
-    Wifi,
-} from "lucide-react";
-import React from "react";
+import { Filter, SlidersHorizontal, Trash2 } from "lucide-react";
+import React, { useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ComboboxSearch } from "@/components/ui/combobox-search";
-import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { OptionItem } from "@/types/assets";
-
-import { ReportComputerFilters } from "./report-computer-filters";
-
-const ASSET_TYPE_ICONS: Record<
-    string,
-    { label: string; icon: React.ReactNode }
-> = {
-    COMPUTER: { label: "Computador", icon: <Monitor size={14} /> },
-    PRINTER: { label: "Impressora", icon: <Printer size={14} /> },
-    PHONE: { label: "Telefone", icon: <Phone size={14} /> },
-    SWITCH: { label: "Switch", icon: <Network size={14} /> },
-    ACCESS_POINT: { label: "Access Point", icon: <Wifi size={14} /> },
-    CAMERA: { label: "Câmera", icon: <Camera size={14} /> },
-};
+import { ReportAccessPointFilters } from "./filters/report-access-point-filters";
+import { ReportComputerFilters } from "./filters/report-computer-filters";
+import { ReportPrinterFilters } from "./filters/report-printer-filters";
+import { ReportSwitchFilters } from "./filters/report-switch-filters";
 
 interface ReportFiltersProps {
-    search: string;
-    onSearchChange: (val: string) => void;
-    ipStatus: "ALL" | "true" | "false";
-    onIpStatusChange: (val: "ALL" | "true" | "false") => void;
-    selectedTypes: string[];
-    onToggleType: (type: string) => void;
-    onClearTypes: () => void;
-
-    // Listas de Opções dos Comboboxes
-    departments: OptionItem[];
-    locations: OptionItem[];
-    networks: OptionItem[];
-    operatingSystems: OptionItem[];
-    processors: OptionItem[];
-    switches: OptionItem[];
-
-    // Valores Selecionados
-    departmentId: string | null;
-    locationId: string | null;
-    networkId: string | null;
-    selectedOsId: string | null;
-    selectedProcessorId: string | null;
-    selectedSwitchId: string | null;
-
-    // Handlers
-    onDepartmentChange: (id: string | null) => void;
-    onLocationChange: (id: string | null) => void;
-    onNetworkChange: (id: string | null) => void;
-    onOsChange: (id: string | null) => void;
-    onProcessorChange: (id: string | null) => void;
-    onSwitchChange: (id: string | null) => void;
+    options: {
+        departments: { id: string; name: string }[];
+        locations: { id: string; name: string }[];
+        networks: { id: string; name: string }[];
+        operatingSystems: { id: string; name: string }[];
+        processors: { id: string; name: string }[];
+        disks: { id: string; name: string }[];
+    };
+    filters: any;
+    setFilters: React.Dispatch<React.SetStateAction<any>>;
+    onApply: () => void;
+    onClear: () => void;
 }
 
 export function ReportFilters({
-    search,
-    onSearchChange,
-    ipStatus,
-    onIpStatusChange,
-    selectedTypes,
-    onToggleType,
-    onClearTypes,
-    departments,
-    locations,
-    networks,
-    operatingSystems,
-    processors,
-    switches,
-    departmentId,
-    locationId,
-    networkId,
-    selectedOsId,
-    selectedProcessorId,
-    selectedSwitchId,
-    onDepartmentChange,
-    onLocationChange,
-    onNetworkChange,
-    onOsChange,
-    onProcessorChange,
-    onSwitchChange,
+    options,
+    filters,
+    setFilters,
+    onApply,
+    onClear,
 }: ReportFiltersProps) {
-    const isComputerSelected =
-        selectedTypes.includes("COMPUTER") || selectedTypes.length === 0;
+    const [showSpecific, setShowSpecific] = useState(false);
+
+    const toggleType = (typeId: string) => {
+        setFilters((prev: any) => {
+            const currentTypes: string[] = prev.types || [];
+            const exists = currentTypes.includes(typeId);
+            const newTypes = exists
+                ? currentTypes.filter((t) => t !== typeId)
+                : [...currentTypes, typeId];
+
+            const newSpecific = { ...prev.specific };
+            if (exists && newSpecific) {
+                if (typeId === "COMPUTER") delete newSpecific.computer;
+                if (typeId === "PRINTER") delete newSpecific.printer;
+                if (typeId === "SWITCH") delete newSpecific.switch;
+                if (typeId === "ACCESS_POINT") delete newSpecific.accessPoint;
+                if (typeId === "CAMERA") delete newSpecific.camera;
+                if (typeId === "PHONE") delete newSpecific.phone;
+            }
+
+            return { ...prev, types: newTypes, specific: newSpecific };
+        });
+    };
+
+    const updateSpecific = (typeKey: string, field: string, value: any) => {
+        setFilters((prev: any) => ({
+            ...prev,
+            specific: {
+                ...prev.specific,
+                [typeKey]: {
+                    ...prev.specific?.[typeKey],
+                    [field]: value,
+                },
+            },
+        }));
+    };
+
+    const selectedTypes = filters.types || [];
 
     return (
-        <Card className="border-zinc-200/80 dark:border-zinc-800 p-4 space-y-4">
-            {/* 1. Busca por Texto + Tabs Status de IP */}
-            <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
-                <div className="relative w-full lg:w-96">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-                        placeholder="Buscar por Patrimônio, Hostname, Serial..."
-                        value={search}
-                        onChange={(e) => onSearchChange(e.target.value)}
-                        className="pl-9 h-9 text-xs"
-                    />
-                </div>
-
-                <Tabs
-                    value={ipStatus}
-                    onValueChange={(val) => onIpStatusChange(val as any)}
-                    className="w-full sm:w-auto"
-                >
-                    <TabsList className="grid grid-cols-3 h-9 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200/50 dark:border-zinc-800/50 p-1 rounded-lg w-full sm:w-[320px]">
-                        <TabsTrigger
-                            value="ALL"
-                            className="text-xs font-semibold gap-1.5 px-3 py-1 rounded-md"
-                        >
-                            <Box size={14} className="opacity-70" />
-                            <span>Todos</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="true"
-                            className="text-xs font-semibold gap-1.5 px-3 py-1 rounded-md data-[state=active]:text-emerald-600"
-                        >
-                            <Globe size={14} className="opacity-70" />
-                            <span>Com IP</span>
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="false"
-                            className="text-xs font-semibold gap-1.5 px-3 py-1 rounded-md data-[state=active]:text-amber-600"
-                        >
-                            <ShieldAlert size={14} className="opacity-70" />
-                            <span>Sem IP</span>
-                        </TabsTrigger>
-                    </TabsList>
-                </Tabs>
-            </div>
-
-            {/* 2. Ícones de Seleção Múltipla dos Tipos de Ativo */}
-            <div className="space-y-1.5">
-                <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    Tipos de Ativos:
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4">
+            {/* SELEÇÃO DE TIPOS */}
+            <div>
+                <span className="text-xs text-zinc-400 font-medium block mb-2">
+                    Tipos de Ativos (Seleção Múltipla)
                 </span>
                 <div className="flex flex-wrap gap-2">
-                    {Object.entries(ASSET_TYPE_ICONS).map(
-                        ([typeKey, { label, icon }]) => {
-                            const isSelected = selectedTypes.includes(typeKey);
-                            return (
-                                <Button
-                                    key={typeKey}
-                                    type="button"
-                                    variant={isSelected ? "default" : "outline"}
-                                    size="sm"
-                                    onClick={() => onToggleType(typeKey)}
-                                    className={`h-8 gap-1.5 text-xs transition-all ${
-                                        isSelected
-                                            ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                                            : ""
-                                    }`}
-                                >
-                                    {icon}
-                                    {label}
-                                </Button>
-                            );
-                        },
-                    )}
-                    {selectedTypes.length > 0 && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={onClearTypes}
-                            className="h-8 text-xs text-muted-foreground"
-                        >
-                            Limpar seleção
-                        </Button>
-                    )}
+                    {[
+                        { id: "COMPUTER", label: "Computador" },
+                        { id: "PRINTER", label: "Impressora" },
+                        { id: "SWITCH", label: "Switch" },
+                        { id: "ACCESS_POINT", label: "Access Point" },
+                        { id: "CAMERA", label: "Câmera" },
+                        { id: "PHONE", label: "Telefone" },
+                    ].map((type) => {
+                        const isSelected = selectedTypes.includes(type.id);
+                        return (
+                            <button
+                                key={type.id}
+                                type="button"
+                                onClick={() => toggleType(type.id)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                                    isSelected
+                                        ? "bg-indigo-950/80 text-indigo-300 border-indigo-700/60"
+                                        : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200"
+                                }`}
+                            >
+                                {type.label}
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* 3. Comboboxes de Relacionamento Geral */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-zinc-100 dark:border-zinc-800">
+            {/* FILTROS GERAIS */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                    <label className="text-xs text-zinc-400 mb-1 block">
                         Departamento
                     </label>
-                    <ComboboxSearch
-                        options={departments}
-                        value={departmentId}
-                        onChange={(val) => onDepartmentChange(val || null)}
-                        placeholder="Todos os Departamentos"
-                    />
+                    <select
+                        value={filters.departmentId || ""}
+                        onChange={(e) =>
+                            setFilters((prev: any) => ({
+                                ...prev,
+                                departmentId: e.target.value || undefined,
+                            }))
+                        }
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+                    >
+                        <option value="">Todos os Departamentos</option>
+                        {options.departments?.map((d) => (
+                            <option key={d.id} value={d.id}>
+                                {d.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div>
-                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
+                    <label className="text-xs text-zinc-400 mb-1 block">
                         Unidade / Local
                     </label>
-                    <ComboboxSearch
-                        options={locations}
-                        value={locationId}
-                        onChange={(val) => onLocationChange(val || null)}
-                        placeholder="Todas as Localidades"
-                    />
+                    <select
+                        value={filters.locationId || ""}
+                        onChange={(e) =>
+                            setFilters((prev: any) => ({
+                                ...prev,
+                                locationId: e.target.value || undefined,
+                            }))
+                        }
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+                    >
+                        <option value="">Todas as Localidades</option>
+                        {options.locations?.map((l) => (
+                            <option key={l.id} value={l.id}>
+                                {l.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <div>
-                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
-                        Rede / Subrede
+                    <label className="text-xs text-zinc-400 mb-1 block">
+                        Rede / Sub-rede
                     </label>
-                    <ComboboxSearch
-                        options={networks}
-                        value={networkId}
-                        onChange={(val) => onNetworkChange(val || null)}
-                        placeholder="Todas as Redes"
-                    />
+                    <select
+                        value={filters.networkId || ""}
+                        onChange={(e) =>
+                            setFilters((prev: any) => ({
+                                ...prev,
+                                networkId: e.target.value || undefined,
+                            }))
+                        }
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+                    >
+                        <option value="">Todas as Redes</option>
+                        {options.networks?.map((n) => (
+                            <option key={n.id} value={n.id}>
+                                {n.name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
-            {/* 4. Filtros de Computador */}
-            {isComputerSelected && (
-                <ReportComputerFilters
-                    operatingSystems={operatingSystems}
-                    processors={processors}
-                    switches={switches}
-                    selectedOsId={selectedOsId}
-                    selectedProcessorId={selectedProcessorId}
-                    selectedSwitchId={selectedSwitchId}
-                    onOsChange={onOsChange}
-                    onProcessorChange={onProcessorChange}
-                    onSwitchChange={onSwitchChange}
-                />
-            )}
-        </Card>
+            {/* BOTÃO TOGGLE DE ESPECIFICAÇÕES AVANÇADAS */}
+            <div className="border-t border-zinc-800/80 pt-3">
+                <button
+                    type="button"
+                    onClick={() => setShowSpecific((prev) => !prev)}
+                    className="flex items-center gap-2 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors my-1"
+                >
+                    <span>
+                        {showSpecific
+                            ? "− Ocultar Especificações"
+                            : "+ Mais Filtros / Especificações Avançadas"}
+                    </span>
+                </button>
+
+                {showSpecific && (
+                    <div className="space-y-3 pt-3">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-200">
+                            <SlidersHorizontal size={13} />
+                            <span>Filtros Específicos do Ativo</span>
+                        </div>
+
+                        {selectedTypes.length === 0 && (
+                            <p className="text-xs text-zinc-500 italic p-2 bg-zinc-950/30 rounded border border-zinc-800/40">
+                                Selecione um tipo de ativo acima para exibir
+                                seus filtros específicos.
+                            </p>
+                        )}
+
+                        {selectedTypes.includes("COMPUTER") && (
+                            <ReportComputerFilters
+                                operatingSystems={
+                                    options.operatingSystems || []
+                                }
+                                processors={options.processors || []}
+                                disks={options.disks || []}
+                                selectedOsId={filters.specific?.computer?.osId}
+                                selectedProcessorId={
+                                    filters.specific?.computer?.processorId
+                                }
+                                selectedDiskId={
+                                    filters.specific?.computer?.diskId
+                                }
+                                selectedRam={filters.specific?.computer?.memory}
+                                onChange={(f, v) =>
+                                    updateSpecific("computer", f, v)
+                                }
+                            />
+                        )}
+
+                        {selectedTypes.includes("PRINTER") && (
+                            <ReportPrinterFilters
+                                model={filters.specific?.printer?.model}
+                                onChange={(f, v) =>
+                                    updateSpecific("printer", f, v)
+                                }
+                            />
+                        )}
+
+                        {selectedTypes.includes("SWITCH") && (
+                            <ReportSwitchFilters
+                                vendor={filters.specific?.switch?.vendor}
+                                model={filters.specific?.switch?.model}
+                                totalPorts={
+                                    filters.specific?.switch?.totalPorts
+                                }
+                                onChange={(f, v) =>
+                                    updateSpecific("switch", f, v)
+                                }
+                            />
+                        )}
+
+                        {selectedTypes.includes("ACCESS_POINT") && (
+                            <ReportAccessPointFilters
+                                vendor={filters.specific?.accessPoint?.vendor}
+                                model={filters.specific?.accessPoint?.model}
+                                ssid={filters.specific?.accessPoint?.ssid}
+                                frequencyBand={
+                                    filters.specific?.accessPoint?.frequencyBand
+                                }
+                                onChange={(f, v) =>
+                                    updateSpecific("accessPoint", f, v)
+                                }
+                            />
+                        )}
+
+                        {selectedTypes.includes("CAMERA") && (
+                            <div className="p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg space-y-2">
+                                <span className="text-[11px] font-semibold text-purple-400 block uppercase tracking-wide">
+                                    Especificações da Câmera
+                                </span>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Modelo"
+                                        value={
+                                            filters.specific?.camera?.model ||
+                                            ""
+                                        }
+                                        onChange={(e) =>
+                                            updateSpecific(
+                                                "camera",
+                                                "model",
+                                                e.target.value || undefined,
+                                            )
+                                        }
+                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Número de Série"
+                                        value={
+                                            filters.specific?.camera?.serial ||
+                                            ""
+                                        }
+                                        onChange={(e) =>
+                                            updateSpecific(
+                                                "camera",
+                                                "serial",
+                                                e.target.value || undefined,
+                                            )
+                                        }
+                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                    />
+                                </div>
+                            </div>
+                        )}
+
+                        {selectedTypes.includes("PHONE") && (
+                            <div className="p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg space-y-2">
+                                <span className="text-[11px] font-semibold text-cyan-400 block uppercase tracking-wide">
+                                    Especificações do Telefone
+                                </span>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Modelo do Aparelho"
+                                        value={
+                                            filters.specific?.phone?.model || ""
+                                        }
+                                        onChange={(e) =>
+                                            updateSpecific(
+                                                "phone",
+                                                "model",
+                                                e.target.value || undefined,
+                                            )
+                                        }
+                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                    />
+                                    <input
+                                        type="text"
+                                        placeholder="Número / Ramal"
+                                        value={
+                                            filters.specific?.phone
+                                                ?.phoneNumber || ""
+                                        }
+                                        onChange={(e) =>
+                                            updateSpecific(
+                                                "phone",
+                                                "phoneNumber",
+                                                e.target.value || undefined,
+                                            )
+                                        }
+                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                )}
+            </div>
+
+            {/* BOTÕES DE AÇÃO */}
+            <div className="flex justify-between items-center pt-2 border-t border-zinc-800">
+                <button
+                    type="button"
+                    onClick={onClear}
+                    className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-red-400 transition-colors"
+                >
+                    <Trash2 size={13} /> Limpar
+                </button>
+
+                <button
+                    type="button"
+                    onClick={onApply}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+                >
+                    <Filter size={13} /> Aplicar Filtros
+                </button>
+            </div>
+        </div>
     );
 }

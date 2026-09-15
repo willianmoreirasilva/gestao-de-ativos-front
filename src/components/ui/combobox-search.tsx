@@ -6,14 +6,21 @@ import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { OptionItem } from "@/types/assets";
+
+export interface ComboboxOptionItem {
+    id?: string;
+    value?: string;
+    name?: string;
+    label?: string;
+}
 
 interface ComboboxSearchProps {
-    options?: OptionItem[];
+    options?: ComboboxOptionItem[];
     value?: string | null;
     onChange: (value: string) => void;
     placeholder?: string;
     emptyMessage?: string;
+    searchPlaceholder?: string;
     disabled?: boolean;
     className?: string;
 }
@@ -34,6 +41,7 @@ export function ComboboxSearch({
     onChange,
     placeholder = "Selecione uma opção...",
     emptyMessage = "Nenhum resultado encontrado.",
+    searchPlaceholder = "Digite para filtrar...",
     disabled = false,
     className,
 }: ComboboxSearchProps) {
@@ -50,8 +58,16 @@ export function ComboboxSearch({
     const safeOptions = React.useMemo(() => options ?? [], [options]);
     const safeValue = value ?? "";
 
+    // Retorna a chave identificadora (id ou value)
+    const getItemKey = (option: ComboboxOptionItem) =>
+        option.id ?? option.value ?? "";
+
+    // Retorna o texto legível (name ou label)
+    const getItemLabel = (option: ComboboxOptionItem) =>
+        option.name ?? option.label ?? "";
+
     const selectedOption = React.useMemo(
-        () => safeOptions.find((option) => option.id === safeValue),
+        () => safeOptions.find((option) => getItemKey(option) === safeValue),
         [safeOptions, safeValue],
     );
 
@@ -59,7 +75,9 @@ export function ComboboxSearch({
         if (!search.trim()) return safeOptions;
         const normalizedSearch = normalizeText(search);
         return safeOptions.filter((option) =>
-            normalizeText(String(option.name || "")).includes(normalizedSearch),
+            normalizeText(String(getItemLabel(option))).includes(
+                normalizedSearch,
+            ),
         );
     }, [safeOptions, search]);
 
@@ -69,11 +87,9 @@ export function ComboboxSearch({
         const rect = containerRef.current.getBoundingClientRect();
         const viewportHeight = window.innerHeight;
 
-        // Estimativa da altura máxima do dropdown (pode ajustar se necessário)
         const dropdownMaxHeight = 260;
         const spaceBelow = viewportHeight - rect.bottom;
 
-        // Se o espaço abaixo for menor que a altura do dropdown e houver espaço acima
         if (spaceBelow < dropdownMaxHeight && rect.top > dropdownMaxHeight) {
             setOpenUpward(true);
         } else {
@@ -162,7 +178,8 @@ export function ComboboxSearch({
                 e.preventDefault();
                 if (focusedIndex >= 0 && filteredOptions[focusedIndex]) {
                     const selected = filteredOptions[focusedIndex];
-                    onChange(selected.id === safeValue ? "" : selected.id);
+                    const selectedKey = getItemKey(selected);
+                    onChange(selectedKey === safeValue ? "" : selectedKey);
                     setIsOpen(false);
                 }
                 break;
@@ -194,7 +211,9 @@ export function ComboboxSearch({
                     )}
                 >
                     <span className="truncate block w-full">
-                        {selectedOption ? selectedOption.name : placeholder}
+                        {selectedOption
+                            ? getItemLabel(selectedOption)
+                            : placeholder}
                     </span>
                 </Button>
 
@@ -232,7 +251,7 @@ export function ComboboxSearch({
                         <Search className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
                         <Input
                             ref={inputRef}
-                            placeholder="Digite para filtrar..."
+                            placeholder={searchPlaceholder}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             autoComplete="off"
@@ -275,19 +294,19 @@ export function ComboboxSearch({
                             </div>
                         ) : (
                             filteredOptions.map((option, index) => {
-                                const isSelected = option.id === safeValue;
+                                const optKey = getItemKey(option);
+                                const optLabel = getItemLabel(option);
+                                const isSelected = optKey === safeValue;
                                 const isKeyboardFocused =
                                     index === focusedIndex;
 
                                 return (
                                     <button
-                                        key={option.id}
+                                        key={optKey || index}
                                         type="button"
                                         data-option-item
                                         onClick={() => {
-                                            onChange(
-                                                isSelected ? "" : option.id,
-                                            );
+                                            onChange(isSelected ? "" : optKey);
                                             setIsOpen(false);
                                         }}
                                         onMouseEnter={() =>
@@ -304,7 +323,7 @@ export function ComboboxSearch({
                                         )}
                                     >
                                         <span className="truncate">
-                                            {option.name}
+                                            {optLabel}
                                         </span>
                                         {isSelected && (
                                             <Check className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />

@@ -9,6 +9,7 @@ interface FilterStateParams {
     networkId: string | null;
     selectedOsId: string | null;
     selectedProcessorId: string | null;
+    selectedRam: string | null;
     selectedSwitchId: string | null;
     page?: number;
     limit?: number;
@@ -91,6 +92,14 @@ export function buildReportPayload(
             field: "computer.processorId",
             operator: "eq",
             value: state.selectedProcessorId,
+        });
+    }
+
+    if (state.selectedRam) {
+        filters.push({
+            field: "computer.ramSize",
+            operator: "eq",
+            value: state.selectedRam,
         });
     }
 

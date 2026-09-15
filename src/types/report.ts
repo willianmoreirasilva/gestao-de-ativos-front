@@ -41,5 +41,11 @@ export interface AssetReportResponse {
         limit: number;
         totalPages: number;
     };
+    summary: {
+        totalAssets: number;
+        withIp: number;
+        withoutIp: number;
+        departmentsCount: number;
+    };
     error: string | null;
 }
