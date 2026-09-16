@@ -119,7 +119,7 @@ export function ReportContainer({
         searchParams.get("apFrequency") || "",
     );
 
-    // Filtros de Câmera (Apenas Hostname e Model)
+    // Filtros de Câmera
     const [cameraFilters, setCameraFilters] = useState({
         hostname:
             searchParams.get("cameraHostname") ||
@@ -129,16 +129,20 @@ export function ReportContainer({
             searchParams.get("cameraModel") || searchParams.get("model") || "",
     });
 
-    // Handler genérico para atualizar o estado de câmera
     const updateCameraFilter = (field: string, val?: string) => {
-        const key = field.replace(/^camera/, "").toLowerCase();
+        const key = field
+            .replace(/^camera/, "")
+            .replace(/^Hostname$/, "hostname")
+            .replace(/^Model$/, "model")
+            .toLowerCase();
+
         setCameraFilters((prev) => ({
             ...prev,
             [key]: val || "",
         }));
     };
 
-    // Filtros de Telefone (Unificado)
+    // Filtros de Telefone
     const [phoneFilters, setPhoneFilters] = useState({
         hostname:
             searchParams.get("phoneHostname") ||
@@ -152,9 +156,7 @@ export function ReportContainer({
             "",
     });
 
-    // Handler genérico de alteração
     const updatePhoneFilter = (field: string, val?: string) => {
-        // Normaliza os nomes emitted (ex: phoneHostname -> hostname)
         const key = field
             .replace(/^phone/, "")
             .replace(/^Extension$/, "Number")
@@ -224,7 +226,6 @@ export function ReportContainer({
                 if (cameraFilters.model)
                     params.set("cameraModel", cameraFilters.model);
             }
-
             if (selectedTypes.includes("PHONE")) {
                 if (phoneFilters.hostname)
                     params.set("phoneHostname", phoneFilters.hostname);
@@ -240,7 +241,6 @@ export function ReportContainer({
         });
     };
 
-    // 🟢 CORREÇÃO: Adicionados os filtros das especificações ao buildPayload (PDF / Export)
     const buildPayload = (limitOverride?: number) => {
         const filters: Array<{ field: string; operator: string; value: any }> =
             [];
@@ -317,7 +317,6 @@ export function ReportContainer({
                 });
         }
 
-        // 🟢 Adicionado filtro da impressora no payload
         if (selectedTypes.includes("PRINTER")) {
             if (printerModel)
                 filters.push({
@@ -345,6 +344,33 @@ export function ReportContainer({
                     field: "switch.totalPorts",
                     operator: "eq",
                     value: switchPorts,
+                });
+        }
+
+        if (selectedTypes.includes("ACCESS_POINT")) {
+            if (apVendor)
+                filters.push({
+                    field: "accessPoint.vendor",
+                    operator: "contains",
+                    value: apVendor,
+                });
+            if (apModel)
+                filters.push({
+                    field: "accessPoint.model",
+                    operator: "contains",
+                    value: apModel,
+                });
+            if (apSsid)
+                filters.push({
+                    field: "accessPoint.ssid",
+                    operator: "contains",
+                    value: apSsid,
+                });
+            if (apFrequency)
+                filters.push({
+                    field: "accessPoint.frequencyBand",
+                    operator: "contains",
+                    value: apFrequency,
                 });
         }
 
@@ -438,38 +464,32 @@ export function ReportContainer({
         }
     };
 
+    // 🟢 CHIPS DE FILTROS ATIVOS PARA TODOS OS TIPOS
     const getActiveChips = (): FilterChip[] => {
         const chips: FilterChip[] = [];
 
-        if (search)
+        if (search) {
             chips.push({
                 key: "search",
                 label: "Busca",
                 value: search,
                 onRemove: () => setSearch(""),
             });
-        if (ipStatus !== "ALL")
+        }
+        if (ipStatus !== "ALL") {
             chips.push({
                 key: "ipStatus",
                 label: "IP",
                 value: ipStatus === "true" ? "Com IP" : "Sem IP",
                 onRemove: () => setIpStatus("ALL"),
             });
-        if (selectedTypes.length > 0)
+        }
+        if (selectedTypes.length > 0) {
             chips.push({
                 key: "types",
                 label: "Tipos",
                 value: selectedTypes.join(", "),
                 onRemove: () => setSelectedTypes([]),
-            });
-
-        // 🟢 Exibe o chip de modelo de impressora se preenchido
-        if (printerModel) {
-            chips.push({
-                key: "printerModel",
-                label: "Modelo Impressora",
-                value: printerModel,
-                onRemove: () => setPrinterModel(""),
             });
         }
 
@@ -506,10 +526,175 @@ export function ReportContainer({
             );
             chips.push({
                 key: "switch",
-                label: "Switch",
+                label: "Switch Concentrador",
                 value: sw?.hostname || connectedToSwitchId,
                 onRemove: () => setConnectedToSwitchId(""),
             });
+        }
+
+        // --- COMPUTADOR ---
+        if (selectedTypes.includes("COMPUTER")) {
+            if (selectedOsId) {
+                const os = options.operatingSystems.find(
+                    (o) => o.id === selectedOsId,
+                );
+                chips.push({
+                    key: "osId",
+                    label: "S.O.",
+                    value: os?.name || selectedOsId,
+                    onRemove: () => setSelectedOsId(undefined),
+                });
+            }
+            if (selectedProcessorId) {
+                const proc = options.processors.find(
+                    (p) => p.id === selectedProcessorId,
+                );
+                chips.push({
+                    key: "processorId",
+                    label: "Processador",
+                    value: proc?.name || selectedProcessorId,
+                    onRemove: () => setSelectedProcessorId(undefined),
+                });
+            }
+            if (selectedDiskId) {
+                const disk = options.disks.find((d) => d.id === selectedDiskId);
+                chips.push({
+                    key: "diskId",
+                    label: "Disco",
+                    value: disk?.name || selectedDiskId,
+                    onRemove: () => setSelectedDiskId(undefined),
+                });
+            }
+            if (selectedRam) {
+                chips.push({
+                    key: "ram",
+                    label: "Memória RAM",
+                    value: selectedRam,
+                    onRemove: () => setSelectedRam(undefined),
+                });
+            }
+        }
+
+        // --- IMPRESSORA ---
+        if (selectedTypes.includes("PRINTER") && printerModel) {
+            chips.push({
+                key: "printerModel",
+                label: "Modelo Impressora",
+                value: printerModel,
+                onRemove: () => setPrinterModel(""),
+            });
+        }
+
+        // --- SWITCH ---
+        if (selectedTypes.includes("SWITCH")) {
+            if (switchVendor) {
+                chips.push({
+                    key: "switchVendor",
+                    label: "Fabricante Switch",
+                    value: switchVendor,
+                    onRemove: () => setSwitchVendor(""),
+                });
+            }
+            if (switchModel) {
+                chips.push({
+                    key: "switchModel",
+                    label: "Modelo Switch",
+                    value: switchModel,
+                    onRemove: () => setSwitchModel(""),
+                });
+            }
+            if (switchPorts) {
+                chips.push({
+                    key: "switchPorts",
+                    label: "Portas Switch",
+                    value: String(switchPorts),
+                    onRemove: () => setSwitchPorts(undefined),
+                });
+            }
+        }
+
+        // --- ACCESS POINT ---
+        if (selectedTypes.includes("ACCESS_POINT")) {
+            if (apVendor) {
+                chips.push({
+                    key: "apVendor",
+                    label: "Fabricante AP",
+                    value: apVendor,
+                    onRemove: () => setApVendor(""),
+                });
+            }
+            if (apModel) {
+                chips.push({
+                    key: "apModel",
+                    label: "Modelo AP",
+                    value: apModel,
+                    onRemove: () => setApModel(""),
+                });
+            }
+            if (apSsid) {
+                chips.push({
+                    key: "apSsid",
+                    label: "SSID AP",
+                    value: apSsid,
+                    onRemove: () => setApSsid(""),
+                });
+            }
+            if (apFrequency) {
+                chips.push({
+                    key: "apFrequency",
+                    label: "Banda AP",
+                    value: apFrequency,
+                    onRemove: () => setApFrequency(""),
+                });
+            }
+        }
+
+        // --- CÂMERA ---
+        if (selectedTypes.includes("CAMERA")) {
+            if (cameraFilters.hostname) {
+                chips.push({
+                    key: "cameraHostname",
+                    label: "Hostname Câmera",
+                    value: cameraFilters.hostname,
+                    onRemove: () => updateCameraFilter("hostname", ""),
+                });
+            }
+            if (cameraFilters.model) {
+                chips.push({
+                    key: "cameraModel",
+                    label: "Modelo Câmera",
+                    value: cameraFilters.model,
+                    onRemove: () => updateCameraFilter("model", ""),
+                });
+            }
+        }
+
+        // --- TELEFONE ---
+        if (selectedTypes.includes("PHONE")) {
+            if (phoneFilters.hostname) {
+                chips.push({
+                    key: "phoneHostname",
+                    label: "Hostname Telefone",
+                    value: phoneFilters.hostname,
+                    onRemove: () => updatePhoneFilter("hostname", ""),
+                });
+            }
+            if (phoneFilters.model) {
+                chips.push({
+                    key: "phoneModel",
+                    label: "Modelo Telefone",
+                    value: phoneFilters.model,
+                    onRemove: () => updatePhoneFilter("model", ""),
+                });
+            }
+            if (phoneFilters.phoneNumber) {
+                chips.push({
+                    key: "phoneNumber",
+                    label: "Ramal Telefone",
+                    value: phoneFilters.phoneNumber,
+                    onRemove: () => updatePhoneFilter("phoneNumber", ""),
+                });
+            }
         }
 
         return chips;
@@ -587,7 +772,6 @@ export function ReportContainer({
                                 }}
                             />
                         )}
-                        {/* 🟢 CORREÇÃO: Trata tanto 'model' quanto 'printerModel' no onChange */}
                         {selectedTypes.includes("PRINTER") && (
                             <ReportPrinterFilters
                                 model={printerModel}

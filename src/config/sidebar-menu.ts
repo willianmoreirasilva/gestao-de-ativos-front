@@ -137,43 +137,20 @@ export const sidebarMenuConfig: GroupMenu[] = [
     },
     {
         title: "Relatórios & Auditoria",
-        url: "/reports",
+
         icon: FileText,
         items: [
             {
                 title: "Construtor de Relatórios",
-                url: "/reports/assets",
+                url: "/reports",
                 icon: LayoutGrid, // ou SlidersHorizontal
                 allowedRoles: ["ADMIN", "USER"],
             },
-            {
-                title: "IPs por Ativo",
-                url: "/reports/ip-assets",
-                icon: BookHeadphones,
-                allowedRoles: ["ADMIN", "USER"],
-            },
-            {
-                title: "IPs por Setor",
-                url: "/reports/departments",
-                icon: BookMinus,
-                allowedRoles: ["ADMIN", "USER"],
-            },
+
             {
                 title: "Logs de Operações",
                 url: "/reports/audit-logs",
                 icon: History,
-                allowedRoles: ["ADMIN", "USER"],
-            },
-            {
-                title: "Divergências de Rede",
-                url: "/reports/conflicts",
-                icon: ShieldAlert,
-                allowedRoles: ["ADMIN", "USER"],
-            },
-            {
-                title: "Exportar Dados",
-                url: "/reports/export",
-                icon: FileDown,
                 allowedRoles: ["ADMIN", "USER"],
             },
         ],
