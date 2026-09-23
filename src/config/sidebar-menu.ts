@@ -149,7 +149,7 @@ export const sidebarMenuConfig: GroupMenu[] = [
 
             {
                 title: "Logs de Operações",
-                url: "/reports/audit-logs",
+                url: "/audit-logs",
                 icon: History,
                 allowedRoles: ["ADMIN", "USER"],
             },

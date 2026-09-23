@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
+import { useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import Image from "next/image";
+import { authClient } from "@/lib/auth-client";
 
 export default function LoginPage() {
     const router = useRouter();
@@ -65,8 +66,6 @@ export default function LoginPage() {
                     </h1>
                 </div>
 
-               
-
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1">
                         <Label htmlFor="email">E-mail</Label>
@@ -94,10 +93,10 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                    <div className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400 text-center">
-                        {error}
-                    </div>
-                )}
+                        <div className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400 text-center">
+                            {error}
+                        </div>
+                    )}
                     <Button
                         type="submit"
                         className="w-full bg-primary hover:bg-primary/90 text-white"
