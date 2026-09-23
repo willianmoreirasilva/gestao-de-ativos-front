@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, RefreshCw, ShieldAlert } from "lucide-react";
+import { RefreshCw, ShieldAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState, useTransition } from "react";
 
@@ -8,6 +8,8 @@ import { AuditLogDetailsModal } from "@/components/audit-logs/audit-log-details-
 import { AuditLogFilters } from "@/components/audit-logs/audit-log-filters";
 import { AuditLogPagination } from "@/components/audit-logs/audit-log-pagination";
 import { AuditLogTable } from "@/components/audit-logs/audit-log-table";
+import { BackButton } from "@/components/users/back-button";
+import { PageTitle } from "@/components/users/page-title";
 import type { AuditLog, AuditLogResponse } from "@/types/audit";
 
 interface AuditLogsContainerProps {
@@ -28,30 +30,25 @@ export function AuditLogsContainer({ initialData }: AuditLogsContainerProps) {
     const hasLogs = initialData.data.length > 0;
 
     return (
-        <div className="space-y-6 p-6">
-            {/* Cabeçalho */}
-            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-zinc-100 flex items-center gap-2">
-                        <FileText className="w-6 h-6 text-indigo-500" />
-                        Logs de Auditoria
-                    </h1>
-                    <p className="text-sm text-zinc-400 mt-1">
-                        Acompanhe todas as atividades, acessos e alterações
-                        realizadas no sistema.
-                    </p>
-                </div>
-                <button
-                    onClick={handleRefresh}
-                    disabled={isPending}
-                    className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-zinc-700 w-fit disabled:opacity-50"
-                >
-                    <RefreshCw
-                        className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`}
-                    />
-                    Atualizar
-                </button>
-            </div>
+        <div className="space-y-6 px-1.5 md:px-0">
+            {/* Cabeçalho Padronizado */}
+            <PageTitle
+                title="Logs de Auditoria"
+                description="Acompanhe todas as atividades, acessos e alterações realizadas no sistema."
+                leftSide={<BackButton />}
+                rightSide={
+                    <button
+                        onClick={handleRefresh}
+                        disabled={isPending}
+                        className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-zinc-700 w-fit disabled:opacity-50"
+                    >
+                        <RefreshCw
+                            className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`}
+                        />
+                        Atualizar
+                    </button>
+                }
+            />
 
             {/* Componente de Filtros e Busca */}
             <AuditLogFilters />

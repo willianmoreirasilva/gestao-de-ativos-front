@@ -9,11 +9,10 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { getFormattedEntity } from "@/lib/audit-utils";
 import type { AuditLog } from "@/types/audit";
-import { ENTITY_LABELS } from "@/types/audit";
 
 import { AuditLogActionBadge } from "./audit-log-action-badge";
-import { getFormattedEntity } from "./audit-log-table";
 
 interface AuditLogDetailsModalProps {
     log: AuditLog | null;

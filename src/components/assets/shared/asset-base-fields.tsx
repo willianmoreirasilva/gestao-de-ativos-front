@@ -3,9 +3,7 @@
 import { UseFormReturn } from "react-hook-form";
 
 // Importações dos seus formulários existentes
-import { DepartmentForm } from "@/components/infra/departments/department-form";
-import { LocationForm } from "@/components/infra/locations/location-form";
-import { ComboboxCreateNew } from "@/components/ui/combobox-create-new";
+import { ComboboxSearch } from "@/components/ui/combobox-search";
 import {
     FormField,
     FormItem,
@@ -73,21 +71,13 @@ export function AssetBaseFields({
                         <FormLabel className="text-xs font-semibold mb-1.5 text-zinc-700 dark:text-zinc-300">
                             Departamento
                         </FormLabel>
-                        <ComboboxCreateNew
+                        <ComboboxSearch
                             options={listDepartments}
                             value={field.value || ""}
                             onChange={field.onChange}
                             placeholder="Selecionar departamento..."
                             searchPlaceholder="Digitar iniciais..."
                             emptyMessage="Nenhum departamento cadastrado."
-                            createLabel="Adicionar Novo Departamento"
-                            modalTitle="Criar Departamento"
-                            modalDescription="O novo departamento ficará disponível instantaneamente para este ativo."
-                            createForm={(onSuccess) => (
-                                <DepartmentForm
-                                    onSuccess={(id) => onSuccess(id)}
-                                />
-                            )}
                         />
                         <FormMessage className="text-xs" />
                     </FormItem>
@@ -103,21 +93,13 @@ export function AssetBaseFields({
                         <FormLabel className="text-xs font-semibold mb-1.5 text-zinc-700 dark:text-zinc-300">
                             Localidade / Filial
                         </FormLabel>
-                        <ComboboxCreateNew
+                        <ComboboxSearch
                             options={listLocations}
                             value={field.value || ""}
                             onChange={field.onChange}
                             placeholder="Selecionar localidade..."
                             searchPlaceholder="Digitar iniciais..."
                             emptyMessage="Nenhuma localidade cadastrada."
-                            createLabel="Cadastrar Nova Localidade"
-                            modalTitle="Criar Localidade / Filial"
-                            modalDescription="Insira os dados geográficos ou salas para vincular ao ativo."
-                            createForm={(onSuccess) => (
-                                <LocationForm
-                                    onSuccess={(id) => onSuccess(id)}
-                                />
-                            )}
                         />
                         <FormMessage className="text-xs" />
                     </FormItem>

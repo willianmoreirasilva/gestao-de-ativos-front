@@ -2,8 +2,8 @@
 
 import React from "react";
 
+import { getFormattedEntity } from "@/lib/audit-utils";
 import type { AuditLog } from "@/types/audit";
-import { ENTITY_LABELS } from "@/types/audit";
 
 import { AuditLogActionBadge } from "./audit-log-action-badge";
 
@@ -11,33 +11,6 @@ interface AuditLogTableProps {
     logs: AuditLog[];
     isLoading: boolean;
     onSelectLog?: (log: AuditLog) => void;
-}
-
-/**
- * Função helper para identificar o tipo específico do Ativo através dos details do Log de Auditoria.
- */
-export function getFormattedEntity(log: AuditLog): string {
-    const entityUpper = log.entity?.toUpperCase();
-
-    // Se for um ativo, tenta buscar o subtipo dentro de details
-    if (entityUpper === "ASSET" && log.details) {
-        const details = log.details as Record<string, any>;
-
-        // O tipo pode estar em details.type ou details.createdData.type
-        const assetType = (
-            details.type ||
-            details.createdData?.type ||
-            details.before?.type ||
-            details.after?.type
-        )?.toUpperCase();
-
-        if (assetType && ENTITY_LABELS[assetType]) {
-            return ENTITY_LABELS[assetType];
-        }
-    }
-
-    // Se não for ASSET ou se não encontrar o tipo específico nos details
-    return ENTITY_LABELS[entityUpper] || log.entity;
 }
 
 export function AuditLogTable({
@@ -119,7 +92,7 @@ export function AuditLogTable({
                                     {getFormattedEntity(log)}
                                 </td>
 
-                                <td className="py-3.5 px-4 font-mono text-xs text-zinc-400 truncate max-w-[120px]">
+                                <td className="py-3.5 px-4 font-mono text-xs text-zinc-400 truncate max-w-30">
                                     {log.entityId || "-"}
                                 </td>
                                 <td className="py-3.5 px-4 text-xs text-zinc-400 whitespace-nowrap">

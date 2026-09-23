@@ -21,6 +21,7 @@ interface AllocationFormBlockProps<
     options?: {
         departments?: OptionItem[];
         units?: OptionItem[];
+        users?: OptionItem[];
     };
     disabled?: boolean;
 }

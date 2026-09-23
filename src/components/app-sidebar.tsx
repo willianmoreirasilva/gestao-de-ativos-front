@@ -163,7 +163,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                             </button>
                         ) : (
                             <Link
-                                href={group.url}
+                                href={group.url ?? "/"}
                                 className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors ${
                                     isCollapsed
                                         ? "justify-center p-2 cursor-pointer w-full text-zinc-500 hover:text-zinc-900"

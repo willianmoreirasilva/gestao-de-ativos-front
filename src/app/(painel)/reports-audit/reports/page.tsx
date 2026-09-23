@@ -4,6 +4,7 @@ import {
     getProcessorsAction,
 } from "@/actions/options";
 import { ReportContainer } from "@/components/reports/report-container";
+import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 import { ReportQueryInput } from "@/schemas/report.schema";
 import { departmentService } from "@/services/department";
@@ -118,7 +119,7 @@ export default async function ReportsPage({ searchParams }: Props) {
         });
     }
 
-    // 🟢 CORREÇÃO: Filtros de Especificação (Computador)
+    // Filtros de Especificação (Computador)
     if (params.osId)
         filters.push({
             field: "computer.osId",
@@ -144,7 +145,7 @@ export default async function ReportsPage({ searchParams }: Props) {
             value: params.ram,
         });
 
-    // 🟢 CORREÇÃO: Filtros de Especificação (Switch)
+    // Filtros de Especificação (Switch)
     if (params.switchModel)
         filters.push({
             field: "switch.model",
@@ -164,7 +165,7 @@ export default async function ReportsPage({ searchParams }: Props) {
             value: Number(params.switchPorts),
         });
 
-    // 🟢 CORREÇÃO: Filtros de Especificação (Access Point)
+    // Filtros de Especificação (Access Point)
     if (params.apModel)
         filters.push({
             field: "accessPoint.model",
@@ -190,7 +191,7 @@ export default async function ReportsPage({ searchParams }: Props) {
             value: params.apFrequency,
         });
 
-    // 🟢 CORREÇÃO: Filtros de Especificação (Câmera)
+    // Filtros de Especificação (Câmera)
     if (params.cameraHostname) {
         filters.push({
             field: "camera.hostname",
@@ -206,7 +207,7 @@ export default async function ReportsPage({ searchParams }: Props) {
         });
     }
 
-    // 🟢 CORREÇÃO: Filtros de Especificação (Telefone)
+    // Filtros de Especificação (Telefone)
     if (params.phoneHostname) {
         filters.push({
             field: "phone.hostname",
@@ -229,7 +230,7 @@ export default async function ReportsPage({ searchParams }: Props) {
         });
     }
 
-    // 🟢 CORREÇÃO: Adicionar Filtro de Especificação (Impressora)
+    // Filtro de Especificação (Impressora)
     const printerModel = params.printerModel || (params as any).model;
 
     if (printerModel?.trim()) {
@@ -340,16 +341,13 @@ export default async function ReportsPage({ searchParams }: Props) {
         })),
     };
 
-    console.log("📊 [SSR Options Carregadas]:", {
-        departments: options.departments.length,
-        locations: options.locations.length,
-        networks: options.networks.length,
-        switches: options.switches.length,
-    });
-
     return (
-        <div className="max-w-7xl mx-auto space-y-6 pb-12 px-4 sm:px-6">
-            <PageTitle title="Relatórios e Inventário de Ativos" />
+        <div className="space-y-6 px-1.5 md:px-0">
+            <PageTitle
+                title="Relatórios e Inventário de Ativos"
+                description="Acompanhe o status do parque tecnológico, alocação por departamento e detalhes de conectividade."
+                leftSide={<BackButton />}
+            />
 
             <ReportContainer
                 initialData={reportResult?.data || []}

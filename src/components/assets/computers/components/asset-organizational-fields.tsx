@@ -3,9 +3,7 @@
 import { ShieldAlert } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 
-import { DepartmentForm } from "@/components/infra/departments/department-form";
-import { LocationForm } from "@/components/infra/locations/location-form";
-import { ComboboxCreateNew } from "@/components/ui/combobox-create-new";
+import { ComboboxSearch } from "@/components/ui/combobox-search";
 import {
     FormControl,
     FormField,
@@ -66,7 +64,7 @@ export function AssetOrganizationalFields({
                         <FormLabel className="text-xs font-semibold mb-1">
                             Departamento
                         </FormLabel>
-                        <ComboboxCreateNew
+                        <ComboboxSearch
                             options={listDepartments}
                             value={field.value || ""}
                             onChange={(val) => {
@@ -74,12 +72,8 @@ export function AssetOrganizationalFields({
                                 if (val) form.clearErrors("departmentId");
                             }}
                             placeholder="Selecionar departamento..."
-                            createLabel="Cadastrar Novo Departamento"
-                            modalTitle="Novo Departamento"
-                            modalDescription="Adicione um departamento sob demanda para a infraestrutura."
-                            createForm={(onSuccess) => (
-                                <DepartmentForm onSuccess={onSuccess} />
-                            )}
+                            searchPlaceholder="Digitar iniciais..."
+                            emptyMessage="Nenhum departamento cadastrado."
                         />
                     </FormItem>
                 )}
@@ -93,7 +87,7 @@ export function AssetOrganizationalFields({
                         <FormLabel className="text-xs font-semibold mb-1">
                             Localidade / Filial
                         </FormLabel>
-                        <ComboboxCreateNew
+                        <ComboboxSearch
                             options={listLocations}
                             value={field.value || ""}
                             onChange={(val) => {
@@ -101,12 +95,8 @@ export function AssetOrganizationalFields({
                                 if (val) form.clearErrors("locationId");
                             }}
                             placeholder="Selecionar localidade..."
-                            createLabel="Cadastrar Nova Localidade"
-                            modalTitle="Nova Localidade"
-                            modalDescription="Adicione uma filial ou sala sob demanda."
-                            createForm={(onSuccess) => (
-                                <LocationForm onSuccess={onSuccess} />
-                            )}
+                            searchPlaceholder="Digitar iniciais..."
+                            emptyMessage="Nenhuma localidade cadastrada."
                         />
                     </FormItem>
                 )}

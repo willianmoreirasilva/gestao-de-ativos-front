@@ -137,19 +137,19 @@ export const sidebarMenuConfig: GroupMenu[] = [
     },
     {
         title: "Relatórios & Auditoria",
-
+        url: "/reports-audit",
         icon: FileText,
         items: [
             {
                 title: "Construtor de Relatórios",
-                url: "/reports",
+                url: "/reports-audit/reports",
                 icon: LayoutGrid, // ou SlidersHorizontal
                 allowedRoles: ["ADMIN", "USER"],
             },
 
             {
                 title: "Logs de Operações",
-                url: "/audit-logs",
+                url: "/reports-audit/audit-logs",
                 icon: History,
                 allowedRoles: ["ADMIN", "USER"],
             },

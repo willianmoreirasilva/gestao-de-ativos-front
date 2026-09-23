@@ -13,7 +13,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useTransition } from "react";
 
 import { getAssetReportAction } from "@/services/reports.service";
-import type { AssetReportData } from "@/types/report";
+import type {
+    AssetReportData,
+    ReportQueryPayload,
+    SingleFilter,
+} from "@/types/report";
 import { ReportOptions } from "@/types/report-options";
 
 import { ActiveChips, type FilterChip } from "./filters/active-chips";
@@ -241,9 +245,8 @@ export function ReportContainer({
         });
     };
 
-    const buildPayload = (limitOverride?: number) => {
-        const filters: Array<{ field: string; operator: string; value: any }> =
-            [];
+    const buildPayload = (limitOverride?: number): ReportQueryPayload => {
+        const filters: SingleFilter[] = [];
 
         if (search.trim())
             filters.push({
