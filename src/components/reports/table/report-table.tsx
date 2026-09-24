@@ -2,9 +2,9 @@
 
 import React from "react";
 
+import { Pagination } from "@/components/pagination"; // ou o caminho do seu componente unificado
 import { Card } from "@/components/ui/card";
 
-import { ReportPagination } from "./report-pagination";
 import { ReportTableContent } from "./report-table-content";
 
 interface ReportTableProps {
@@ -32,13 +32,15 @@ export function ReportTable({
             {/* Tabela de Conteúdo */}
             <ReportTableContent data={data} isLoading={isLoading} />
 
-            {/* Rodapé e Paginação Integrada */}
-            <ReportPagination
-                meta={meta}
-                isPending={isLoading}
-                onPageChange={onPageChange}
-                onLimitChange={onLimitChange}
-            />
+            {/* Rodapé com Paginação Universal */}
+            <div className="border-t border-border/60">
+                <Pagination
+                    {...meta}
+                    itemLabel="relatórios"
+                    onPageChange={onPageChange}
+                    onLimitChange={onLimitChange}
+                />
+            </div>
         </Card>
     );
 }

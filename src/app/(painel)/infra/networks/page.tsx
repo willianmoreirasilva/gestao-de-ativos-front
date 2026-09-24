@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { NetworkFilters } from "@/components/infra/networks/network-filters";
 import { NetworkItem } from "@/components/infra/networks/network-item";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -12,10 +13,9 @@ import {
     TableHeader,
     TableRow,
 } from "@/components/ui/table";
-import { BackButton } from "@/components/users/back-button"; // 🌟 Importado para seguir o padrão
+import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { networkService } from "@/services/network";
 import type { Network } from "@/types/network";
 
@@ -52,13 +52,10 @@ export default async function NetworksPage({ searchParams }: PageProps) {
 
     const networks: Network[] = Array.isArray(data) ? data : [];
     const totalRecords = meta?.total ?? 0;
-    const currentOffset = meta?.offset ?? offset;
     const currentLimitActive = meta?.limit ?? currentLimit;
+    const totalPages = Math.ceil(totalRecords / currentLimitActive);
 
-    const disablePrev = currentOffset === 0;
-    const disableNext = currentOffset + currentLimitActive >= totalRecords;
-
-    //PADRÃO: Título da página isolado em uma constante
+    // Título da página
     const pageTitle = (
         <PageTitle
             title="Infraestrutura de Redes"
@@ -74,7 +71,7 @@ export default async function NetworksPage({ searchParams }: PageProps) {
         />
     );
 
-    // PADRÃO: Empty State de segurança para banco zerado real (Página 1, sem filtros aplicados)
+    // Empty State para banco vazio na primeira página
     const hasNoFilters =
         !searchQuery && !vlanQuery && (!typeQuery || typeQuery === "ALL");
 
@@ -91,7 +88,6 @@ export default async function NetworksPage({ searchParams }: PageProps) {
         );
     }
 
-    // Retorno padrão da página (caso o banco tenha dados ou o usuário esteja filtrando)
     return (
         <div className="space-y-6">
             {pageTitle}
@@ -104,15 +100,12 @@ export default async function NetworksPage({ searchParams }: PageProps) {
                         <TableRow className="bg-zinc-50/50 dark:bg-zinc-900/30">
                             <TableHead>Rede / CIDR</TableHead>
                             <TableHead>VLAN</TableHead>
-                            {/* Oculto em celulares, visível a partir de tablets (sm) */}
                             <TableHead className="hidden sm:table-cell">
                                 Tipo de Rede
                             </TableHead>
-                            {/* Oculto em celulares, visível a partir de telas médias (md) */}
                             <TableHead className="hidden md:table-cell">
                                 IPs Alocados
                             </TableHead>
-                            {/* Oculto em celulares, visível a partir de telas médias (md) */}
                             <TableHead className="hidden md:table-cell">
                                 IPs Disponíveis
                             </TableHead>
@@ -131,7 +124,6 @@ export default async function NetworksPage({ searchParams }: PageProps) {
                             </TableRow>
                         )}
 
-                        {/* 🌟 REAPROVEITANDO SEU EMPTY STATE GLOBAL */}
                         {!error && networks.length === 0 && (
                             <TableRow className="hover:bg-transparent">
                                 <TableCell colSpan={6} className="py-4">
@@ -155,11 +147,14 @@ export default async function NetworksPage({ searchParams }: PageProps) {
                 </Table>
             </div>
 
-            {/* 🌟 REAPROVEITANDO SEU COMPONENTE PAGINATION GLOBAL */}
-            {!error && (
+            {/* 🌟 COMPONENTE PAGINATION GLOBAL UNIFICADO */}
+            {!error && networks.length > 0 && (
                 <Pagination
-                    disablePrev={disablePrev}
-                    disableNext={disableNext}
+                    total={totalRecords}
+                    page={currentPage}
+                    limit={currentLimitActive}
+                    totalPages={totalPages}
+                    itemLabel="redes"
                 />
             )}
         </div>

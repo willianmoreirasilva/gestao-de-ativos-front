@@ -1,8 +1,9 @@
-import { Camera, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 
 import { CameraRowItem } from "@/components/assets/cameras/camera-row-item";
 import { AssetFilters } from "@/components/assets/shared/asset-filters";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -15,7 +16,6 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { getAssets } from "@/services/assets";
 
 type PageProps = {
@@ -32,7 +32,6 @@ export default async function CamerasPage({ searchParams }: PageProps) {
 
     const currentPage = Math.max(1, Number(params.page || "1"));
     const currentLimit = Math.max(1, Number(params.limit || "8"));
-    const offset = (currentPage - 1) * currentLimit;
 
     const searchQuery = params.search || "";
     const hasIpQuery = params.hasIp || undefined;
@@ -46,7 +45,6 @@ export default async function CamerasPage({ searchParams }: PageProps) {
     });
 
     const cameras = Array.isArray(data) ? data : [];
-    const totalRecords = meta?.total ?? 0;
 
     const pageTitle = (
         <PageTitle
@@ -146,10 +144,7 @@ export default async function CamerasPage({ searchParams }: PageProps) {
             </div>
 
             {!error && cameras.length > 0 && (
-                <Pagination
-                    disablePrev={currentPage <= 1}
-                    disableNext={offset + cameras.length >= totalRecords}
-                />
+                <Pagination {...meta} itemLabel="cameras" />
             )}
         </div>
     );

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { AssetFilters } from "@/components/assets/shared/asset-filters";
 import { SwitchRowItem } from "@/components/assets/switches/switch-row-item";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -15,7 +16,6 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { switchService } from "@/services/switches";
 
 type PageProps = {
@@ -32,7 +32,6 @@ export default async function SwitchesPage({ searchParams }: PageProps) {
 
     const currentPage = Math.max(1, Number(params.page || "1"));
     const currentLimit = Math.max(1, Number(params.limit || "8"));
-    const offset = (currentPage - 1) * currentLimit;
 
     const searchQuery = params.search || "";
     const hasIpQuery = params.hasIp || "ALL";
@@ -45,7 +44,6 @@ export default async function SwitchesPage({ searchParams }: PageProps) {
     });
 
     const switches = Array.isArray(data) ? data : [];
-    const totalRecords = meta?.total ?? 0;
 
     const pageTitle = (
         <PageTitle
@@ -150,10 +148,7 @@ export default async function SwitchesPage({ searchParams }: PageProps) {
             </div>
 
             {!error && switches.length > 0 && (
-                <Pagination
-                    disablePrev={currentPage <= 1}
-                    disableNext={offset + switches.length >= totalRecords}
-                />
+                <Pagination {...meta} itemLabel="switches" />
             )}
         </div>
     );

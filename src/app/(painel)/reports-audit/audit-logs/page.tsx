@@ -22,7 +22,7 @@ export default async function AuditLogsPage({
     const params = await searchParams;
 
     const page = Number(params.page) || 1;
-    const limit = Number(params.limit) || 10;
+    const limit = Number(params.limit) || 8;
 
     const initialData = await fetchAuditLogs({
         page,

@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 
 import { LocationItem } from "@/components/infra/locations/location-item";
+import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,30 +16,31 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { locationService } from "@/services/location";
 
 type Props = {
-    searchParams: Promise<{ page?: string; q?: string }>;
+    searchParams: Promise<{ page?: string; limit?: string; q?: string }>;
 };
 
 export default async function LocationsPage({ searchParams }: Props) {
     const params = await searchParams;
     const page = Math.max(1, parseInt(params.page || "1", 10));
+    const limit = Math.max(1, parseInt(params.limit || "8", 10));
     const query = params.q || "";
-    const limit = 8;
 
     // Busca os dados passando paginação nativa (page/limit/query)
     const locationsRes = await locationService.getLocations(page, limit, query);
 
     const locations = locationsRes?.data ?? [];
 
-    // Tratamento unificado de metadados idêntico ao de departamentos
-    const meta = locationsRes?.meta ?? {
-        total: locationsRes?.total ?? 0,
+    // Tratamento unificado de metadados utilizando o limit dinâmico
+    const totalRecords = locationsRes?.meta?.total ?? locationsRes?.total ?? 0;
+    const meta = {
+        total: totalRecords,
         page,
         limit,
-        totalPages: Math.ceil((locationsRes?.total ?? 0) / limit),
+        totalPages:
+            locationsRes?.meta?.totalPages ?? Math.ceil(totalRecords / limit),
     };
 
     const emptyMessage = `Nenhum local foi encontrado para "${query}".`;
@@ -153,18 +155,9 @@ export default async function LocationsPage({ searchParams }: Props) {
                 </Table>
             </div>
 
-            {/* Componente de paginação usando as propriedades calculadas do meta */}
-            {meta.totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2">
-                    <p className="text-sm text-muted-foreground">
-                        Página <strong>{meta.page}</strong> de{" "}
-                        <strong>{meta.totalPages}</strong>
-                    </p>
-                    <Pagination
-                        disablePrev={meta.page <= 1}
-                        disableNext={meta.page >= meta.totalPages}
-                    />
-                </div>
+            {/* Componente de paginação unificado */}
+            {meta && meta.totalPages > 0 && (
+                <Pagination {...meta} itemLabel="localidades" />
             )}
         </div>
     );

@@ -6,11 +6,12 @@ import React, { useState, useTransition } from "react";
 
 import { AuditLogDetailsModal } from "@/components/audit-logs/audit-log-details-modal";
 import { AuditLogFilters } from "@/components/audit-logs/audit-log-filters";
-import { AuditLogPagination } from "@/components/audit-logs/audit-log-pagination";
 import { AuditLogTable } from "@/components/audit-logs/audit-log-table";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 import type { AuditLog, AuditLogResponse } from "@/types/audit";
+
+import { Pagination } from "../pagination";
 
 interface AuditLogsContainerProps {
     initialData: AuditLogResponse;
@@ -79,11 +80,12 @@ export function AuditLogsContainer({ initialData }: AuditLogsContainerProps) {
                         />
 
                         {/* Paginação fixa na parte inferior da tabela */}
-                        <AuditLogPagination
+                        <Pagination
                             total={initialData.meta.total}
                             page={initialData.meta.page}
                             limit={initialData.meta.limit}
                             totalPages={initialData.meta.totalPages}
+                            itemLabel="logs"
                         />
                     </>
                 )}

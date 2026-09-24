@@ -1,20 +1,24 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+
+import { Input } from "@/components/ui/input";
 
 type Props = {
     placeholder?: string;
     queryParamName?: string;
 };
 
-export function SearchInput({ placeholder = "Buscar...", queryParamName = "q" }: Props) {
+export function SearchInput({
+    placeholder = "Buscar...",
+    queryParamName = "q",
+}: Props) {
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    
+
     // Pegamos o valor inicial apenas uma vez ao montar o componente
     const initialParamValue = searchParams.get(queryParamName) || "";
     const [text, setText] = useState(initialParamValue);
@@ -38,8 +42,8 @@ export function SearchInput({ placeholder = "Buscar...", queryParamName = "q" }:
         }, 400);
 
         return () => clearTimeout(delayDebounce);
-        
-        // 🌟 ATENÇÃO: Deixamos apenas o 'text' aqui. Adicionar router, pathname ou searchParams 
+
+        // 🌟 ATENÇÃO: Deixamos apenas o 'text' aqui. Adicionar router, pathname ou searchParams
         // causa instabilidade e loops infinitos em várias versões do Next.js 13/14/15.
     }, [text]);
 
@@ -54,7 +58,7 @@ export function SearchInput({ placeholder = "Buscar...", queryParamName = "q" }:
     return (
         <div className="relative max-w-sm w-full mb-4">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-400" />
-            
+
             <Input
                 type="text"
                 placeholder={placeholder}

@@ -2,6 +2,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 
 import { DepartmentItem } from "@/components/infra/departments/department-item";
+import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,20 +16,21 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { departmentService } from "@/services/department";
 
 type Props = {
-    searchParams: Promise<{ page?: string; q?: string }>;
+    // 1. Inclua o parâmetro limit no searchParams
+    searchParams: Promise<{ page?: string; limit?: string; q?: string }>;
 };
 
 export default async function DepartmentPage({ searchParams }: Props) {
     const params = await searchParams;
     const page = Math.max(1, parseInt(params.page || "1", 10));
+    // 2. Leia o limit da URL ou assuma 8 como padrão
+    const limit = Math.max(1, parseInt(params.limit || "8", 10));
     const query = params.q || "";
-    const limit = 8;
 
-    // Busca os dados passando paginação nativa (page/limit/search)
+    // 3. Passe o limit dinâmico na requisição do serviço
     const departmentsRes = await departmentService.getDepartments(
         page,
         limit,
@@ -38,8 +40,8 @@ export default async function DepartmentPage({ searchParams }: Props) {
     const departments = departmentsRes?.data ?? [];
     const meta = departmentsRes?.meta ?? {
         total: 0,
-        page: 1,
-        limit: 8,
+        page,
+        limit,
         totalPages: 0,
     };
 
@@ -152,18 +154,9 @@ export default async function DepartmentPage({ searchParams }: Props) {
                 </Table>
             </div>
 
-            {/* Componente de paginação usando as propriedades calculadas do meta */}
-            {meta.totalPages > 1 && (
-                <div className="flex items-center justify-between pt-2">
-                    <p className="text-sm text-muted-foreground">
-                        Página <strong>{meta.page}</strong> de{" "}
-                        <strong>{meta.totalPages}</strong>
-                    </p>
-                    <Pagination
-                        disablePrev={meta.page <= 1}
-                        disableNext={meta.page >= meta.totalPages}
-                    />
-                </div>
+            {/* Componente de paginação unificado */}
+            {meta && meta.totalPages > 0 && (
+                <Pagination {...meta} itemLabel="departamentos" />
             )}
         </div>
     );

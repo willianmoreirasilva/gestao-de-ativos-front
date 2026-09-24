@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { PrinterRowItem } from "@/components/assets/printers/printer-row-item";
 import { AssetFilters } from "@/components/assets/shared/asset-filters";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -15,7 +16,6 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { getAssets } from "@/services/assets";
 
 type PageProps = {
@@ -31,8 +31,7 @@ export default async function PrintersPage({ searchParams }: PageProps) {
     const params = await searchParams;
 
     const currentPage = Math.max(1, Number(params.page || "1"));
-    const currentLimit = Math.max(1, Number(params.limit || "8"));
-    const offset = (currentPage - 1) * currentLimit;
+    const currentLimit = Math.max(1, Number(params.limit || "7"));
 
     const searchQuery = params.search || "";
     const hasIpQuery = params.hasIp || undefined;
@@ -46,7 +45,6 @@ export default async function PrintersPage({ searchParams }: PageProps) {
     });
 
     const printers = Array.isArray(data) ? data : [];
-    const totalRecords = meta?.total ?? 0;
 
     const pageTitle = (
         <PageTitle
@@ -147,10 +145,7 @@ export default async function PrintersPage({ searchParams }: PageProps) {
             </div>
 
             {!error && printers.length > 0 && (
-                <Pagination
-                    disablePrev={currentPage <= 1}
-                    disableNext={offset + printers.length >= totalRecords}
-                />
+                <Pagination {...meta} itemLabel="impressoras" />
             )}
         </div>
     );

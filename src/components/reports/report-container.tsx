@@ -20,6 +20,7 @@ import type {
 } from "@/types/report";
 import { ReportOptions } from "@/types/report-options";
 
+import { Pagination } from "../pagination";
 import { ActiveChips, type FilterChip } from "./filters/active-chips";
 import { GeneralFilters } from "./filters/general-filters";
 import { ReportAccessPointFilters } from "./filters/report-access-point-filters";
@@ -30,7 +31,6 @@ import { ReportPrinterFilters } from "./filters/report-printer-filters";
 import { ReportSwitchFilters } from "./filters/report-switch-filters";
 import { ReportPrintModal } from "./report-print-modal";
 import { ReportKpiCards } from "./summary/report-kpi-cards";
-import { ReportPagination } from "./table/report-pagination";
 import { ReportTableContent } from "./table/report-table-content";
 
 interface ReportContainerProps {
@@ -185,7 +185,7 @@ export function ReportContainer({
         const params = new URLSearchParams();
         const currentPage = overridePage ?? 1;
         const currentLimit =
-            overrideLimit ?? parseInt(searchParams.get("limit") || "10", 10);
+            overrideLimit ?? parseInt(searchParams.get("limit") || "4", 10);
 
         params.set("page", currentPage.toString());
         params.set("limit", currentLimit.toString());
@@ -241,7 +241,7 @@ export function ReportContainer({
         }
 
         startTransition(() => {
-            router.push(`/reports?${params.toString()}`);
+            router.push(`/reports-audit/reports?${params.toString()}`);
         });
     };
 
@@ -451,7 +451,7 @@ export function ReportContainer({
         setApFrequency("");
         setCameraFilters({ hostname: "", model: "" });
         setPhoneFilters({ hostname: "", model: "", phoneNumber: "" });
-        router.push(`/reports?page=1&limit=${meta.limit}`);
+        router.push(`/reports-audit/reports?page=1&limit=4`);
     };
 
     const handleExportPdf = async () => {
@@ -891,9 +891,9 @@ export function ReportContainer({
             {/* TABELA DE ATIVOS E PAGINAÇÃO */}
             <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs transition-colors">
                 <ReportTableContent data={initialData} />
-                <ReportPagination
-                    meta={meta}
-                    isPending={isPending}
+                <Pagination
+                    {...meta}
+                    itemLabel="relatórios"
                     onPageChange={(p) => handleApplyFilters(p)}
                     onLimitChange={(l) => handleApplyFilters(1, l)}
                 />

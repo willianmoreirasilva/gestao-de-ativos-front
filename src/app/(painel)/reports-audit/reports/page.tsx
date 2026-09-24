@@ -55,7 +55,7 @@ export default async function ReportsPage({ searchParams }: Props) {
     const params = await searchParams;
 
     const page = parseInt(params.page || "1", 10);
-    const limit = parseInt(params.limit || "10", 10);
+    const limit = parseInt(params.limit || "4", 10);
 
     const filters: any[] = [];
 
@@ -355,7 +355,7 @@ export default async function ReportsPage({ searchParams }: Props) {
                     reportResult?.meta || {
                         total: 0,
                         page: 1,
-                        limit: 10,
+                        limit: 5,
                         totalPages: 0,
                     }
                 }

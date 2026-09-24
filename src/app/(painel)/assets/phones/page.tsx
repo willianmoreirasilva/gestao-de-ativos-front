@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { PhoneRowItem } from "@/components/assets/phones/phone-row-item";
 import { AssetFilters } from "@/components/assets/shared/asset-filters";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import {
     Table,
@@ -15,7 +16,6 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { Pagination } from "@/components/users/pagination";
 import { getAssets } from "@/services/assets";
 
 type PageProps = {
@@ -146,10 +146,7 @@ export default async function PhonesPage({ searchParams }: PageProps) {
             </div>
 
             {!error && phones.length > 0 && (
-                <Pagination
-                    disablePrev={currentPage <= 1}
-                    disableNext={offset + phones.length >= totalRecords}
-                />
+                <Pagination {...meta} itemLabel="telefones" />
             )}
         </div>
     );

@@ -11,12 +11,6 @@ export async function getAssetReportAction(
     const defaultPage = payload.page ?? 1;
     const defaultLimit = payload.limit ?? 20;
 
-    // Log para inspecionar os filtros e o ID do Sistema Operacional enviados
-    console.log(
-        "🚀 [SERVER ACTION] Payload enviado para o Backend:",
-        JSON.stringify(payload, null, 2),
-    );
-
     try {
         const api = await getServerApi();
         const response = await api.post("/api/reports/assets", payload);
