@@ -34,14 +34,14 @@ export function ReportComputerFilters({
     onChange,
 }: ReportComputerFiltersProps) {
     return (
-        <div className="p-3 bg-zinc-950/50 rounded-lg border border-zinc-800 space-y-2">
-            <span className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Cpu size={13} className="text-indigo-400" /> Especificações do
+        <div className="p-3.5 bg-muted/30 rounded-xl border border-border/80 space-y-2.5">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Cpu size={13} className="text-primary" /> Especificações do
                 Computador
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
                         Sistema Operacional
                     </label>
                     <ComboboxSearch
@@ -52,7 +52,7 @@ export function ReportComputerFilters({
                     />
                 </div>
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
                         Processador / CPU
                     </label>
                     <ComboboxSearch
@@ -65,7 +65,7 @@ export function ReportComputerFilters({
                     />
                 </div>
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block flex items-center gap-1">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 flex items-center gap-1">
                         <HardDrive size={12} /> Armazenamento
                     </label>
                     <ComboboxSearch
@@ -76,7 +76,7 @@ export function ReportComputerFilters({
                     />
                 </div>
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block flex items-center gap-1">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 flex items-center gap-1">
                         <MemoryStick size={12} /> Memória RAM
                     </label>
                     <Select
@@ -85,10 +85,10 @@ export function ReportComputerFilters({
                             onChange("memory", val === "ALL" ? undefined : val)
                         }
                     >
-                        <SelectTrigger className="h-9 text-xs bg-zinc-900 border-zinc-800 text-zinc-200">
+                        <SelectTrigger className="h-9 text-xs bg-background border-border text-foreground rounded-lg">
                             <SelectValue placeholder="Todas as Memórias" />
                         </SelectTrigger>
-                        <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                        <SelectContent className="bg-popover border-border text-popover-foreground">
                             <SelectItem value="ALL">
                                 Todas as Memórias
                             </SelectItem>

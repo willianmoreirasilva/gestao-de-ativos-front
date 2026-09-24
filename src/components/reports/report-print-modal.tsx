@@ -30,27 +30,27 @@ export function ReportPrintModal({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 overflow-y-auto">
-            <div className="bg-zinc-900 border border-zinc-800 text-zinc-100 rounded-xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 overflow-y-auto">
+            <div className="bg-card border border-border text-card-foreground rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl transition-colors">
                 {/* Cabeçalho da Modal */}
-                <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 print:hidden">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-border print:hidden">
                     <div className="flex items-center gap-2">
-                        <FileText className="w-5 h-5 text-indigo-400" />
-                        <h3 className="font-semibold text-lg">
+                        <FileText className="w-5 h-5 text-primary" />
+                        <h3 className="font-semibold text-base">
                             Pré-visualização do Relatório
                         </h3>
                     </div>
                     <div className="flex items-center gap-2">
                         <button
                             onClick={handlePrint}
-                            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                            className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer"
                         >
                             <Printer className="w-4 h-4" />
                             Imprimir / Exportar PDF
                         </button>
                         <button
                             onClick={onClose}
-                            className="p-2 text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800"
+                            className="p-2 text-muted-foreground hover:text-foreground rounded-xl hover:bg-muted transition-all cursor-pointer"
                         >
                             <X className="w-5 h-5" />
                         </button>
@@ -58,8 +58,7 @@ export function ReportPrintModal({
                 </div>
 
                 {/* Conteúdo Imprimível */}
-                <div className="p-8 overflow-y-auto print:p-0 print:overflow-visible text-black bg-white">
-                    {/* Estilos específicos de impressão */}
+                <div className="p-8 overflow-y-auto print:p-0 print:overflow-visible text-slate-900 bg-white rounded-b-2xl">
                     <style jsx global>{`
                         @media print {
                             body * {
@@ -89,16 +88,16 @@ export function ReportPrintModal({
 
                     <div className="print-container space-y-6">
                         {/* Header do Relatório */}
-                        <div className="border-b-2 border-zinc-900 pb-4 flex justify-between items-end">
+                        <div className="border-b-2 border-slate-900 pb-4 flex justify-between items-end">
                             <div>
-                                <h1 className="text-2xl font-bold uppercase tracking-tight text-zinc-900">
+                                <h1 className="text-2xl font-bold uppercase tracking-tight text-slate-900">
                                     Relatório Inventário de Ativos
                                 </h1>
-                                <p className="text-xs text-zinc-600">
+                                <p className="text-xs text-slate-600">
                                     Sistema de Gestão de Infraestrutura e TI
                                 </p>
                             </div>
-                            <div className="text-right text-xs text-zinc-500">
+                            <div className="text-right text-xs text-slate-500">
                                 <p>
                                     Gerado em:{" "}
                                     {new Date().toLocaleString("pt-BR")}
@@ -108,12 +107,12 @@ export function ReportPrintModal({
                         </div>
 
                         {/* Filtros Aplicados */}
-                        <div className="bg-zinc-100 p-4 rounded-lg text-xs space-y-2 border border-zinc-200">
-                            <span className="font-bold text-zinc-800 uppercase block mb-1">
+                        <div className="bg-slate-100 p-4 rounded-lg text-xs space-y-2 border border-slate-200">
+                            <span className="font-bold text-slate-800 uppercase block mb-1">
                                 Filtros Aplicados na Consulta
                             </span>
                             {activeFiltersLabels.length === 0 ? (
-                                <p className="text-zinc-500 italic">
+                                <p className="text-slate-500 italic">
                                     Nenhum filtro restritivo aplicado (Exibindo
                                     escopo geral).
                                 </p>
@@ -121,10 +120,10 @@ export function ReportPrintModal({
                                 <div className="grid grid-cols-2 gap-x-4 gap-y-1">
                                     {activeFiltersLabels.map((f, i) => (
                                         <div key={i} className="flex gap-1">
-                                            <span className="font-semibold text-zinc-700">
+                                            <span className="font-semibold text-slate-700">
                                                 {f.label}:
                                             </span>
-                                            <span className="text-zinc-900">
+                                            <span className="text-slate-900">
                                                 {f.value}
                                             </span>
                                         </div>
@@ -135,32 +134,32 @@ export function ReportPrintModal({
 
                         {/* Resumo dos KPIs */}
                         <div className="grid grid-cols-4 gap-4 text-center">
-                            <div className="border border-zinc-300 p-3 rounded">
-                                <span className="block text-xs text-zinc-500 font-semibold uppercase">
+                            <div className="border border-slate-300 p-3 rounded">
+                                <span className="block text-xs text-slate-500 font-semibold uppercase">
                                     Total Ativos
                                 </span>
-                                <span className="text-xl font-bold text-zinc-900">
+                                <span className="text-xl font-bold text-slate-900">
                                     {summary.totalAssets}
                                 </span>
                             </div>
-                            <div className="border border-zinc-300 p-3 rounded">
-                                <span className="block text-xs text-zinc-500 font-semibold uppercase">
+                            <div className="border border-slate-300 p-3 rounded">
+                                <span className="block text-xs text-slate-500 font-semibold uppercase">
                                     Com IP
                                 </span>
                                 <span className="text-xl font-bold text-emerald-700">
                                     {summary.withIp}
                                 </span>
                             </div>
-                            <div className="border border-zinc-300 p-3 rounded">
-                                <span className="block text-xs text-zinc-500 font-semibold uppercase">
+                            <div className="border border-slate-300 p-3 rounded">
+                                <span className="block text-xs text-slate-500 font-semibold uppercase">
                                     Sem IP
                                 </span>
                                 <span className="text-xl font-bold text-amber-700">
                                     {summary.withoutIp}
                                 </span>
                             </div>
-                            <div className="border border-zinc-300 p-3 rounded">
-                                <span className="block text-xs text-zinc-500 font-semibold uppercase">
+                            <div className="border border-slate-300 p-3 rounded">
+                                <span className="block text-xs text-slate-500 font-semibold uppercase">
                                     Setores
                                 </span>
                                 <span className="text-xl font-bold text-purple-700">
@@ -172,7 +171,7 @@ export function ReportPrintModal({
                         {/* Tabela Principal */}
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
-                                <tr className="border-b-2 border-zinc-800 bg-zinc-100 text-zinc-800">
+                                <tr className="border-b-2 border-slate-800 bg-slate-100 text-slate-800">
                                     <th className="py-2 px-2 font-bold">
                                         Patrimônio
                                     </th>
@@ -200,7 +199,7 @@ export function ReportPrintModal({
                                 {data.map((item, index) => (
                                     <tr
                                         key={item.id || index}
-                                        className="border-b border-zinc-200 hover:bg-zinc-50"
+                                        className="border-b border-slate-200 hover:bg-slate-50"
                                     >
                                         <td className="py-2 px-2 font-mono">
                                             {item.patrimony || "S/N"}

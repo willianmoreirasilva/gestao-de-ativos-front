@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Filter, SlidersHorizontal, Trash2, X } from "lucide-react";
 import React, { useState } from "react";
 
 import { ReportAccessPointFilters } from "./filters/report-access-point-filters";
@@ -70,10 +70,10 @@ export function ReportFilters({
     const selectedTypes = filters.types || [];
 
     return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 space-y-4">
+        <div className="bg-card border border-border/80 rounded-2xl p-4 sm:p-5 space-y-4 shadow-xs transition-colors">
             {/* SELEÇÃO DE TIPOS */}
             <div>
-                <span className="text-xs text-zinc-400 font-medium block mb-2">
+                <span className="text-xs text-muted-foreground font-semibold block mb-2">
                     Tipos de Ativos (Seleção Múltipla)
                 </span>
                 <div className="flex flex-wrap gap-2">
@@ -91,10 +91,10 @@ export function ReportFilters({
                                 key={type.id}
                                 type="button"
                                 onClick={() => toggleType(type.id)}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                                className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                                     isSelected
-                                        ? "bg-indigo-950/80 text-indigo-300 border-indigo-700/60"
-                                        : "bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200"
+                                        ? "bg-primary/10 text-primary border-primary/30 shadow-xs"
+                                        : "bg-background text-muted-foreground border-border hover:bg-muted/60 hover:text-foreground"
                                 }`}
                             >
                                 {type.label}
@@ -107,7 +107,7 @@ export function ReportFilters({
             {/* FILTROS GERAIS */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
                         Departamento
                     </label>
                     <select
@@ -118,7 +118,7 @@ export function ReportFilters({
                                 departmentId: e.target.value || undefined,
                             }))
                         }
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+                        className="w-full bg-background border border-border text-foreground rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                     >
                         <option value="">Todos os Departamentos</option>
                         {options.departments?.map((d) => (
@@ -130,7 +130,7 @@ export function ReportFilters({
                 </div>
 
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
                         Unidade / Local
                     </label>
                     <select
@@ -141,7 +141,7 @@ export function ReportFilters({
                                 locationId: e.target.value || undefined,
                             }))
                         }
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+                        className="w-full bg-background border border-border text-foreground rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                     >
                         <option value="">Todas as Localidades</option>
                         {options.locations?.map((l) => (
@@ -153,7 +153,7 @@ export function ReportFilters({
                 </div>
 
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-xs font-medium text-muted-foreground mb-1 block">
                         Rede / Sub-rede
                     </label>
                     <select
@@ -164,7 +164,7 @@ export function ReportFilters({
                                 networkId: e.target.value || undefined,
                             }))
                         }
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200"
+                        className="w-full bg-background border border-border text-foreground rounded-xl px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                     >
                         <option value="">Todas as Redes</option>
                         {options.networks?.map((n) => (
@@ -177,11 +177,11 @@ export function ReportFilters({
             </div>
 
             {/* BOTÃO TOGGLE DE ESPECIFICAÇÕES AVANÇADAS */}
-            <div className="border-t border-zinc-800/80 pt-3">
+            <div className="border-t border-border/60 pt-3">
                 <button
                     type="button"
                     onClick={() => setShowSpecific((prev) => !prev)}
-                    className="flex items-center gap-2 text-xs font-medium text-indigo-400 hover:text-indigo-300 transition-colors my-1"
+                    className="flex items-center gap-2 text-xs font-semibold text-primary hover:text-primary/80 transition-colors my-1 cursor-pointer"
                 >
                     <span>
                         {showSpecific
@@ -191,14 +191,17 @@ export function ReportFilters({
                 </button>
 
                 {showSpecific && (
-                    <div className="space-y-3 pt-3">
-                        <div className="flex items-center gap-1.5 text-xs font-semibold text-zinc-200">
-                            <SlidersHorizontal size={13} />
+                    <div className="space-y-3 pt-3 animate-in fade-in duration-200">
+                        <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                            <SlidersHorizontal
+                                size={13}
+                                className="text-primary"
+                            />
                             <span>Filtros Específicos do Ativo</span>
                         </div>
 
                         {selectedTypes.length === 0 && (
-                            <p className="text-xs text-zinc-500 italic p-2 bg-zinc-950/30 rounded border border-zinc-800/40">
+                            <p className="text-xs text-muted-foreground italic p-3 bg-muted/30 rounded-xl border border-border/50">
                                 Selecione um tipo de ativo acima para exibir
                                 seus filtros específicos.
                             </p>
@@ -262,11 +265,11 @@ export function ReportFilters({
                         )}
 
                         {selectedTypes.includes("CAMERA") && (
-                            <div className="p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg space-y-2">
-                                <span className="text-[11px] font-semibold text-purple-400 block uppercase tracking-wide">
+                            <div className="p-3.5 bg-muted/30 border border-border/80 rounded-xl space-y-2.5">
+                                <span className="text-[11px] font-semibold text-purple-600 dark:text-purple-400 block uppercase tracking-wider">
                                     Especificações da Câmera
                                 </span>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <input
                                         type="text"
                                         placeholder="Modelo"
@@ -281,7 +284,7 @@ export function ReportFilters({
                                                 e.target.value || undefined,
                                             )
                                         }
-                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                        className="bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
                                     <input
                                         type="text"
@@ -297,18 +300,18 @@ export function ReportFilters({
                                                 e.target.value || undefined,
                                             )
                                         }
-                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                        className="bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
                                 </div>
                             </div>
                         )}
 
                         {selectedTypes.includes("PHONE") && (
-                            <div className="p-3 bg-zinc-950/60 border border-zinc-800 rounded-lg space-y-2">
-                                <span className="text-[11px] font-semibold text-cyan-400 block uppercase tracking-wide">
+                            <div className="p-3.5 bg-muted/30 border border-border/80 rounded-xl space-y-2.5">
+                                <span className="text-[11px] font-semibold text-cyan-600 dark:text-cyan-400 block uppercase tracking-wider">
                                     Especificações do Telefone
                                 </span>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <input
                                         type="text"
                                         placeholder="Modelo do Aparelho"
@@ -322,7 +325,7 @@ export function ReportFilters({
                                                 e.target.value || undefined,
                                             )
                                         }
-                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                        className="bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
                                     <input
                                         type="text"
@@ -338,7 +341,7 @@ export function ReportFilters({
                                                 e.target.value || undefined,
                                             )
                                         }
-                                        className="bg-zinc-900 border border-zinc-800 text-xs text-zinc-200 rounded px-2.5 py-1.5"
+                                        className="bg-background border border-border text-xs text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                                     />
                                 </div>
                             </div>
@@ -348,11 +351,11 @@ export function ReportFilters({
             </div>
 
             {/* BOTÕES DE AÇÃO */}
-            <div className="flex justify-between items-center pt-2 border-t border-zinc-800">
+            <div className="flex justify-between items-center pt-2 border-t border-border/60">
                 <button
                     type="button"
                     onClick={onClear}
-                    className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-red-400 transition-colors"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors cursor-pointer"
                 >
                     <Trash2 size={13} /> Limpar
                 </button>
@@ -360,11 +363,56 @@ export function ReportFilters({
                 <button
                     type="button"
                     onClick={onApply}
-                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-xs font-semibold transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground font-medium text-xs rounded-xl hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
                 >
                     <Filter size={13} /> Aplicar Filtros
                 </button>
             </div>
+        </div>
+    );
+}
+
+export interface FilterChip {
+    key: string;
+    label: string;
+    value: string;
+    onRemove: () => void;
+}
+
+interface ActiveChipsProps {
+    chips: FilterChip[];
+    onApply: () => void;
+}
+
+export function ActiveChips({ chips, onApply }: ActiveChipsProps) {
+    if (chips.length === 0) return null;
+
+    return (
+        <div className="flex flex-wrap items-center gap-2 pt-2">
+            <span className="text-xs text-muted-foreground font-semibold">
+                Filtros ativos:
+            </span>
+            {chips.map((chip) => (
+                <span
+                    key={chip.key}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-muted/80 text-foreground border border-border/80 shadow-2xs"
+                >
+                    <span className="text-muted-foreground font-normal">
+                        {chip.label}:
+                    </span>
+                    <span>{chip.value}</span>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            chip.onRemove();
+                            setTimeout(() => onApply(), 50);
+                        }}
+                        className="hover:text-destructive text-muted-foreground transition-colors ml-0.5 cursor-pointer"
+                    >
+                        <X className="w-3.5 h-3.5" />
+                    </button>
+                </span>
+            ))}
         </div>
     );
 }

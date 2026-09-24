@@ -47,15 +47,15 @@ export function AuditLogPagination({
     const endItem = Math.min(page * limit, total);
 
     return (
-        <div className="border-t border-zinc-800 bg-zinc-900/40 px-4 py-3 rounded-b-xl space-y-3">
-            {/* Linha Superior: Exibindo X-Y de Z e Seletor de Limite */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-zinc-400">
+        <div className="border border-border/80 border-t-0 bg-card px-4 py-3 rounded-b-2xl space-y-3 transition-colors shadow-xs">
+            {/* Linha Superior */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
                 <div>
                     Exibindo{" "}
-                    <strong className="text-zinc-200">
+                    <strong className="text-foreground">
                         {startItem}–{endItem}
                     </strong>{" "}
-                    de <strong className="text-zinc-200">{total}</strong>{" "}
+                    de <strong className="text-foreground">{total}</strong>{" "}
                     registros
                 </div>
 
@@ -64,7 +64,7 @@ export function AuditLogPagination({
                     <select
                         value={limit}
                         onChange={(e) => handleLimitChange(e.target.value)}
-                        className="bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-zinc-200 focus:outline-none focus:border-zinc-700"
+                        className="bg-background border border-border rounded-lg px-2 py-1 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all cursor-pointer"
                     >
                         <option value={10}>10</option>
                         <option value={25}>25</option>
@@ -74,21 +74,21 @@ export function AuditLogPagination({
                 </div>
             </div>
 
-            {/* Linha Inferior: Número de Páginas e Botões de Navegação */}
-            <div className="flex items-center justify-between pt-2 border-t border-zinc-800/50">
-                <span className="text-xs text-zinc-400">
+            {/* Linha Inferior */}
+            <div className="flex items-center justify-between pt-2 border-t border-border/60">
+                <span className="text-xs text-muted-foreground">
                     Página{" "}
-                    <strong className="text-zinc-200">
+                    <strong className="text-foreground">
                         {totalPages === 0 ? 0 : page}
                     </strong>{" "}
-                    de <strong className="text-zinc-200">{totalPages}</strong>
+                    de <strong className="text-foreground">{totalPages}</strong>
                 </span>
 
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => handlePageChange(1)}
                         disabled={page <= 1}
-                        className="p-1.5 rounded border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         title="Primeira página"
                     >
                         <ChevronsLeft className="h-4 w-4" />
@@ -97,7 +97,7 @@ export function AuditLogPagination({
                     <button
                         onClick={() => handlePageChange(page - 1)}
                         disabled={page <= 1}
-                        className="p-1.5 rounded border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         title="Página anterior"
                     >
                         <ChevronLeft className="h-4 w-4" />
@@ -106,7 +106,7 @@ export function AuditLogPagination({
                     <button
                         onClick={() => handlePageChange(page + 1)}
                         disabled={page >= totalPages}
-                        className="p-1.5 rounded border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         title="Próxima página"
                     >
                         <ChevronRight className="h-4 w-4" />
@@ -115,7 +115,7 @@ export function AuditLogPagination({
                     <button
                         onClick={() => handlePageChange(totalPages)}
                         disabled={page >= totalPages}
-                        className="p-1.5 rounded border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                        className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                         title="Última página"
                     >
                         <ChevronsRight className="h-4 w-4" />

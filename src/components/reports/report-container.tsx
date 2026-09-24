@@ -711,7 +711,7 @@ export function ReportContainer({
             <ReportKpiCards summary={summary} />
 
             {/* CONTAINER DE FILTROS */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 space-y-5">
+            <div className="bg-card border border-border/80 rounded-2xl p-4 sm:p-6 space-y-5 shadow-xs transition-colors">
                 <GeneralFilters
                     search={search}
                     onSearchChange={setSearch}
@@ -732,13 +732,13 @@ export function ReportContainer({
 
                 {/* Botão de Especificações Avançadas */}
                 {selectedTypes.length > 0 && (
-                    <div className="pt-2 border-t border-zinc-800/60 flex justify-end">
+                    <div className="pt-2 border-t border-border/60 flex justify-end">
                         <button
                             type="button"
                             onClick={() =>
                                 setShowAdvancedFilters(!showAdvancedFilters)
                             }
-                            className="flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 font-medium py-1.5 px-3 rounded-lg bg-indigo-950/40 border border-indigo-900/50 transition-colors"
+                            className="flex items-center gap-1.5 text-xs text-primary hover:text-primary/80 font-semibold py-1.5 px-3 rounded-lg bg-primary/10 border border-primary/20 transition-all cursor-pointer"
                         >
                             <SlidersHorizontal size={13} />
                             {showAdvancedFilters
@@ -839,13 +839,13 @@ export function ReportContainer({
                 )}
 
                 {/* BOTÕES DE AÇÃO */}
-                <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-3 border-t border-zinc-800/60">
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-3 pt-3 border-t border-border/60">
                     <div className="flex items-center gap-2 w-full sm:w-auto">
                         <button
                             type="button"
                             onClick={() => handleApplyFilters(1)}
                             disabled={isPending}
-                            className="flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto disabled:opacity-50"
+                            className="flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto disabled:opacity-50 cursor-pointer shadow-xs"
                         >
                             {isPending ? (
                                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -859,7 +859,7 @@ export function ReportContainer({
                             type="button"
                             onClick={handleClearFilters}
                             disabled={isPending}
-                            className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto"
+                            className="flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground border border-border/60 px-4 py-2 rounded-xl text-sm font-medium transition-all w-full sm:w-auto cursor-pointer"
                         >
                             <FilterX className="w-4 h-4" />
                             Limpar
@@ -870,7 +870,7 @@ export function ReportContainer({
                         type="button"
                         onClick={handleExportPdf}
                         disabled={isExportLoading}
-                        className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto disabled:opacity-50"
+                        className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto disabled:opacity-50 cursor-pointer shadow-xs"
                     >
                         {isExportLoading ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
@@ -889,7 +889,7 @@ export function ReportContainer({
             </div>
 
             {/* TABELA DE ATIVOS E PAGINAÇÃO */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs transition-colors">
                 <ReportTableContent data={initialData} />
                 <ReportPagination
                     meta={meta}

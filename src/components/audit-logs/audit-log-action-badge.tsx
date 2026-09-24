@@ -1,7 +1,5 @@
 import React from "react";
 
-import { Badge } from "@/components/ui/badge";
-
 interface AuditLogActionBadgeProps {
     action: string;
 }
@@ -9,38 +7,45 @@ interface AuditLogActionBadgeProps {
 export function AuditLogActionBadge({ action }: AuditLogActionBadgeProps) {
     const formattedAction = action.toUpperCase();
 
-    let variantClasses = "bg-zinc-800 text-zinc-300 border-zinc-700";
+    let variantClasses = "bg-muted/80 text-muted-foreground border-border";
     let label = action;
 
     switch (formattedAction) {
         case "CREATE":
             variantClasses =
-                "bg-emerald-950/60 text-emerald-400 border-emerald-800/50";
+                "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20";
             label = "Criou";
             break;
         case "UPDATE":
             variantClasses =
-                "bg-amber-950/60 text-amber-400 border-amber-800/50";
+                "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20";
             label = "Atualizou";
             break;
         case "DELETE":
-            variantClasses = "bg-rose-950/60 text-rose-400 border-rose-800/50";
+            variantClasses =
+                "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20";
             label = "Excluiu";
             break;
         case "LOGIN":
-            variantClasses = "bg-blue-950/60 text-blue-400 border-blue-800/50";
+            variantClasses =
+                "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20";
             label = "Login";
+            break;
+        case "LOGOUT":
+            variantClasses =
+                "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
+            label = "Logout";
             break;
         case "EXPORT":
             variantClasses =
-                "bg-indigo-950/60 text-indigo-400 border-indigo-800/50";
+                "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20";
             label = "Exportou";
             break;
     }
 
     return (
         <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${variantClasses}`}
+            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${variantClasses}`}
         >
             {label}
         </span>

@@ -40,10 +40,12 @@ export function AuditLogsContainer({ initialData }: AuditLogsContainerProps) {
                     <button
                         onClick={handleRefresh}
                         disabled={isPending}
-                        className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 px-4 py-2 rounded-lg text-sm font-medium transition-colors border border-zinc-700 w-fit disabled:opacity-50"
+                        className="flex items-center gap-2 bg-secondary hover:bg-muted text-secondary-foreground px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-border/80 w-fit cursor-pointer shadow-2xs disabled:opacity-50"
                     >
                         <RefreshCw
-                            className={`w-4 h-4 ${isPending ? "animate-spin" : ""}`}
+                            className={`w-4 h-4 text-muted-foreground ${
+                                isPending ? "animate-spin text-primary" : ""
+                            }`}
                         />
                         Atualizar
                     </button>
@@ -54,14 +56,16 @@ export function AuditLogsContainer({ initialData }: AuditLogsContainerProps) {
             <AuditLogFilters />
 
             {/* Container da Tabela e Paginação */}
-            <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs transition-colors">
                 {!hasLogs && !isPending ? (
-                    <div className="py-16 text-center space-y-3">
-                        <ShieldAlert className="w-12 h-12 text-zinc-600 mx-auto" />
-                        <h3 className="text-base font-semibold text-zinc-300">
+                    <div className="py-16 text-center space-y-3 px-4">
+                        <div className="w-12 h-12 rounded-full bg-muted/60 border border-border/80 flex items-center justify-center mx-auto text-muted-foreground">
+                            <ShieldAlert className="w-6 h-6" />
+                        </div>
+                        <h3 className="text-base font-semibold text-foreground">
                             Nenhum registro encontrado
                         </h3>
-                        <p className="text-sm text-zinc-500 max-w-sm mx-auto">
+                        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
                             Não encontramos registros de auditoria para os
                             parâmetros e filtros selecionados.
                         </p>

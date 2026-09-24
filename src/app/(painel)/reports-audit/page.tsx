@@ -178,7 +178,9 @@ export default async function ReportsAuditDashboardPage() {
                             size="sm"
                             className="text-xs"
                         >
-                            <Link href="/audit-logs">Ver todos →</Link>
+                            <Link href="/reports-audit/audit-logs">
+                                Ver todos →
+                            </Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="p-6">

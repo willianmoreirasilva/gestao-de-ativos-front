@@ -24,9 +24,10 @@ export function ReportAllocationFilters({
     onLocationChange,
 }: ReportAllocationFiltersProps) {
     return (
-        <div className="p-3 bg-zinc-50 dark:bg-zinc-900/50 rounded-lg border border-zinc-200/60 dark:border-zinc-800 space-y-2">
+        <div className="p-3.5 bg-muted/30 rounded-xl border border-border/80 space-y-2.5">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-                <Building2 size={13} /> Alocação & Setor:
+                <Building2 size={13} className="text-primary" /> Alocação &
+                Setor
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>

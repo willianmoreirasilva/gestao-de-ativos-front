@@ -43,7 +43,6 @@ export function GeneralFilters({
     onConnectedToSwitchIdChange,
     options,
 }: GeneralFiltersProps) {
-    // Memoização dos mapeamentos para evitar recriações de arrays em cada render
     const departmentOptions = useMemo(
         () =>
             (options?.departments || []).map((d) => ({
@@ -94,26 +93,28 @@ export function GeneralFilters({
     return (
         <div className="space-y-4">
             {/* Campo de busca textual + Filtro rápido IP */}
-            <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="flex flex-col md:flex-row gap-3 justify-between items-center">
+                {/* Input de busca com fundo dinamico e suave */}
                 <div className="relative w-full md:w-96">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400" />
+                    <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                     <input
                         type="text"
                         placeholder="Buscar por Patrimônio, Hostname, Serial..."
                         value={search}
                         onChange={(e) => onSearchChange(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg pl-9 pr-4 py-2 text-sm text-zinc-100 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-background dark:bg-zinc-900/50 border border-border rounded-xl pl-9 pr-4 py-2 text-xs text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all shadow-xs"
                     />
                 </div>
 
-                <div className="flex items-center bg-zinc-950 p-1 rounded-lg border border-zinc-800 w-full md:w-auto">
+                {/* Seletor Toggle de IP com fundo neutro suave no Light Mode */}
+                <div className="flex items-center bg-muted/60 dark:bg-zinc-900/80 p-1 rounded-xl border border-border/80 w-full md:w-auto">
                     <button
                         type="button"
                         onClick={() => onIpStatusChange("ALL")}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                             ipStatus === "ALL"
-                                ? "bg-zinc-800 text-white"
-                                : "text-zinc-400 hover:text-zinc-200"
+                                ? "bg-background text-foreground shadow-xs border border-border/50 font-semibold"
+                                : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                         Todos
@@ -121,10 +122,10 @@ export function GeneralFilters({
                     <button
                         type="button"
                         onClick={() => onIpStatusChange("true")}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                             ipStatus === "true"
-                                ? "bg-emerald-950/80 text-emerald-400 border border-emerald-800/50"
-                                : "text-zinc-400 hover:text-zinc-200"
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold"
+                                : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                         Com IP
@@ -132,10 +133,10 @@ export function GeneralFilters({
                     <button
                         type="button"
                         onClick={() => onIpStatusChange("false")}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
+                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
                             ipStatus === "false"
-                                ? "bg-amber-950/80 text-amber-400 border border-amber-800/50"
-                                : "text-zinc-400 hover:text-zinc-200"
+                                ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-semibold"
+                                : "text-muted-foreground hover:text-foreground"
                         }`}
                     >
                         Sem IP
@@ -149,10 +150,10 @@ export function GeneralFilters({
                 onChange={onSelectedTypesChange}
             />
 
-            {/* Grid de Filtros Gerais com ComboboxSearch */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2 border-t border-zinc-800/60">
+            {/* Grid de Filtros Gerais */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2 border-t border-border/60">
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
                         Departamento
                     </label>
                     <ComboboxSearch
@@ -166,7 +167,7 @@ export function GeneralFilters({
                 </div>
 
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
                         Unidade / Local
                     </label>
                     <ComboboxSearch
@@ -180,7 +181,7 @@ export function GeneralFilters({
                 </div>
 
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
                         Rede / Sub-rede
                     </label>
                     <ComboboxSearch
@@ -194,7 +195,7 @@ export function GeneralFilters({
                 </div>
 
                 <div>
-                    <label className="text-xs text-zinc-400 mb-1 block">
+                    <label className="text-[11px] font-medium text-muted-foreground mb-1 block">
                         Switch Concentrador
                     </label>
                     <ComboboxSearch

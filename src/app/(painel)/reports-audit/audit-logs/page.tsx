@@ -1,5 +1,6 @@
 // src/app/(painel)/audit-logs/page.tsx
-import { AuditLogsContainer } from "@/components/audit-logs/audit-logs-container";
+
+import { AuditLogsContainer } from "@/components/audit-logs/audit-log-container";
 import { fetchAuditLogs } from "@/services/audit.service"; // ou sua chamada de serviço/API
 
 interface AuditLogsPageProps {

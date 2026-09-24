@@ -1,9 +1,13 @@
+"use client";
+
 import React from "react";
 
+import { Badge } from "@/components/ui/badge";
 import type { AssetReportData } from "@/types/report";
 
 interface ReportTableContentProps {
     data: AssetReportData[];
+    isLoading?: boolean;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -16,28 +20,38 @@ const TYPE_LABELS: Record<string, string> = {
     SERVER: "Servidor",
 };
 
-export function ReportTableContent({ data }: ReportTableContentProps) {
+export function ReportTableContent({
+    data,
+    isLoading,
+}: ReportTableContentProps) {
     return (
         <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-sm">
+            <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                    <tr className="border-b border-zinc-800 bg-zinc-950/50 text-zinc-400">
-                        <th className="py-3 px-6 font-medium">PATRIMÔNIO</th>
-                        <th className="py-3 px-6 font-medium">
-                            ATIVO / HOSTNAME
-                        </th>
-                        <th className="py-3 px-6 font-medium">TIPO</th>
-                        <th className="py-3 px-6 font-medium">DEPARTAMENTO</th>
-                        <th className="py-3 px-6 font-medium">LOCALIDADE</th>
-                        <th className="py-3 px-6 font-medium">ENDEREÇO IP</th>
+                    <tr className="border-b border-border bg-muted/50 text-muted-foreground font-semibold uppercase tracking-wider">
+                        <th className="py-3 px-4">Patrimônio</th>
+                        <th className="py-3 px-4">Ativo / Hostname</th>
+                        <th className="py-3 px-4">Tipo</th>
+                        <th className="py-3 px-4">Departamento</th>
+                        <th className="py-3 px-4">Localidade</th>
+                        <th className="py-3 px-4">Endereço IP</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-800/60 text-zinc-200">
-                    {data.length === 0 ? (
+                <tbody className="divide-y divide-border/60 text-foreground">
+                    {isLoading ? (
                         <tr>
                             <td
                                 colSpan={6}
-                                className="py-8 text-center text-zinc-500"
+                                className="py-8 text-center text-muted-foreground font-medium"
+                            >
+                                Carregando relatório...
+                            </td>
+                        </tr>
+                    ) : data.length === 0 ? (
+                        <tr>
+                            <td
+                                colSpan={6}
+                                className="py-8 text-center text-muted-foreground"
                             >
                                 Nenhum ativo encontrado para os filtros
                                 selecionados.
@@ -63,35 +77,44 @@ export function ReportTableContent({ data }: ReportTableContentProps) {
                             return (
                                 <tr
                                     key={item.id}
-                                    className="hover:bg-zinc-800/30 transition-colors"
+                                    className="hover:bg-muted/40 transition-colors"
                                 >
-                                    <td className="py-3.5 px-6 font-mono text-zinc-300">
+                                    <td className="py-3 px-4 font-semibold text-foreground">
                                         {item.patrimony || "S/N"}
                                     </td>
-                                    <td className="py-3.5 px-6 font-medium text-white">
+                                    <td className="py-3 px-4 font-medium text-foreground">
                                         {hostname}
                                     </td>
-                                    <td className="py-3.5 px-6">
-                                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-zinc-800 text-zinc-300 border border-zinc-700">
+                                    <td className="py-3 px-4">
+                                        <Badge
+                                            variant="outline"
+                                            className="text-[10px] font-semibold bg-background"
+                                        >
                                             {TYPE_LABELS[item.type] ||
                                                 item.type}
-                                        </span>
+                                        </Badge>
                                     </td>
-                                    <td className="py-3.5 px-6 text-zinc-300">
+                                    <td className="py-3 px-4 text-muted-foreground">
                                         {item.department?.name || "-"}
                                     </td>
-                                    <td className="py-3.5 px-6 text-zinc-300">
+                                    <td className="py-3 px-4 text-muted-foreground">
                                         {item.location?.name || "-"}
                                     </td>
-                                    <td className="py-3.5 px-6">
+                                    <td className="py-3 px-4">
                                         {ipAddress ? (
-                                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-mono bg-emerald-950/60 text-emerald-400 border border-emerald-800/40">
+                                            <Badge
+                                                variant="secondary"
+                                                className="bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/40 font-mono text-[11px]"
+                                            >
                                                 {ipAddress}
-                                            </span>
+                                            </Badge>
                                         ) : (
-                                            <span className="text-zinc-500 text-xs">
+                                            <Badge
+                                                variant="outline"
+                                                className="text-muted-foreground/60 border-dashed text-[10px]"
+                                            >
                                                 Sem IP
-                                            </span>
+                                            </Badge>
                                         )}
                                     </td>
                                 </tr>

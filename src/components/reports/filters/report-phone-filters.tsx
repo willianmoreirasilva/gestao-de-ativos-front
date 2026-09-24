@@ -17,14 +17,17 @@ export function ReportPhoneFilters({
     onChange,
 }: ReportPhoneFiltersProps) {
     return (
-        <div className="p-3 bg-zinc-950/50 rounded-lg border border-zinc-800 space-y-2">
-            <span className="text-[11px] font-semibold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                <Phone size={13} className="text-emerald-400" /> Especificações
-                do Telefone / Ramal
+        <div className="p-3.5 bg-muted/30 rounded-xl border border-border/80 space-y-2.5">
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Phone
+                    size={13}
+                    className="text-emerald-600 dark:text-emerald-400"
+                />{" "}
+                Especificações do Telefone / Ramal
             </span>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
                         Hostname / Nome
                     </label>
                     <input
@@ -34,11 +37,11 @@ export function ReportPhoneFilters({
                             onChange("hostname", e.target.value || undefined)
                         }
                         placeholder="Ex: TEL-RECEPCAO-01"
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                 </div>
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
                         Modelo
                     </label>
                     <input
@@ -48,11 +51,11 @@ export function ReportPhoneFilters({
                             onChange("model", e.target.value || undefined)
                         }
                         placeholder="Ex: GXP1625"
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                 </div>
                 <div>
-                    <label className="text-[10px] font-medium text-zinc-400 mb-1 block">
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
                         Ramal / Número
                     </label>
                     <input
@@ -62,7 +65,7 @@ export function ReportPhoneFilters({
                             onChange("phoneNumber", e.target.value || undefined)
                         }
                         placeholder="Ex: 2001, 2002"
-                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-indigo-500"
+                        className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                 </div>
             </div>
