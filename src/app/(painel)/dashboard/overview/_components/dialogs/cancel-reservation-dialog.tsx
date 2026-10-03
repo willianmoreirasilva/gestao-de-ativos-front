@@ -36,7 +36,7 @@ export function CancelReservationDialog({
             setLoading(true);
             const res = await cancelIpReservationAction(ip.id, ip.networkId);
 
-            if (res.success) {
+            if (res?.success) {
                 toast.success(
                     `Reserva cancelada. O IP ${ip.address} está novamente disponível.`,
                 );
@@ -44,11 +44,14 @@ export function CancelReservationDialog({
                 onClose();
             } else {
                 toast.error(
-                    res.error || "Não foi possível cancelar a reserva.",
+                    res?.error || "Não foi possível cancelar a reserva.",
                 );
             }
-        } catch (error) {
-            toast.error("Erro ao cancelar reserva.");
+        } catch (error: any) {
+            console.error("Erro no cliente ao cancelar reserva:", error);
+            toast.error(
+                error?.message || "Erro inesperado ao cancelar reserva.",
+            );
         } finally {
             setLoading(false);
         }
@@ -91,11 +94,15 @@ export function CancelReservationDialog({
                             </div>
                         )}
                     </div>
+
+                    {/* Caixa de Motivo corrigida para textos longos */}
                     {ip.reservationReason && (
-                        <p className="text-[11px] bg-amber-500/10 text-amber-700 dark:text-amber-400 p-2 rounded border border-amber-500/20">
-                            <strong>Motivo registrado:</strong>{" "}
-                            {ip.reservationReason}
-                        </p>
+                        <div className="text-[11px] bg-amber-500/10 text-amber-700 dark:text-amber-400 p-2.5 rounded border border-amber-500/20 max-h-28 overflow-y-auto break-words break-all leading-relaxed">
+                            <strong className="block mb-0.5 font-semibold">
+                                Motivo registrado:
+                            </strong>
+                            <span>{ip.reservationReason}</span>
+                        </div>
                     )}
                 </div>
 
@@ -105,7 +112,7 @@ export function CancelReservationDialog({
                         size="sm"
                         onClick={onClose}
                         disabled={loading}
-                        className="text-xs"
+                        className="text-xs cursor-pointer"
                     >
                         Voltar
                     </Button>
@@ -114,7 +121,7 @@ export function CancelReservationDialog({
                         size="sm"
                         onClick={handleConfirm}
                         disabled={loading}
-                        className="text-xs gap-2"
+                        className="text-xs gap-2 cursor-pointer"
                     >
                         {loading && (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />

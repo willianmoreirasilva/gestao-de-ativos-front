@@ -98,7 +98,7 @@ export function FindAvailableIpsTab({
     const handleReserveSuccess = () => {
         setSelectedIps([]);
         setResult(null);
-        onRefreshAll();
+        onRefreshAll?.();
     };
 
     return (

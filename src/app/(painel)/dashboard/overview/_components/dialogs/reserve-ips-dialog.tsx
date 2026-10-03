@@ -45,8 +45,9 @@ export function ReserveIpsDialog({
     if (!open || selectedIps.length === 0) return null;
 
     const handleConfirm = async () => {
+        setLoading(true);
+
         try {
-            setLoading(true);
             const res = await reserveIpsAction({
                 ipAddresses: selectedIps,
                 networkId,
@@ -58,12 +59,17 @@ export function ReserveIpsDialog({
                     `Reserva realizada com sucesso. ${res.count || selectedIps.length} IP(s) reservado(s).`,
                 );
                 setReason("");
-                onSuccess();
+
+                // Fecha o modal primeiro e isola a execução do onSuccess de forma segura
                 onClose();
+                setTimeout(() => {
+                    onSuccess?.(); // Chamada opcional segura
+                }, 0);
             } else {
                 toast.error(res.error || "Erro ao efetuar reserva.");
             }
         } catch (error) {
+            console.error("Erro na reserva de IPs:", error);
             toast.error("Erro inesperado ao realizar reserva.");
         } finally {
             setLoading(false);
@@ -124,7 +130,7 @@ export function ReserveIpsDialog({
                         <span className="text-muted-foreground block mb-1 text-[11px] font-medium">
                             IPs selecionados:
                         </span>
-                        <div className="max-h-24 overflow-y-auto bg-background border rounded p-2 text-xs font-mono flex flex-wrap gap-1">
+                        <div className="mt-2 max-h-24 overflow-y-auto bg-background border rounded p-2 text-xs font-mono flex flex-wrap gap-1">
                             {selectedIps.map((ip) => (
                                 <span
                                     key={ip}
@@ -148,8 +154,9 @@ export function ReserveIpsDialog({
                             placeholder="Ex: Reserva para novos servidores de banco de dados"
                             value={reason}
                             onChange={(e) => setReason(e.target.value)}
+                            maxLength={100}
                             disabled={loading}
-                            className="text-xs h-9"
+                            className="text-xs h-9 mt-4"
                         />
                     </div>
                 </div>
@@ -160,7 +167,7 @@ export function ReserveIpsDialog({
                         size="sm"
                         onClick={onClose}
                         disabled={loading}
-                        className="text-xs"
+                        className="text-xs cursor-pointer"
                     >
                         Cancelar
                     </Button>
@@ -168,7 +175,7 @@ export function ReserveIpsDialog({
                         size="sm"
                         onClick={handleConfirm}
                         disabled={loading}
-                        className="text-xs gap-2"
+                        className="text-xs gap-2 cursor-pointer"
                     >
                         {loading && (
                             <Loader2 className="h-3.5 w-3.5 animate-spin" />

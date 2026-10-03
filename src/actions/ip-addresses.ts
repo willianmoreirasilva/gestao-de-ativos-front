@@ -59,24 +59,52 @@ export async function cancelIpReservationAction(
     id: string,
     networkId?: string,
 ) {
-    const api = await getServerApi();
     try {
-        const response = await api.delete(`/api/ip-addresses/reserve/${id}`);
+        const api = await getServerApi();
+        const response = await api.delete(`/api/ip-addresses/reserve/${id}`, {
+            headers: {
+                "Content-Type": undefined,
+            },
+        });
 
-        if (response.data?.error) {
-            return { success: false, error: response.data.error };
+        // Se o backend retornar sucesso falso ou campo de erro
+        if (response.data?.success === false || response.data?.error) {
+            return {
+                success: false,
+                error:
+                    response.data?.error ||
+                    "Não foi possível cancelar a reserva.",
+            };
         }
 
-        revalidateIpPaths(networkId);
+        // Revalidações no Next.js utilizando networkId para purgar os caches certos
+        try {
+            revalidatePath("/dashboard/overview");
+            revalidatePath("/dashboard/ip-addresses");
+            if (networkId) {
+                revalidatePath(`/dashboard/ip-addresses/${networkId}`);
+            }
+        } catch (revalidateError) {
+            console.warn(
+                "[ACTION] Erro ao revalidar caminhos no Next.js:",
+                revalidateError,
+            );
+        }
 
         return { success: true, error: null };
     } catch (error: any) {
+        console.error(
+            "[ACTION ERROR] Falha no cancelIpReservationAction:",
+            error?.response?.data || error,
+        );
+
         return {
             success: false,
             error:
                 error.response?.data?.error ||
                 error.response?.data?.message ||
-                "Falha ao cancelar reserva do IP",
+                error.message ||
+                "Falha ao cancelar reserva do IP.",
         };
     }
 }

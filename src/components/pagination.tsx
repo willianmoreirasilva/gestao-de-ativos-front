@@ -7,20 +7,16 @@ import {
     ChevronsRight,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRef } from "react";
 
 type PaginationProps = {
-    // Props do modo completo
     total?: number;
     page?: number;
     limit?: number;
     totalPages?: number;
-    itemLabel?: string; // Ex: "ativos", "registros", "relatórios"
-
-    // Props para tabelas controladas por estado (ex: ReportTable)
+    itemLabel?: string;
     onPageChange?: (page: number) => void;
     onLimitChange?: (limit: number) => void;
-
-    // Props para compatibilidade retroativa (modo legado)
     disablePrev?: boolean;
     disableNext?: boolean;
 };
@@ -40,7 +36,6 @@ export function Pagination({
     const pathname = usePathname();
     const searchParams = useSearchParams();
 
-    // Lê os query params de URL como fallback
     const urlPage = parseInt(searchParams.get("page") || "1", 10);
     const urlLimit = parseInt(
         searchParams.get("limit") || String(propLimit || 10),
@@ -50,7 +45,14 @@ export function Pagination({
     const currentPage = propPage ?? urlPage;
     const currentLimit = propLimit ?? urlLimit;
 
-    // Se total e totalPages não forem informados, opera no modo legado/simplificado
+    // 🟢 GUARDA O LIMITE INICIAL APENAS NA PRIMEIRA RENDERIZAÇÃO
+    const initialLimitRef = useRef<number | null>(null);
+    if (initialLimitRef.current === null) {
+        initialLimitRef.current = currentLimit;
+    }
+
+    const initialLimit = initialLimitRef.current;
+
     const isLegacyMode = total === undefined || propTotalPages === undefined;
 
     const calculatedTotalPages = isLegacyMode
@@ -91,7 +93,6 @@ export function Pagination({
         }
     };
 
-    // Cálculos do intervalo de exibição (ex: "1–7 de 73")
     const startItem =
         total === 0 || total === undefined
             ? 0
@@ -99,29 +100,31 @@ export function Pagination({
     const endItem =
         total === undefined ? 0 : Math.min(currentPage * currentLimit, total);
 
-    // Esconde o componente se não houver registros para exibir no modo legado
+    // 🟢 LÓGICA DAS OPÇÕES DO SELECT
+    let optionsList: number[] = [];
+
+    if (initialLimit <= 5) {
+        // Se o limite inicial for <= 5 (ex: 3, 5), inclui o limite inicial E o 10: [initialLimit, 10, 25, 50, 100]
+        optionsList = [initialLimit, 10, 25, 50, 100];
+    } else if (initialLimit > 5 && initialLimit < 10) {
+        // Se for entre 6 e 9 (ex: 8), substitui o 10 por ele: [initialLimit, 25, 50, 100]
+        optionsList = [initialLimit, 25, 50, 100];
+    } else {
+        // Padrão do sistema
+        optionsList = [10, 25, 50, 100];
+    }
+
+    // Garante que o limite selecionado atualmente (ex: se o usuário escolheu outro valor) também esteja na lista
+    optionsList.push(currentLimit);
+
+    // Remove duplicatas e ordena numericamente
+    const selectOptions = Array.from(new Set(optionsList)).sort(
+        (a, b) => a - b,
+    );
+
     if (isLegacyMode && disablePrev && disableNext && currentPage === 1) {
         return null;
     }
-
-    // 🟢 MATEMÁTICA REFINADA DAS OPÇÕES DE EXIBIÇÃO:
-    // Identifica o limite baixo base da página (sub-25)
-    const initialLowLimit =
-        currentLimit < 25
-            ? currentLimit
-            : propLimit && propLimit < 25
-              ? propLimit
-              : 8;
-
-    // Se o limite inicial for menor que 5 (ex: 4), mantemos o 10 na lista.
-    // Se estiver entre 5 e 24 (ex: 5 ou 8), o 10 é substituído por esse valor.
-    const baseList =
-        initialLowLimit < 5
-            ? [initialLowLimit, 10, 25, 50, 100]
-            : [initialLowLimit, 25, 50, 100];
-
-    // Ordena os valores e garante que não existam duplicatas
-    const selectOptions = Array.from(new Set(baseList)).sort((a, b) => a - b);
 
     return (
         <div className="flex flex-wrap items-center justify-between gap-4 border border-border/80 bg-card px-4 py-2.5 rounded-xl text-xs transition-colors shadow-xs">
@@ -150,8 +153,7 @@ export function Pagination({
             </div>
 
             {/* Direita: Seletor de limite e Controles de Navegação */}
-            <div className="flex items-center gap-4">
-                {/* Registros por página (Seletor) */}
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4">
                 {!isLegacyMode && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                         <span>Exibir:</span>
@@ -169,14 +171,12 @@ export function Pagination({
                     </div>
                 )}
 
-                {/* Divisor Visual */}
                 {!isLegacyMode && (
-                    <div className="h-4 w-[1px] bg-border/60 hidden sm:block" />
+                    <div className="h-4 w-px bg-border/60 hidden sm:block" />
                 )}
 
-                {/* Indicador e Botões */}
                 <div className="flex items-center gap-3">
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground whitespace-nowrap">
                         Pág.{" "}
                         <strong className="text-foreground font-semibold">
                             {calculatedTotalPages === 0 ? 0 : currentPage}

@@ -1,16 +1,20 @@
 "use client";
 
-import { CheckCircle2, Clock, RefreshCw, Search } from "lucide-react";
+import {
+    CheckCircle2,
+    ChevronDown,
+    ChevronUp,
+    Clock,
+    Network,
+    RefreshCw,
+    Search,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-    IpAddress,
-    NetworkUsageMetric,
-    OverviewStatsResponse,
-} from "@/types/ip-address";
+import { IpAddress, OverviewStatsResponse } from "@/types/ip-address";
 
 import { CancelReservationDialog } from "./dialogs/cancel-reservation-dialog";
 import { ReserveIpsDialog } from "./dialogs/reserve-ips-dialog";
@@ -29,6 +33,9 @@ export function IpOverviewContainer({
 }: IpOverviewContainerProps) {
     const router = useRouter();
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Estado para controlar especificamente a exibição da Utilização por Rede
+    const [showNetworkUsage, setShowNetworkUsage] = useState(false);
 
     // Estados dos Dialogs
     const [reserveState, setReserveState] = useState<{
@@ -84,13 +91,38 @@ export function IpOverviewContainer({
                 </Button>
             </div>
 
-            {/* ÁREA 1 — VISÃO GERAL */}
-            <div className="space-y-6">
-                <IpOverviewStats summary={summary} />
-                <IpNetworkUsage networksUsage={networks} />
+            {/* 1. KPIs SEMPRE VISÍVEIS */}
+            <IpOverviewStats summary={summary} />
+
+            {/* 2. BOTÃO + ÁREA DE UTILIZAÇÃO POR REDE (RETRÁTIL) */}
+            <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                    <Button
+                        onClick={() => setShowNetworkUsage((prev) => !prev)}
+                        variant="ghost"
+                        size="sm"
+                        className="gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer p-0 h-auto"
+                    >
+                        <Network className="h-4 w-4" />
+                        {showNetworkUsage
+                            ? "Ocultar Utilização por Rede"
+                            : "Ver Utilização por Rede (Distribuição e Capacidade)"}
+                        {showNetworkUsage ? (
+                            <ChevronUp className="h-4 w-4" />
+                        ) : (
+                            <ChevronDown className="h-4 w-4" />
+                        )}
+                    </Button>
+                </div>
+
+                {showNetworkUsage && (
+                    <div className="animate-in fade-in-50 duration-200">
+                        <IpNetworkUsage networksUsage={networks} />
+                    </div>
+                )}
             </div>
 
-            {/* ÁREA 2 — OPERAÇÃO DE IPs */}
+            {/* 3. OPERAÇÃO DE IPs (ÁREA PRINCIPAL) */}
             <div className="bg-card border border-border/60 rounded-xl p-5 shadow-xs space-y-4">
                 <div className="border-b border-border/40 pb-3">
                     <h3 className="text-sm font-bold tracking-tight">
@@ -148,7 +180,7 @@ export function IpOverviewContainer({
                     <TabsContent value="reserved">
                         <ReservedIpsTab
                             networks={networks}
-                            onOpenCancelDialog={(ip) => setCancelTarget(ip)}
+                            onRefreshAll={handleRefresh}
                         />
                     </TabsContent>
                 </Tabs>

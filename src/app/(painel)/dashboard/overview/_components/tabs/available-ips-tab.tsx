@@ -1,9 +1,10 @@
 "use client";
 
-import { BookmarkPlus, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { BookmarkPlus, Loader2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { getAvailableIpsAction } from "@/actions/ip-addresses";
+import { Pagination } from "@/components/pagination";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -43,6 +44,7 @@ export function AvailableIpsTab({
     const [ips, setIps] = useState<IpAddress[]>([]);
     const [meta, setMeta] = useState<PaginatedMeta | null>(null);
     const [page, setPage] = useState(1);
+    const [limit, setLimit] = useState(4);
 
     const [selectedIps, setSelectedIps] = useState<string[]>([]);
     const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
@@ -61,7 +63,7 @@ export function AvailableIpsTab({
             const res = await getAvailableIpsAction(
                 selectedNetworkId,
                 page,
-                15,
+                limit,
             );
             if (res.success && res.data) {
                 setIps(res.data);
@@ -72,7 +74,7 @@ export function AvailableIpsTab({
         } finally {
             setLoading(false);
         }
-    }, [selectedNetworkId, page]);
+    }, [selectedNetworkId, page, limit]);
 
     useEffect(() => {
         fetchAvailableIps();
@@ -104,6 +106,14 @@ export function AvailableIpsTab({
     };
 
     const activeNetwork = networks.find((n) => n.id === selectedNetworkId);
+
+    // Formatação amigável do status
+    const formatStatus = (status: string) => {
+        if (status === "AVAILABLE") return "Disponível";
+        if (status === "IN_USE") return "Em Uso";
+        if (status === "RESERVED") return "Reservado";
+        return status;
+    };
 
     return (
         <div className="space-y-4">
@@ -141,7 +151,7 @@ export function AvailableIpsTab({
                     <Button
                         size="sm"
                         onClick={() => setIsReserveDialogOpen(true)}
-                        className="h-8 text-xs gap-1.5 self-end sm:self-auto"
+                        className="h-8 text-xs gap-1.5 self-end sm:self-auto cursor-pointer"
                     >
                         <BookmarkPlus className="h-3.5 w-3.5" />
                         Reservar selecionados ({selectedIps.length})
@@ -198,6 +208,13 @@ export function AvailableIpsTab({
                                 const isChecked = selectedIps.includes(
                                     ip.address,
                                 );
+                                // Resolve o nome da sub-rede usando a relação do IP ou a sub-rede ativa selecionada
+                                const networkLabel = ip.network
+                                    ? `${ip.network.networkAddress}/${ip.network.cidr}`
+                                    : activeNetwork
+                                      ? `${activeNetwork.networkAddress}/${activeNetwork.cidr}`
+                                      : "-";
+
                                 return (
                                     <TableRow
                                         key={ip.id}
@@ -218,13 +235,11 @@ export function AvailableIpsTab({
                                         </TableCell>
                                         <TableCell>
                                             <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 font-medium">
-                                                {ip.status}
+                                                {formatStatus(ip.status)}
                                             </span>
                                         </TableCell>
                                         <TableCell className="text-xs text-muted-foreground font-mono">
-                                            {ip.network
-                                                ? `${ip.network.networkAddress}/${ip.network.cidr}`
-                                                : "-"}
+                                            {networkLabel}
                                         </TableCell>
                                     </TableRow>
                                 );
@@ -234,34 +249,21 @@ export function AvailableIpsTab({
                 </Table>
             </div>
 
-            {meta && meta.totalPages ? (
-                <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
-                    <span>
-                        Página {meta.page} de {meta.totalPages} ({meta.total}{" "}
-                        livres)
-                    </span>
-                    <div className="flex gap-1">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7"
-                            disabled={page <= 1}
-                            onClick={() => setPage((p) => p - 1)}
-                        >
-                            <ChevronLeft className="h-3.5 w-3.5" />
-                        </Button>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-7 w-7"
-                            disabled={page >= meta.totalPages}
-                            onClick={() => setPage((p) => p + 1)}
-                        >
-                            <ChevronRight className="h-3.5 w-3.5" />
-                        </Button>
-                    </div>
-                </div>
-            ) : null}
+            {/* Componente de Paginação Padrão */}
+            {meta && (
+                <Pagination
+                    total={meta.total}
+                    page={page}
+                    limit={limit}
+                    totalPages={meta.totalPages}
+                    itemLabel="IPs livres"
+                    onPageChange={(newPage) => setPage(newPage)}
+                    onLimitChange={(newLimit) => {
+                        setLimit(newLimit);
+                        setPage(1);
+                    }}
+                />
+            )}
 
             <ReserveIpsDialog
                 open={isReserveDialogOpen}
