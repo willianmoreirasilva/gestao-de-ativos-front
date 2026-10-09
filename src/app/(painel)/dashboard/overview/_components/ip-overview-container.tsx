@@ -174,6 +174,7 @@ export function IpOverviewContainer({
                             onOpenReserveDialog={(networkId, ips) =>
                                 setReserveState({ open: true, networkId, ips })
                             }
+                            onRefreshAll={handleRefresh}
                         />
                     </TabsContent>
 

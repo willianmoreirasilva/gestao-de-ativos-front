@@ -282,7 +282,7 @@ export function AvailableIpsTab({
                 onSuccess={() => {
                     setSelectedIps([]);
                     fetchAvailableIps();
-                    onRefreshAll();
+                    onRefreshAll?.();
                 }}
             />
         </div>

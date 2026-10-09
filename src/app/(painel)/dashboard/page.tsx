@@ -1,10 +1,6 @@
 import { AlertCircle } from "lucide-react";
 
-import { DashboardActivitySummary } from "@/components/dashboard/dashboard-activity-summary";
-import { DashboardHeader } from "@/components/dashboard/dashboard-header";
-import { DashboardKpiCards } from "@/components/dashboard/dashboard-kpi-cards";
-import { DashboardNetworkUsage } from "@/components/dashboard/dashboard-network-usage";
-import { DashboardQuickActions } from "@/components/dashboard/dashboard-quick-actions";
+import { DashboardClientView } from "@/components/dashboard/dashboard-client-view";
 import { dashboardService } from "@/services/dashboard-service";
 import { AuditPeriod } from "@/types/dashboard";
 
@@ -37,27 +33,5 @@ export default async function DashboardPage({
         );
     }
 
-    const { infra, audit } = data;
-
-    return (
-        <div className="p-6 space-y-6 max-w-(--breakpoint-2xl) mx-auto text-foreground">
-            <DashboardHeader currentPeriod={period} />
-
-            <DashboardKpiCards
-                totalAssets={audit.summary.totalAssets}
-                totalNetworks={infra.summary.totalNetworks}
-                totalDepartments={infra.summary.totalDepartments}
-                totalLocations={infra.summary.totalLocations}
-            />
-
-            <DashboardNetworkUsage
-                summary={infra.summary}
-                networksUsage={infra.networksUsage}
-            />
-
-            <DashboardActivitySummary audit={audit} />
-
-            <DashboardQuickActions />
-        </div>
-    );
+    return <DashboardClientView data={data} period={period} />;
 }
