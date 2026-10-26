@@ -32,10 +32,11 @@ export function validateAvatarFile(file: File): string | null {
     return null;
 }
 
-// User.image guarda um caminho relativo da API; URLs absolutas passam direto
+// User.image guarda um caminho relativo da API; URLs absolutas e
+// pré-visualizações locais (blob:/data:) passam direto
 export function resolveAvatarUrl(image: string | null | undefined) {
     if (!image) return undefined;
-    if (/^https?:\/\//i.test(image)) return image;
+    if (/^(https?:|blob:|data:)/i.test(image)) return image;
     return `${process.env.NEXT_PUBLIC_API_URL ?? ""}${image}`;
 }
 
@@ -47,4 +48,49 @@ export function buildAvatarFormData(file: File, crop: AvatarCrop): FormData {
     formData.append("cropSize", String(crop.size));
     formData.append("file", file, file.name);
     return formData;
+}
+
+/**
+ * Gera no navegador uma pré-visualização do recorte (somente para exibição;
+ * o arquivo enviado é sempre o original, recortado no servidor).
+ * Devolve uma object URL que deve ser liberada com URL.revokeObjectURL.
+ */
+export async function createAvatarPreview(
+    file: File,
+    crop: AvatarCrop,
+    outputSize = 256,
+): Promise<string> {
+    const sourceUrl = URL.createObjectURL(file);
+    try {
+        const image = new Image();
+        image.src = sourceUrl;
+        await image.decode();
+
+        const canvas = document.createElement("canvas");
+        canvas.width = outputSize;
+        canvas.height = outputSize;
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Canvas indisponível");
+
+        // O navegador já aplica a orientação EXIF, como o servidor
+        context.drawImage(
+            image,
+            crop.x,
+            crop.y,
+            crop.size,
+            crop.size,
+            0,
+            0,
+            outputSize,
+            outputSize,
+        );
+
+        const blob = await new Promise<Blob | null>((resolve) =>
+            canvas.toBlob(resolve, "image/webp", 0.9),
+        );
+        if (!blob) throw new Error("Falha ao gerar a pré-visualização");
+        return URL.createObjectURL(blob);
+    } finally {
+        URL.revokeObjectURL(sourceUrl);
+    }
 }

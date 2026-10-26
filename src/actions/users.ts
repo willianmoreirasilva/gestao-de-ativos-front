@@ -141,9 +141,11 @@ export async function updateMyProfileAction(
     }
 }
 
+// avatar: FormData opcional montado com buildAvatarFormData (cropX, cropY, cropSize e file)
 export async function acceptInvitationAction(
     token: string,
     input: unknown,
+    avatar?: FormData | null,
 ): Promise<UserActionResult> {
     if (!token) {
         return { success: false, error: "Convite inválido." };
@@ -152,12 +154,38 @@ export async function acceptInvitationAction(
     const parsed = acceptInvitationSchema.safeParse(input);
     if (!parsed.success) return validationError(parsed.error);
 
+    const body = new FormData();
+    body.append("token", token);
+    body.append("name", parsed.data.name);
+    body.append("password", parsed.data.password);
+
+    // Foto opcional: o próprio convidado escolhe ao criar a conta
+    const file = avatar?.get("file");
+    if (file instanceof File && file.size > 0) {
+        if (file.size > AVATAR_MAX_BYTES) {
+            return {
+                success: false,
+                error: "A imagem deve ter no máximo 5 MB.",
+            };
+        }
+        const crop = avatarCropSchema.safeParse({
+            x: avatar?.get("cropX"),
+            y: avatar?.get("cropY"),
+            size: avatar?.get("cropSize"),
+        });
+        if (!crop.success) {
+            return { success: false, error: "Área de recorte inválida." };
+        }
+        const avatarData = buildAvatarFormData(file, crop.data);
+        for (const [key, value] of avatarData.entries()) {
+            body.append(key, value);
+        }
+    }
+
     try {
         const api = await getServerApi();
-        const response = await api.post("/api/users/invitations/accept", {
-            token,
-            name: parsed.data.name,
-            password: parsed.data.password,
+        const response = await api.post("/api/users/invitations/accept", body, {
+            headers: { "Content-Type": "multipart/form-data" },
         });
 
         return {

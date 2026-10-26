@@ -3,16 +3,22 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { useForm } from "react-hook-form";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 
 import { acceptInvitationAction } from "@/actions/users";
+import { AvatarUploader } from "@/components/avatar/avatar-uploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/users/field-error";
+import {
+    type AvatarCrop,
+    buildAvatarFormData,
+    createAvatarPreview,
+} from "@/lib/avatar";
 import { acceptInvitationSchema } from "@/schemas/user";
 
 type FormInput = z.input<typeof acceptInvitationSchema>;
@@ -34,6 +40,43 @@ export function AcceptInviteForm({ token, email, roleLabel }: Props) {
     const [serverError, setServerError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const [completed, setCompleted] = useState(false);
+    // Foto opcional: guardada localmente e enviada junto com o cadastro
+    const [avatar, setAvatar] = useState<{
+        file: File;
+        crop: AvatarCrop;
+    } | null>(null);
+    const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const previewRef = useRef<string | null>(null);
+
+    const replacePreview = (next: string | null) => {
+        if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        previewRef.current = next;
+        setAvatarPreview(next);
+    };
+
+    // Libera a pré-visualização ao sair da página
+    useEffect(
+        () => () => {
+            if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+        },
+        [],
+    );
+
+    const handleAvatarSelect = async (file: File, crop: AvatarCrop) => {
+        try {
+            replacePreview(await createAvatarPreview(file, crop));
+        } catch {
+            // Sem pré-visualização, a foto ainda pode ser enviada
+            replacePreview(null);
+        }
+        setAvatar({ file, crop });
+        return true;
+    };
+
+    const handleAvatarRemove = () => {
+        setAvatar(null);
+        replacePreview(null);
+    };
 
     const form = useForm<FormInput, unknown, FormOutput>({
         resolver: zodResolver(acceptInvitationSchema),
@@ -43,7 +86,11 @@ export function AcceptInviteForm({ token, email, roleLabel }: Props) {
     const onSubmit = (values: FormOutput) => {
         setServerError(null);
         startTransition(async () => {
-            const result = await acceptInvitationAction(token, values);
+            const result = await acceptInvitationAction(
+                token,
+                values,
+                avatar ? buildAvatarFormData(avatar.file, avatar.crop) : null,
+            );
 
             if (result.success) {
                 setCompleted(true);
@@ -69,6 +116,7 @@ export function AcceptInviteForm({ token, email, roleLabel }: Props) {
 
     const busy = isPending || completed;
     const nameError = form.formState.errors.name?.message;
+    const typedName = useWatch({ control: form.control, name: "name" });
 
     return (
         <form
@@ -85,6 +133,25 @@ export function AcceptInviteForm({ token, email, roleLabel }: Props) {
                     <span className="text-muted-foreground">Função</span>
                     <span className="font-medium">{roleLabel}</span>
                 </div>
+            </div>
+
+            <div className="space-y-2">
+                <Label>
+                    Foto de perfil{" "}
+                    <span className="font-normal text-muted-foreground">
+                        (opcional)
+                    </span>
+                </Label>
+                <AvatarUploader
+                    image={avatar ? avatarPreview : null}
+                    name={typedName || null}
+                    email={email}
+                    isPending={busy}
+                    onSelect={handleAvatarSelect}
+                    onRemove={handleAvatarRemove}
+                    cropConfirmLabel="Usar esta foto"
+                    hint="JPG, PNG ou WebP de até 5 MB. Você também pode adicionar depois, em Minha Conta."
+                />
             </div>
 
             <div className="space-y-1.5">

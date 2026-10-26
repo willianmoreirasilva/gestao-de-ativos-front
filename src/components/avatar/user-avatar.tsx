@@ -22,7 +22,9 @@ export function UserAvatar({
     const src = resolveAvatarUrl(image);
 
     return (
-        <Avatar className={cn("shrink-0", className)}>
+        // O Radix guarda o status "loaded" na raiz e não o reinicia quando a
+        // imagem sai; a key remonta o avatar para voltar às iniciais
+        <Avatar key={src ?? "initials"} className={cn("shrink-0", className)}>
             {src && (
                 <AvatarImage
                     src={src}

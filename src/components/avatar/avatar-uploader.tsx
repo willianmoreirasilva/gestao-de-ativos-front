@@ -34,6 +34,10 @@ type AvatarUploaderProps = {
     layout?: "inline" | "stacked";
     // Conteúdo exibido entre a foto e as ações no layout "stacked"
     children?: ReactNode;
+    // Texto do botão de confirmação do recorte
+    cropConfirmLabel?: string;
+    // Dica exibida abaixo dos botões
+    hint?: string;
     className?: string;
 };
 
@@ -50,6 +54,8 @@ export function AvatarUploader({
     onRemove,
     layout = "inline",
     children,
+    cropConfirmLabel,
+    hint = "JPG, PNG ou WebP de até 5 MB.",
     className,
 }: AvatarUploaderProps) {
     const stacked = layout === "stacked";
@@ -186,9 +192,7 @@ export function AvatarUploader({
                         </Button>
                     )}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                    JPG, PNG ou WebP de até 5 MB.
-                </p>
+                <p className="text-xs text-muted-foreground">{hint}</p>
                 {error && (
                     <p
                         role="alert"
@@ -208,6 +212,7 @@ export function AvatarUploader({
                 }}
                 onConfirm={handleConfirm}
                 isPending={isPending}
+                confirmLabel={cropConfirmLabel}
             />
         </div>
     );

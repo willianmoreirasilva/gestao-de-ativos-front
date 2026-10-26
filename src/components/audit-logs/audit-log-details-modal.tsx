@@ -3,6 +3,7 @@
 import { Activity, Calendar, Check, Copy, Tag } from "lucide-react";
 import React, { useState } from "react";
 
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import {
     Dialog,
     DialogContent,
@@ -169,9 +170,13 @@ export function AuditLogDetailsModal({
                     {/* Grid de Metadados */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-muted/30 border border-border/80 rounded-xl p-4">
                         <div className="flex items-start gap-3 min-w-0">
-                            <div className="w-8 h-8 rounded-full bg-secondary border border-border flex shrink-0 items-center justify-center text-xs font-bold text-primary">
-                                {log.user.name.substring(0, 2).toUpperCase()}
-                            </div>
+                            <UserAvatar
+                                image={log.user.image}
+                                name={log.user.name}
+                                email={log.user.email}
+                                className="h-10 w-10 border border-border"
+                                fallbackClassName="bg-secondary text-primary text-xs font-bold"
+                            />
                             <div className="min-w-0">
                                 <span className="text-xs text-muted-foreground block">
                                     Usuário

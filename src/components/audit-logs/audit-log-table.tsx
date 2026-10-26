@@ -2,6 +2,7 @@
 
 import React from "react";
 
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import { getFormattedEntity } from "@/lib/audit-utils";
 import type { AuditLog } from "@/types/audit";
 
@@ -67,11 +68,13 @@ export function AuditLogTable({
                                 >
                                     <td className="py-3.5 px-4">
                                         <div className="flex items-center gap-2.5">
-                                            <div className="w-7 h-7 rounded-full bg-secondary border border-border/80 flex items-center justify-center text-xs font-semibold text-secondary-foreground shrink-0">
-                                                {userName
-                                                    .substring(0, 2)
-                                                    .toUpperCase()}
-                                            </div>
+                                            <UserAvatar
+                                                image={log.user?.image}
+                                                name={userName}
+                                                email={userEmail}
+                                                className="h-7 w-7 border border-border/80"
+                                                fallbackClassName="bg-secondary text-secondary-foreground text-xs"
+                                            />
                                             <div className="truncate max-w-[200px]">
                                                 <p className="font-medium text-foreground leading-tight truncate">
                                                     {userName}
