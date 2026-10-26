@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/tooltip";
 import { sidebarMenuConfig } from "@/config/sidebar-menu";
 import { authClient } from "@/lib/auth-client";
+import { can } from "@/lib/permissions";
 import { ROLE_LABELS } from "@/lib/user-roles";
 import { UserSession } from "@/services/auth";
 
@@ -110,14 +111,28 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     {sidebarMenuConfig.map((group) => {
                         const allowedItems = group.items.filter(
                             (item) =>
-                                !item.allowedRoles ||
-                                item.allowedRoles.includes(user.role),
+                                !item.permission ||
+                                can(
+                                    user.role,
+                                    item.permission.resource,
+                                    item.permission.action,
+                                ),
                         );
 
                         if (allowedItems.length === 0) return null;
 
+                        const groupUrl =
+                            !group.urlPermission ||
+                            can(
+                                user.role,
+                                group.urlPermission.resource,
+                                group.urlPermission.action,
+                            )
+                                ? group.url
+                                : allowedItems.find((item) => item.url)?.url;
+
                         const isGroupActive =
-                            group.url === pathname ||
+                            groupUrl === pathname ||
                             group.items.some(
                                 (item) =>
                                     item.url &&
@@ -127,7 +142,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                         const isOpen = openGroups[group.title] ?? false;
 
                         // 💡 Se o grupo não possuir URL configurada (ex: Ferramentas sem rota)
-                        const hasNoUrl = !group.url;
+                        const hasNoUrl = !groupUrl;
 
                         const headerContentInner = (
                             <>
@@ -164,7 +179,7 @@ export function AppSidebar({ user }: AppSidebarProps) {
                             </button>
                         ) : (
                             <Link
-                                href={group.url ?? "/"}
+                                href={groupUrl ?? "/"}
                                 className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors ${
                                     isCollapsed
                                         ? "justify-center p-2 cursor-pointer w-full text-zinc-500 hover:text-zinc-900"

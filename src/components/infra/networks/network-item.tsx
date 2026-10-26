@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { deleteNetworkAction } from "@/actions/networks";
+import { Can } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
@@ -121,26 +122,31 @@ export function NetworkItem({ network }: Props) {
             {/* COLUNA 5: Ações */}
             <TableCell className="w-24">
                 <div className="flex items-center gap-1">
-                    <Link href={`/infra/networks/edit/${network.id}`}>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                            title="Editar rede"
-                        >
-                            <Edit size={16} />
-                        </Button>
-                    </Link>
+                    <Can resource="networks" action="update">
+                        <Link href={`/infra/networks/edit/${network.id}`}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                title="Editar rede"
+                            >
+                                <Edit size={16} />
+                            </Button>
+                        </Link>
+                    </Can>
 
-                    <ConfirmDeleteDialog
-                        name={`${network.networkAddress}/${network.cidr}`}
-                        onConfirm={handleDelete}
-                        isDeleting={isDeleting}
-                        error={actionError}
-                        open={modalOpen}
-                        setOpen={handleModalOpenChange}
-                        disabled={hasAllocatedIps}
-                    />
+                    {/* Excluir rede: SUPERADM e ADMIN */}
+                    <Can resource="networks" action="delete">
+                        <ConfirmDeleteDialog
+                            name={`${network.networkAddress}/${network.cidr}`}
+                            onConfirm={handleDelete}
+                            isDeleting={isDeleting}
+                            error={actionError}
+                            open={modalOpen}
+                            setOpen={handleModalOpenChange}
+                            disabled={hasAllocatedIps}
+                        />
+                    </Can>
                 </div>
             </TableCell>
         </TableRow>

@@ -13,6 +13,7 @@ import Link from "next/link";
 
 import { getReportsAuditDashboardAction } from "@/actions/reports-audit-dashboard.action";
 import { ReportKpiCards } from "@/components/reports/summary/report-kpi-cards";
+import { RequirePermission } from "@/components/require-permission";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +26,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { getFormattedEntity } from "@/lib/audit-utils";
 
-export default async function ReportsAuditDashboardPage() {
+async function ReportsAuditDashboard() {
     const { data, error } = await getReportsAuditDashboardAction();
 
     if (error || !data) {
@@ -315,5 +316,18 @@ export default async function ReportsAuditDashboardPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Painel de auditoria: exclusivo do SUPERADM
+export default function ReportsAuditDashboardPage() {
+    return (
+        <RequirePermission
+            resource="auditLogs"
+            action="view"
+            message="Apenas Superadministradores podem ver o painel de auditoria."
+        >
+            <ReportsAuditDashboard />
+        </RequirePermission>
     );
 }

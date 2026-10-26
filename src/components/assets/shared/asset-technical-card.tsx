@@ -6,6 +6,8 @@ import { CameraHardwareCard } from "@/components/assets/cameras/camera-hardware-
 import { ComputerHardwareCard } from "@/components/assets/computers/computer-hardware-card";
 import { PhoneHardwareCard } from "@/components/assets/phones/phone-hardware-card";
 import { PrinterHardwareCard } from "@/components/assets/printers/printer-hardware-card";
+import { useCan } from "@/components/permission-provider";
+import { assetResource } from "@/lib/permissions";
 import type { AssetItem, OptionItem } from "@/types/assets";
 
 import { SwitchHardwareCard } from "../switches/switch-hardware-card";
@@ -31,6 +33,10 @@ export function AssetTechnicalCard({
     asset,
     options,
 }: AssetTechnicalCardProps) {
+    const can = useCan();
+    // Edição conforme a matriz: câmera exige cameras.update (ADMIN só vê)
+    const readOnly = asset ? !can(assetResource(asset.type), "update") : true;
+
     // MODO CRIAÇÃO (Cadastro Inicial Centralizado)
     if (mode === "create") {
         return (
@@ -99,6 +105,7 @@ export function AssetTechnicalCard({
                         <CameraHardwareCard
                             assetId={asset.id}
                             camera={asset.camera}
+                            readOnly={readOnly}
                         />
                     )}
 
@@ -130,6 +137,7 @@ export function AssetTechnicalCard({
                         connectedToSwitch={asset.connectedToSwitch}
                         switchPort={asset.switchPort?.toString() || null}
                         switches={options.switches}
+                        readOnly={readOnly}
                     />
                 </div>
             </div>
@@ -145,6 +153,7 @@ export function AssetTechnicalCard({
                         departments: options.departments,
                         locations: options.locations,
                     }}
+                    readOnly={readOnly}
                 />
             </div>
         </div>

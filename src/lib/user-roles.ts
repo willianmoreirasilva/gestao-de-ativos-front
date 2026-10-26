@@ -1,3 +1,4 @@
+import { can } from "@/lib/permissions";
 import type { UserRole } from "@/schemas/user";
 
 type BadgeVariant = "default" | "secondary" | "destructive" | "outline";
@@ -16,23 +17,37 @@ export const ROLE_BADGE_VARIANT: Record<UserRole, BadgeVariant> = {
     CAM_OPERATOR: "outline",
 };
 
-// Espelha a política do backend (requireSuperAdmin). Serve apenas para a
+// Espelham a política do backend (lib/permissions.ts). Servem apenas para a
 // interface: a API continua sendo a fonte definitiva de autorização.
 export function canManageUsers(role: UserRole | null | undefined): boolean {
-    return role === "SUPERADM";
+    return can(role, "users", "view");
 }
 
 type Actor = { id: string; role: UserRole };
 type Target = { id: string; isActive: boolean };
 
 export function canChangeRole(actor: Actor, target: Target): boolean {
-    return canManageUsers(actor.role) && actor.id !== target.id;
+    return can(actor.role, "users", "update") && actor.id !== target.id;
 }
 
 export function canDeactivate(actor: Actor, target: Target): boolean {
     return (
-        canManageUsers(actor.role) && actor.id !== target.id && target.isActive
+        can(actor.role, "users", "update") &&
+        actor.id !== target.id &&
+        target.isActive
     );
+}
+
+export function canReactivate(actor: Actor, target: Target): boolean {
+    return (
+        can(actor.role, "users", "update") &&
+        actor.id !== target.id &&
+        !target.isActive
+    );
+}
+
+export function canDeleteUser(actor: Actor, target: Target): boolean {
+    return can(actor.role, "users", "delete") && actor.id !== target.id;
 }
 
 export function getInitials(name: string | null, email: string): string {

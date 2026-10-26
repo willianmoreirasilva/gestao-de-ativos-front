@@ -118,6 +118,61 @@ export async function deactivateUserAction(
     }
 }
 
+// PATCH/DELETE sem corpo: o Fastify rejeita Content-Type JSON vazio
+const NO_BODY = { headers: { "Content-Type": undefined } };
+
+export async function reactivateUserAction(
+    userId: string,
+): Promise<UserActionResult> {
+    try {
+        const api = await getServerApi();
+        const response = await api.patch(
+            `/api/users/${encodeURIComponent(userId)}/reactivate`,
+            undefined,
+            NO_BODY,
+        );
+
+        revalidatePath("/users");
+        return {
+            success: true,
+            message: readMessage(response.data, "Usuário reativado."),
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: extractApiError(
+                error,
+                "Não foi possível reativar o usuário.",
+            ).message,
+        };
+    }
+}
+
+// Exclusão = anonimização no backend (a auditoria é preservada)
+export async function deleteUserAction(
+    userId: string,
+): Promise<UserActionResult> {
+    try {
+        const api = await getServerApi();
+        const response = await api.delete(
+            `/api/users/${encodeURIComponent(userId)}/permanent`,
+            NO_BODY,
+        );
+
+        revalidatePath("/users");
+        return {
+            success: true,
+            message: readMessage(response.data, "Usuário excluído."),
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: extractApiError(error, "Não foi possível excluir o usuário.")
+                .message,
+        };
+    }
+}
+
 export async function updateMyProfileAction(
     input: unknown,
 ): Promise<UserActionResult> {

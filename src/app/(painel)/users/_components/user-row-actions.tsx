@@ -1,6 +1,12 @@
 "use client";
 
-import { MoreHorizontal, ShieldCheck, UserX } from "lucide-react";
+import {
+    MoreHorizontal,
+    ShieldCheck,
+    Trash2,
+    UserCheck,
+    UserX,
+} from "lucide-react";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,12 +17,20 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { canChangeRole, canDeactivate } from "@/lib/user-roles";
+import {
+    canChangeRole,
+    canDeactivate,
+    canDeleteUser,
+    canReactivate,
+} from "@/lib/user-roles";
 import type { UserRole } from "@/schemas/user";
 import type { UserListItem } from "@/types/user";
 
 import { ChangeUserRoleDialog } from "./change-user-role-dialog";
-import { DeactivateUserDialog } from "./deactivate-user-dialog";
+import {
+    type UserAccountAction,
+    UserAccountDialog,
+} from "./user-account-dialog";
 
 type Props = {
     user: UserListItem;
@@ -24,19 +38,25 @@ type Props = {
     currentUserRole: UserRole;
 };
 
+const DANGER =
+    "cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400";
+
 export function UserRowActions({
     user,
     currentUserId,
     currentUserRole,
 }: Props) {
     const [roleOpen, setRoleOpen] = useState(false);
-    const [deactivateOpen, setDeactivateOpen] = useState(false);
+    const [accountAction, setAccountAction] =
+        useState<UserAccountAction | null>(null);
 
     const actor = { id: currentUserId, role: currentUserRole };
     const allowRole = canChangeRole(actor, user);
     const allowDeactivate = canDeactivate(actor, user);
+    const allowReactivate = canReactivate(actor, user);
+    const allowDelete = canDeleteUser(actor, user);
 
-    if (!allowRole && !allowDeactivate) {
+    if (!allowRole && !allowDeactivate && !allowReactivate && !allowDelete) {
         return <span className="sr-only">Nenhuma ação disponível</span>;
     }
 
@@ -65,14 +85,35 @@ export function UserRowActions({
                             Alterar função
                         </DropdownMenuItem>
                     )}
-                    {allowRole && allowDeactivate && <DropdownMenuSeparator />}
+                    {allowReactivate && (
+                        <DropdownMenuItem
+                            className="cursor-pointer gap-2"
+                            onSelect={() => setAccountAction("reactivate")}
+                        >
+                            <UserCheck size={14} />
+                            Reativar acesso
+                        </DropdownMenuItem>
+                    )}
+                    {(allowRole || allowReactivate) &&
+                        (allowDeactivate || allowDelete) && (
+                            <DropdownMenuSeparator />
+                        )}
                     {allowDeactivate && (
                         <DropdownMenuItem
-                            className="cursor-pointer gap-2 text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400"
-                            onSelect={() => setDeactivateOpen(true)}
+                            className={DANGER}
+                            onSelect={() => setAccountAction("deactivate")}
                         >
                             <UserX size={14} />
                             Desativar acesso
+                        </DropdownMenuItem>
+                    )}
+                    {allowDelete && (
+                        <DropdownMenuItem
+                            className={DANGER}
+                            onSelect={() => setAccountAction("delete")}
+                        >
+                            <Trash2 size={14} />
+                            Excluir conta
                         </DropdownMenuItem>
                     )}
                 </DropdownMenuContent>
@@ -85,11 +126,14 @@ export function UserRowActions({
                     onOpenChange={setRoleOpen}
                 />
             )}
-            {allowDeactivate && (
-                <DeactivateUserDialog
+            {accountAction && (
+                <UserAccountDialog
                     user={user}
-                    open={deactivateOpen}
-                    onOpenChange={setDeactivateOpen}
+                    action={accountAction}
+                    open
+                    onOpenChange={(open) => {
+                        if (!open) setAccountAction(null);
+                    }}
                 />
             )}
         </>

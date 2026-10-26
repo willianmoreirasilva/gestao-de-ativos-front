@@ -12,12 +12,12 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { useCan, useRole } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IpAddress, OverviewStatsResponse } from "@/types/ip-address";
+import { reservationNetworkTypes } from "@/lib/permissions";
+import { OverviewStatsResponse } from "@/types/ip-address";
 
-import { CancelReservationDialog } from "./dialogs/cancel-reservation-dialog";
-import { ReserveIpsDialog } from "./dialogs/reserve-ips-dialog";
 import { IpNetworkUsage } from "./ip-network-usage";
 import { IpOverviewStats } from "./ip-overview-stats";
 import { AvailableIpsTab } from "./tabs/available-ips-tab";
@@ -37,18 +37,6 @@ export function IpOverviewContainer({
     // Estado para controlar especificamente a exibição da Utilização por Rede
     const [showNetworkUsage, setShowNetworkUsage] = useState(false);
 
-    // Estados dos Dialogs
-    const [reserveState, setReserveState] = useState<{
-        open: boolean;
-        networkId: string;
-        ips: string[];
-    }>({
-        open: false,
-        networkId: "",
-        ips: [],
-    });
-    const [cancelTarget, setCancelTarget] = useState<IpAddress | null>(null);
-
     const handleRefresh = () => {
         setIsRefreshing(true);
         router.refresh();
@@ -62,6 +50,16 @@ export function IpOverviewContainer({
         reserved: 0,
     };
     const networks = initialStats?.networksUsage || [];
+
+    // Reservas: SUPERADM e ADMIN em qualquer rede; CAM_OPERATOR só nas
+    // redes de câmeras; USER não reserva (a API aplica a mesma regra)
+    const can = useCan();
+    const role = useRole();
+    const canReserve = can("ipReservations", "create");
+    const allowedTypes = reservationNetworkTypes(role);
+    const reservableNetworks = allowedTypes
+        ? networks.filter((net) => allowedTypes.includes(net.type))
+        : networks;
 
     return (
         <div className="p-6 space-y-6 max-w-(--breakpoint-2xl) mx-auto text-foreground">
@@ -123,86 +121,66 @@ export function IpOverviewContainer({
             </div>
 
             {/* 3. OPERAÇÃO DE IPs (ÁREA PRINCIPAL) */}
-            <div className="bg-card border border-border/60 rounded-xl p-5 shadow-xs space-y-4">
-                <div className="border-b border-border/40 pb-3">
-                    <h3 className="text-sm font-bold tracking-tight">
-                        Operação de IPs
-                    </h3>
-                    <p className="text-[11px] text-muted-foreground">
-                        Encontre blocos livres, consulte a disponibilidade ou
-                        gerencie reservas ativas
-                    </p>
+            {canReserve && (
+                <div className="bg-card border border-border/60 rounded-xl p-5 shadow-xs space-y-4">
+                    <div className="border-b border-border/40 pb-3">
+                        <h3 className="text-sm font-bold tracking-tight">
+                            Operação de IPs
+                        </h3>
+                        <p className="text-[11px] text-muted-foreground">
+                            Encontre blocos livres, consulte a disponibilidade
+                            ou gerencie reservas ativas
+                        </p>
+                    </div>
+
+                    <Tabs defaultValue="find" className="space-y-4">
+                        <TabsList className="bg-muted/50 p-1 rounded-lg">
+                            <TabsTrigger
+                                value="find"
+                                className="text-xs gap-1.5 cursor-pointer"
+                            >
+                                <Search className="h-3.5 w-3.5" />
+                                Encontrar IPs
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="available"
+                                className="text-xs gap-1.5 cursor-pointer"
+                            >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Disponíveis
+                            </TabsTrigger>
+                            <TabsTrigger
+                                value="reserved"
+                                className="text-xs gap-1.5 cursor-pointer"
+                            >
+                                <Clock className="h-3.5 w-3.5" />
+                                Reservados
+                            </TabsTrigger>
+                        </TabsList>
+
+                        <TabsContent value="find">
+                            <FindAvailableIpsTab
+                                networks={reservableNetworks}
+                                onRefreshAll={handleRefresh}
+                            />
+                        </TabsContent>
+
+                        <TabsContent value="available">
+                            <AvailableIpsTab
+                                networks={reservableNetworks}
+                                onRefreshAll={handleRefresh}
+                            />
+                        </TabsContent>
+
+                        <TabsContent value="reserved">
+                            <ReservedIpsTab
+                                networks={reservableNetworks}
+                                onRefreshAll={handleRefresh}
+                            />
+                        </TabsContent>
+                    </Tabs>
                 </div>
-
-                <Tabs defaultValue="find" className="space-y-4">
-                    <TabsList className="bg-muted/50 p-1 rounded-lg">
-                        <TabsTrigger
-                            value="find"
-                            className="text-xs gap-1.5 cursor-pointer"
-                        >
-                            <Search className="h-3.5 w-3.5" />
-                            Encontrar IPs
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="available"
-                            className="text-xs gap-1.5 cursor-pointer"
-                        >
-                            <CheckCircle2 className="h-3.5 w-3.5" />
-                            Disponíveis
-                        </TabsTrigger>
-                        <TabsTrigger
-                            value="reserved"
-                            className="text-xs gap-1.5 cursor-pointer"
-                        >
-                            <Clock className="h-3.5 w-3.5" />
-                            Reservados
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="find">
-                        <FindAvailableIpsTab
-                            networks={networks}
-                            onOpenReserveDialog={(networkId, ips) =>
-                                setReserveState({ open: true, networkId, ips })
-                            }
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="available">
-                        <AvailableIpsTab
-                            networks={networks}
-                            onOpenReserveDialog={(networkId, ips) =>
-                                setReserveState({ open: true, networkId, ips })
-                            }
-                            onRefreshAll={handleRefresh}
-                        />
-                    </TabsContent>
-
-                    <TabsContent value="reserved">
-                        <ReservedIpsTab
-                            networks={networks}
-                            onRefreshAll={handleRefresh}
-                        />
-                    </TabsContent>
-                </Tabs>
-            </div>
-
-            {/* Dialogs */}
-            <ReserveIpsDialog
-                open={reserveState.open}
-                networkId={reserveState.networkId}
-                ipAddresses={reserveState.ips}
-                onClose={() =>
-                    setReserveState({ open: false, networkId: "", ips: [] })
-                }
-                onSuccess={handleRefresh}
-            />
-
-            <CancelReservationDialog
-                ip={cancelTarget}
-                onClose={() => setCancelTarget(null)}
-                onSuccess={handleRefresh}
-            />
+            )}
         </div>
     );
 }

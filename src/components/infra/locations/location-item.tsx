@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { deleteLocationAction } from "@/actions/locations";
+import { Can } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import {
     Popover,
@@ -137,14 +138,17 @@ export function LocationItem({ location }: Props) {
                         </Button>
                     </Link>
 
-                    <ConfirmDeleteDialog
-                        name={location.name}
-                        onConfirm={handleDelete}
-                        isDeleting={isDeleting}
-                        error={actionError}
-                        open={modalOpen}
-                        setOpen={handleModalOpenChange}
-                    />
+                    {/* Excluir: SUPERADM e ADMIN */}
+                    <Can resource="locations" action="delete">
+                        <ConfirmDeleteDialog
+                            name={location.name}
+                            onConfirm={handleDelete}
+                            isDeleting={isDeleting}
+                            error={actionError}
+                            open={modalOpen}
+                            setOpen={handleModalOpenChange}
+                        />
+                    </Can>
                 </div>
             </TableCell>
         </TableRow>

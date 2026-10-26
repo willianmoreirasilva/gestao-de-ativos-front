@@ -1,6 +1,7 @@
 // src/app/(painel)/audit-logs/page.tsx
 
 import { AuditLogsContainer } from "@/components/audit-logs/audit-log-container";
+import { RequirePermission } from "@/components/require-permission";
 import { fetchAuditLogs } from "@/services/audit.service"; // ou sua chamada de serviço/API
 
 interface AuditLogsPageProps {
@@ -16,9 +17,7 @@ interface AuditLogsPageProps {
     }>;
 }
 
-export default async function AuditLogsPage({
-    searchParams,
-}: AuditLogsPageProps) {
+async function AuditLogs({ searchParams }: AuditLogsPageProps) {
     const params = await searchParams;
 
     const page = Number(params.page) || 1;
@@ -37,4 +36,17 @@ export default async function AuditLogsPage({
 
     // Renderize o Container (Client Component) e passe o initialData
     return <AuditLogsContainer initialData={initialData} />;
+}
+
+// Logs de auditoria: exclusivos do SUPERADM
+export default function AuditLogsPage(props: AuditLogsPageProps) {
+    return (
+        <RequirePermission
+            resource="auditLogs"
+            action="view"
+            message="Apenas Superadministradores podem ver os logs de auditoria."
+        >
+            <AuditLogs {...props} />
+        </RequirePermission>
+    );
 }

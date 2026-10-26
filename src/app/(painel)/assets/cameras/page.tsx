@@ -16,7 +16,9 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
+import { can } from "@/lib/permissions";
 import { getAssets } from "@/services/assets";
+import { userService } from "@/services/user";
 
 type PageProps = {
     searchParams: Promise<{
@@ -46,17 +48,23 @@ export default async function CamerasPage({ searchParams }: PageProps) {
 
     const cameras = Array.isArray(data) ? data : [];
 
+    // Cadastrar câmera: SUPERADM e CAM_OPERATOR (ADMIN só visualiza)
+    const { data: profile } = await userService.getMyProfile();
+    const canCreate = can(profile?.role, "cameras", "create");
+
     const pageTitle = (
         <PageTitle
             title="Inventário de Câmeras"
             leftSide={<BackButton />}
             rightSide={
-                <Link href="/assets/cameras/add">
-                    <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
-                        <Plus size={15} />
-                        Nova Câmera
-                    </Button>
-                </Link>
+                canCreate && (
+                    <Link href="/assets/cameras/add">
+                        <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
+                            <Plus size={15} />
+                            Nova Câmera
+                        </Button>
+                    </Link>
+                )
             }
         />
     );
@@ -68,8 +76,8 @@ export default async function CamerasPage({ searchParams }: PageProps) {
                 {pageTitle}
                 <EmptyState
                     message="Nenhuma câmera foi localizada no inventário."
-                    label="Cadastrar Câmera"
-                    href="/assets/cameras/add"
+                    label={canCreate ? "Cadastrar Câmera" : undefined}
+                    href={canCreate ? "/assets/cameras/add" : undefined}
                 />
             </div>
         );
@@ -123,8 +131,16 @@ export default async function CamerasPage({ searchParams }: PageProps) {
                                     <TableCell colSpan={6} className="py-10">
                                         <EmptyState
                                             message={`Nenhuma câmera encontrada para: "${searchQuery}"`}
-                                            label="Cadastrar Nova Câmera"
-                                            href="/assets/cameras/add"
+                                            label={
+                                                canCreate
+                                                    ? "Cadastrar Nova Câmera"
+                                                    : undefined
+                                            }
+                                            href={
+                                                canCreate
+                                                    ? "/assets/cameras/add"
+                                                    : undefined
+                                            }
                                         />
                                     </TableCell>
                                 </TableRow>

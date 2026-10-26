@@ -44,5 +44,7 @@ export type AuditDashboardData = {
 
 export type ExecutiveDashboardData = {
     infra: InfraDashboardData;
-    audit: AuditDashboardData;
+    totalAssets: number;
+    // null para quem não pode ver a auditoria (só o SUPERADM vê)
+    audit: AuditDashboardData | null;
 };

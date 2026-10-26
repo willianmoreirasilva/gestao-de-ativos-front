@@ -21,16 +21,16 @@ export function DashboardClientView({
     period,
 }: DashboardClientViewProps) {
     const [showNetworkUsage, setShowNetworkUsage] = useState(false);
-    const { infra, audit } = data;
+    const { infra, audit, totalAssets } = data;
 
     return (
         <div className="p-6 space-y-6 max-w-(--breakpoint-2xl) mx-auto text-foreground">
             {/* Header com Filtro de Período */}
-            <DashboardHeader currentPeriod={period} />
+            <DashboardHeader currentPeriod={period} showPeriod={!!audit} />
 
             {/* KPIs Principais */}
             <DashboardKpiCards
-                totalAssets={audit.summary.totalAssets}
+                totalAssets={totalAssets}
                 totalNetworks={infra.summary.totalNetworks}
                 totalDepartments={infra.summary.totalDepartments}
                 totalLocations={infra.summary.totalLocations}
@@ -70,8 +70,8 @@ export function DashboardClientView({
                 )}
             </div>
 
-            {/* Resumo de Atividades e Usuários Ativos */}
-            <DashboardActivitySummary audit={audit} />
+            {/* Resumo de Atividades e Usuários Ativos (só SUPERADM) */}
+            {audit && <DashboardActivitySummary audit={audit} />}
         </div>
     );
 }

@@ -29,11 +29,14 @@ interface CameraHardwareCardProps {
         mac?: string | null;
         notes?: string | null;
     };
+    // ADMIN visualiza câmeras, mas não edita
+    readOnly?: boolean;
 }
 
 export function CameraHardwareCard({
     assetId,
     camera,
+    readOnly = false,
 }: CameraHardwareCardProps) {
     const [isEditing, setIsEditing] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -95,7 +98,7 @@ export function CameraHardwareCard({
                     </h3>
                 </div>
 
-                {!isEditing ? (
+                {readOnly ? null : !isEditing ? (
                     <Button
                         variant="outline"
                         size="sm"

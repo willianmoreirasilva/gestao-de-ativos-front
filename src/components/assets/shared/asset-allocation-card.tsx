@@ -25,6 +25,8 @@ interface AssetAllocationCardProps {
         departments: OptionItem[];
         locations: OptionItem[];
     };
+    // Sem permissão de edição (ex.: ADMIN em câmeras), o botão some
+    readOnly?: boolean;
 }
 
 export function AssetAllocationCard({
@@ -33,6 +35,7 @@ export function AssetAllocationCard({
     department,
     location,
     options,
+    readOnly = false,
 }: AssetAllocationCardProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
     const hasSubLocation =
@@ -46,15 +49,17 @@ export function AssetAllocationCard({
                         <Layout size={15} className="text-purple-500" />{" "}
                         Alocação e Localização Física
                     </CardTitle>
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-                        onClick={() => setIsEditOpen(true)}
-                        title="Editar alocação"
-                    >
-                        <Pencil size={13} />
-                    </Button>
+                    {!readOnly && (
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+                            onClick={() => setIsEditOpen(true)}
+                            title="Editar alocação"
+                        >
+                            <Pencil size={13} />
+                        </Button>
+                    )}
                 </CardHeader>
 
                 <CardContent className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3 items-stretch">

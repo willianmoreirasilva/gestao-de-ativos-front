@@ -1,8 +1,25 @@
+"use client";
+
 import { ArrowRight, FileText, Layers, ShieldAlert } from "lucide-react";
 import Link from "next/link";
 
+import { useCan } from "@/components/permission-provider";
+import type { Action, Resource } from "@/lib/permissions";
+
+type QuickAction = {
+    title: string;
+    description: string;
+    href: string;
+    icon: typeof Layers;
+    color: string;
+    bg: string;
+    // Atalho só aparece para quem tem a permissão
+    permission?: { resource: Resource; action: Action };
+};
+
 export function DashboardQuickActions() {
-    const actions = [
+    const can = useCan();
+    const allActions: QuickAction[] = [
         {
             title: "Visão Geral de IPs",
             description:
@@ -20,6 +37,7 @@ export function DashboardQuickActions() {
             icon: FileText,
             color: "text-purple-500",
             bg: "bg-purple-500/10",
+            permission: { resource: "cameraReports", action: "view" },
         },
         {
             title: "Logs de Operações",
@@ -29,8 +47,14 @@ export function DashboardQuickActions() {
             icon: ShieldAlert,
             color: "text-amber-500",
             bg: "bg-amber-500/10",
+            permission: { resource: "auditLogs", action: "view" },
         },
     ];
+    const actions = allActions.filter(
+        (act) =>
+            !act.permission ||
+            can(act.permission.resource, act.permission.action),
+    );
 
     return (
         <div className="space-y-3">

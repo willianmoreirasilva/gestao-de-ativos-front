@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import React from "react";
 
+import { useCan } from "@/components/permission-provider";
+
 const ASSET_TYPES = [
     { id: "COMPUTER", label: "Computador", icon: Laptop },
     { id: "PRINTER", label: "Impressora", icon: Printer },
@@ -29,6 +31,12 @@ export function ReportTypeSelector({
     selectedTypes,
     onChange,
 }: ReportTypeSelectorProps) {
+    // Sem relatório geral (CAM_OPERATOR), só o tipo Câmera é oferecido
+    const canGeneralReports = useCan()("reports", "view");
+    const availableTypes = canGeneralReports
+        ? ASSET_TYPES
+        : ASSET_TYPES.filter((type) => type.id === "CAMERA");
+
     const toggleType = (typeId: string) => {
         if (selectedTypes.includes(typeId)) {
             onChange(selectedTypes.filter((t) => t !== typeId));
@@ -43,7 +51,7 @@ export function ReportTypeSelector({
                 Tipos de Ativos (Seleção Múltipla):
             </span>
             <div className="flex flex-wrap gap-2">
-                {ASSET_TYPES.map((type) => {
+                {availableTypes.map((type) => {
                     const Icon = type.icon;
                     const isSelected = selectedTypes.includes(type.id);
                     return (

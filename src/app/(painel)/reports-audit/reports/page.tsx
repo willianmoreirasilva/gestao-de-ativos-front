@@ -4,14 +4,17 @@ import {
     getProcessorsAction,
 } from "@/actions/options";
 import { ReportContainer } from "@/components/reports/report-container";
+import { RequirePermission } from "@/components/require-permission";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+import { can } from "@/lib/permissions";
 import { ReportQueryInput } from "@/schemas/report.schema";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
 import { networkService } from "@/services/network";
 import { getAssetReportAction } from "@/services/reports.service";
 import { switchService } from "@/services/switches";
+import { userService } from "@/services/user";
 import { ReportOptions } from "@/types/report-options";
 
 interface Props {
@@ -51,7 +54,7 @@ interface Props {
     }>;
 }
 
-export default async function ReportsPage({ searchParams }: Props) {
+async function Reports({ searchParams }: Props) {
     const params = await searchParams;
 
     const page = parseInt(params.page || "1", 10);
@@ -77,9 +80,14 @@ export default async function ReportsPage({ searchParams }: Props) {
         });
     }
 
-    // Tipos Selecionados
-    if (params.types) {
-        const typesList = params.types.split(",").filter(Boolean);
+    // Tipos Selecionados. Sem relatório geral (CAM_OPERATOR), o relatório
+    // é sempre só de câmeras; a API recusa qualquer outro tipo
+    const { data: profile } = await userService.getMyProfile();
+    const typesParam = can(profile?.role, "reports", "view")
+        ? params.types
+        : "CAMERA";
+    if (typesParam) {
+        const typesList = typesParam.split(",").filter(Boolean);
         if (typesList.length > 0) {
             filters.push({
                 field: "type",
@@ -370,5 +378,18 @@ export default async function ReportsPage({ searchParams }: Props) {
                 options={options}
             />
         </div>
+    );
+}
+
+// Relatórios: SUPERADM e ADMIN (gerais) e CAM_OPERATOR (só câmeras)
+export default function ReportsPage(props: Props) {
+    return (
+        <RequirePermission
+            resource="cameraReports"
+            action="view"
+            message="Você não tem permissão para gerar relatórios."
+        >
+            <Reports {...props} />
+        </RequirePermission>
     );
 }

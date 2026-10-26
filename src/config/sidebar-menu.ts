@@ -26,13 +26,14 @@ import {
     Zap,
 } from "lucide-react";
 
-import type { UserRole } from "@/schemas/user";
+import type { Action, Resource } from "@/lib/permissions";
 
 export type MenuItem = {
     title: string;
     url?: string;
     icon: React.ElementType;
-    allowedRoles?: UserRole[];
+    // Permissão da matriz (lib/permissions.ts) exigida para exibir o item
+    permission?: { resource: Resource; action: Action };
     isQuickSearch?: boolean; // Dispara a Command Palette (modal)
     shortcut?: string;
 };
@@ -40,6 +41,8 @@ export type MenuItem = {
 export type GroupMenu = {
     title: string;
     url?: string;
+    // Sem esta permissão, o cabeçalho do grupo aponta para o primeiro item permitido
+    urlPermission?: { resource: Resource; action: Action };
     icon: React.ElementType;
     items: MenuItem[];
 };
@@ -67,19 +70,19 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Redes e Subredes",
                 url: "/infra/networks",
                 icon: Network,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "networks", action: "view" },
             },
             {
                 title: "Departamentos",
                 url: "/infra/departments",
                 icon: Pentagon,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "departments", action: "view" },
             },
             {
                 title: "Localizações / Prédios",
                 url: "/infra/locations",
                 icon: MapPin,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "locations", action: "view" },
             },
         ],
     },
@@ -92,37 +95,37 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Computadores",
                 url: "/assets/computers",
                 icon: Computer,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "assets", action: "view" },
             },
             {
                 title: "Impressoras",
                 url: "/assets/printers",
                 icon: Printer,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "assets", action: "view" },
             },
             {
                 title: "Telefonia VoIP",
                 url: "/assets/phones",
                 icon: Phone,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "assets", action: "view" },
             },
             {
                 title: "Câmeras CFTV",
                 url: "/assets/cameras",
                 icon: Cctv,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER", "CAM_OPERATOR"],
+                permission: { resource: "cameras", action: "view" },
             },
             {
                 title: "Switches",
                 url: "/assets/switches",
                 icon: Radio,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "assets", action: "view" },
             },
             {
                 title: "Access Points",
                 url: "/assets/access-points",
                 icon: Wifi,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "assets", action: "view" },
             },
         ],
     },
@@ -142,33 +145,35 @@ export const sidebarMenuConfig: GroupMenu[] = [
     {
         title: "Relatórios & Auditoria",
         url: "/reports-audit",
+        urlPermission: { resource: "auditLogs", action: "view" },
         icon: FileText,
         items: [
             {
                 title: "Construtor de Relatórios",
                 url: "/reports-audit/reports",
                 icon: LayoutGrid, // ou SlidersHorizontal
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "cameraReports", action: "view" },
             },
 
             {
                 title: "Logs de Operações",
                 url: "/reports-audit/audit-logs",
                 icon: History,
-                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+                permission: { resource: "auditLogs", action: "view" },
             },
         ],
     },
     {
         title: "Administração",
         url: "/users",
+        urlPermission: { resource: "users", action: "view" },
         icon: ShieldCheck,
         items: [
             {
                 title: "Usuários do Sistema",
                 url: "/users",
                 icon: Users,
-                allowedRoles: ["SUPERADM"],
+                permission: { resource: "users", action: "view" },
             },
         ],
     },

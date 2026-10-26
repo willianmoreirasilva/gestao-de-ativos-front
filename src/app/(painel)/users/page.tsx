@@ -1,12 +1,13 @@
-import { AlertCircle, ShieldOff } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 
+import { AccessDenied } from "@/components/access-denied";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { canManageUsers } from "@/lib/user-roles";
+import { can } from "@/lib/permissions";
 import { userService } from "@/services/user";
 import type { UserListItem } from "@/types/user";
 
@@ -51,25 +52,11 @@ export default async function UsersPage({ searchParams }: Props) {
 
     const profile = profileRes.data;
 
-    if (!canManageUsers(profile.role)) {
+    if (!can(profile.role, "users", "view")) {
         return (
             <div className="space-y-6">
                 <PageTitle title={TITLE} description={DESCRIPTION} />
-                <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md mx-auto space-y-3">
-                    <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-full text-zinc-400">
-                        <ShieldOff size={28} strokeWidth={1.5} />
-                    </div>
-                    <h2 className="font-semibold text-foreground">
-                        Acesso restrito
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Apenas Superadministradores podem gerenciar usuários e
-                        permissões.
-                    </p>
-                    <Button asChild variant="outline" size="sm">
-                        <Link href="/dashboard">Voltar ao início</Link>
-                    </Button>
-                </div>
+                <AccessDenied message="Apenas Superadministradores podem gerenciar usuários e permissões." />
             </div>
         );
     }

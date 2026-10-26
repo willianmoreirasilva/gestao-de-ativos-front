@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { deleteDepartmentAction } from "@/actions/departments";
+import { Can } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
@@ -83,14 +84,17 @@ export const DepartmentItem = ({ department }: Props) => {
                         </Button>
                     </Link>
 
-                    <ConfirmDeleteDialog
-                        name={department.name}
-                        onConfirm={handleDelete}
-                        isDeleting={isDeleting}
-                        error={actionError}
-                        open={modalOpen}
-                        setOpen={handleModalOpenChange}
-                    />
+                    {/* Excluir: SUPERADM e ADMIN */}
+                    <Can resource="departments" action="delete">
+                        <ConfirmDeleteDialog
+                            name={department.name}
+                            onConfirm={handleDelete}
+                            isDeleting={isDeleting}
+                            error={actionError}
+                            open={modalOpen}
+                            setOpen={handleModalOpenChange}
+                        />
+                    </Can>
                 </div>
             </TableCell>
         </TableRow>
