@@ -69,3 +69,7 @@ export type UserActionResult =
           error: string;
           fieldErrors?: Record<string, string[]>;
       };
+
+export type AvatarActionResult =
+    | { success: true; image: string | null; message: string }
+    | { success: false; error: string };

@@ -1,6 +1,6 @@
 import { CheckCircle2, CircleDashed } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import {
     Table,
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/table";
 import {
     formatDateBR,
-    getInitials,
     ROLE_BADGE_VARIANT,
     ROLE_LABELS,
 } from "@/lib/user-roles";
@@ -82,24 +81,13 @@ export function UsersTable({
                                 >
                                     <TableCell className="py-3">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <Avatar className="h-9 w-9 shrink-0">
-                                                {user.image && (
-                                                    <AvatarImage
-                                                        src={user.image}
-                                                        alt={
-                                                            user.name ||
-                                                            user.email
-                                                        }
-                                                        className="object-cover"
-                                                    />
-                                                )}
-                                                <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">
-                                                    {getInitials(
-                                                        user.name,
-                                                        user.email,
-                                                    )}
-                                                </AvatarFallback>
-                                            </Avatar>
+                                            <UserAvatar
+                                                image={user.image}
+                                                name={user.name}
+                                                email={user.email}
+                                                className="h-9 w-9"
+                                                fallbackClassName="text-xs"
+                                            />
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <span

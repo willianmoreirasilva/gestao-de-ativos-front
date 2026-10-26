@@ -3,15 +3,17 @@
 import { revalidatePath } from "next/cache";
 import type { ZodError } from "zod";
 
+import { AVATAR_MAX_BYTES, buildAvatarFormData } from "@/lib/avatar";
 import { getServerApi } from "@/lib/server-api";
 import {
     acceptInvitationSchema,
+    avatarCropSchema,
     inviteUserSchema,
     updateProfileSchema,
     updateUserRoleSchema,
 } from "@/schemas/user";
 import { extractApiError } from "@/services/user";
-import type { UserActionResult } from "@/types/user";
+import type { AvatarActionResult, UserActionResult } from "@/types/user";
 
 function validationError(error: ZodError): UserActionResult {
     const fieldErrors: Record<string, string[]> = {};
@@ -168,6 +170,93 @@ export async function acceptInvitationAction(
             error: extractApiError(
                 error,
                 "Não foi possível concluir o cadastro.",
+            ).message,
+        };
+    }
+}
+
+function readAvatarResponse(data: unknown): {
+    image: string | null;
+    message: string | null;
+} {
+    if (!data || typeof data !== "object") {
+        return { image: null, message: null };
+    }
+    const image =
+        "image" in data && typeof data.image === "string" ? data.image : null;
+    return { image, message: readMessage(data, "") || null };
+}
+
+export async function updateMyAvatarAction(
+    formData: FormData,
+): Promise<AvatarActionResult> {
+    const file = formData.get("file");
+    if (!(file instanceof File) || file.size === 0) {
+        return { success: false, error: "Selecione uma imagem." };
+    }
+    if (file.size > AVATAR_MAX_BYTES) {
+        return { success: false, error: "A imagem deve ter no máximo 5 MB." };
+    }
+
+    const crop = avatarCropSchema.safeParse({
+        x: formData.get("cropX"),
+        y: formData.get("cropY"),
+        size: formData.get("cropSize"),
+    });
+    if (!crop.success) {
+        return { success: false, error: "Área de recorte inválida." };
+    }
+
+    try {
+        const api = await getServerApi();
+        // O usuário alterado é o da sessão; nenhum id é enviado
+        const response = await api.put(
+            "/api/users/me/avatar",
+            buildAvatarFormData(file, crop.data),
+            { headers: { "Content-Type": "multipart/form-data" } },
+        );
+        const { image, message } = readAvatarResponse(response.data);
+
+        revalidatePath("/settings/profile");
+        revalidatePath("/", "layout");
+        return {
+            success: true,
+            image,
+            message: message ?? "Foto de perfil atualizada.",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: extractApiError(
+                error,
+                "Não foi possível atualizar a foto de perfil.",
+            ).message,
+        };
+    }
+}
+
+export async function removeMyAvatarAction(): Promise<AvatarActionResult> {
+    try {
+        const api = await getServerApi();
+        // DELETE sem corpo: o Fastify rejeita Content-Type JSON vazio
+        const response = await api.delete("/api/users/me/avatar", {
+            headers: { "Content-Type": undefined },
+        });
+        const { message } = readAvatarResponse(response.data);
+
+        revalidatePath("/settings/profile");
+        revalidatePath("/", "layout");
+        return {
+            success: true,
+            image: null,
+            message: message ?? "Foto de perfil removida.",
+        };
+    } catch (error) {
+        return {
+            success: false,
+            error: extractApiError(
+                error,
+                "Não foi possível remover a foto de perfil.",
             ).message,
         };
     }

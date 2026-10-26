@@ -72,3 +72,10 @@ export type InviteUserInput = z.input<typeof inviteUserSchema>;
 export type UpdateProfileInput = z.input<typeof updateProfileSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type AcceptInvitationInput = z.input<typeof acceptInvitationSchema>;
+
+// Recorte do avatar recebido pelo Server Action (campos de FormData)
+export const avatarCropSchema = z.object({
+    x: z.coerce.number().int().min(0),
+    y: z.coerce.number().int().min(0),
+    size: z.coerce.number().int().min(1),
+});

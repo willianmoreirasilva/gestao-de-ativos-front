@@ -7,7 +7,6 @@ import {
     Monitor,
     Moon,
     Sun,
-    User,
     UserCog,
 } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +15,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { toast } from "sonner"; // 👈 Toast de notificação
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/avatar/user-avatar";
 import {
     Collapsible,
     CollapsibleContent,
@@ -358,22 +357,13 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                         : "p-1.5 gap-3 text-left"
                                 }`}
                             >
-                                <Avatar className="h-8 w-8 shrink-0 border border-primary/20 transition-transform duration-200 hover:scale-105">
-                                    {user.image && (
-                                        <AvatarImage
-                                            src={user.image}
-                                            alt={user.name || "Avatar"}
-                                            className="object-cover"
-                                        />
-                                    )}
-                                    <AvatarFallback className="bg-primary/10 text-primary font-semibold text-xs uppercase font-sans">
-                                        {user.name ? (
-                                            user.name.substring(0, 2)
-                                        ) : (
-                                            <User size={14} />
-                                        )}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <UserAvatar
+                                    image={user.image}
+                                    name={user.name}
+                                    email={user.email}
+                                    className="h-8 w-8 border border-primary/20 transition-transform duration-200 hover:scale-105"
+                                    fallbackClassName="text-xs font-sans"
+                                />
 
                                 {!isCollapsed && (
                                     <>
