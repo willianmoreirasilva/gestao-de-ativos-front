@@ -1,6 +1,7 @@
 "use client";
 
 import { AlertTriangle, Trash2 } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -22,7 +23,18 @@ type Props = {
     error?: string | null;
     open: boolean;
     setOpen: (open: boolean) => void;
+    title?: string;
+    // Recebe o nome destacado; padrão é o texto de exclusão permanente
+    description?: (name: ReactNode) => ReactNode;
+    confirmLabel?: string;
+    pendingLabel?: string;
+    // null = diálogo controlado sem gatilho (aberto por outro elemento)
+    trigger?: ReactNode | null;
 };
+
+const defaultDescription = (name: ReactNode) => (
+    <>Esta ação não pode ser desfeita. Isso excluirá permanentemente {name}</>
+);
 
 export function ConfirmDeleteDialog({
     name,
@@ -32,36 +44,52 @@ export function ConfirmDeleteDialog({
     error,
     open,
     setOpen,
+    title = "Tem certeza absoluta?",
+    description = defaultDescription,
+    confirmLabel = "Confirmar Exclusão",
+    pendingLabel = "Excluindo...",
+    trigger,
 }: Props) {
+    const highlightedName = (
+        <strong className="font-semibold text-foreground">{name}</strong>
+    );
+
+    const defaultTrigger = (
+        <DialogTrigger asChild>
+            <div
+                className="inline-block"
+                title={
+                    disabled
+                        ? "Não é possível excluir o ativo no momento"
+                        : `Excluir ${name}`
+                }
+            >
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 rounded-lg transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={disabled}
+                >
+                    <Trash2 size={16} />
+                </Button>
+            </div>
+        </DialogTrigger>
+    );
+
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <div
-                    className="inline-block"
-                    title={
-                        disabled
-                            ? "Não é possível excluir o ativo no momento"
-                            : `Excluir ${name}`
-                    }
-                >
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 text-zinc-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-950/30 rounded-lg transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-40"
-                        disabled={disabled}
-                    >
-                        <Trash2 size={16} />
-                    </Button>
-                </div>
-            </DialogTrigger>
+            {trigger === undefined ? (
+                defaultTrigger
+            ) : trigger === null ? null : (
+                <DialogTrigger asChild>{trigger}</DialogTrigger>
+            )}
             <DialogContent className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 shadow-xl">
                 <DialogHeader>
                     <DialogTitle className="text-zinc-900 dark:text-zinc-100 font-bold">
-                        Tem certeza absoluta?
+                        {title}
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground">
-                        Esta ação não pode ser desfeita. Isso excluirá
-                        permanentemente **{name}**
+                        {description(highlightedName)}
                     </DialogDescription>
                 </DialogHeader>
 
@@ -91,7 +119,7 @@ export function ConfirmDeleteDialog({
                         disabled={isDeleting}
                         className="h-9 text-xs font-bold bg-red-600 hover:bg-red-700 text-white dark:bg-red-950 dark:hover:bg-red-900 dark:text-red-200 transition-colors"
                     >
-                        {isDeleting ? "Excluindo..." : "Confirmar Exclusão"}
+                        {isDeleting ? pendingLabel : confirmLabel}
                     </Button>
                 </DialogFooter>
             </DialogContent>

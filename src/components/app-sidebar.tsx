@@ -8,6 +8,7 @@ import {
     Moon,
     Sun,
     User,
+    UserCog,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -51,6 +52,7 @@ import {
 } from "@/components/ui/tooltip";
 import { sidebarMenuConfig } from "@/config/sidebar-menu";
 import { authClient } from "@/lib/auth-client";
+import { ROLE_LABELS } from "@/lib/user-roles";
 import { UserSession } from "@/services/auth";
 
 import { QuickSearchModal } from "./assets/quick-search-modal";
@@ -401,8 +403,17 @@ export function AppSidebar({ user }: AppSidebarProps) {
                             <DropdownMenuItem className="text-xs font-mono text-zinc-400">
                                 Nível:{" "}
                                 <span className="font-bold text-blue-600 dark:text-blue-500 ml-1">
-                                    {user.role}
+                                    {ROLE_LABELS[user.role]}
                                 </span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                asChild
+                                className="cursor-pointer flex items-center gap-2 text-zinc-700 dark:text-zinc-300"
+                            >
+                                <Link href="/settings/profile">
+                                    <UserCog size={16} />
+                                    Minha Conta
+                                </Link>
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />

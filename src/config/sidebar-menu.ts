@@ -20,15 +20,19 @@ import {
     Printer,
     Radio,
     ShieldAlert,
+    ShieldCheck,
+    Users,
     Wifi,
     Zap,
 } from "lucide-react";
+
+import type { UserRole } from "@/schemas/user";
 
 export type MenuItem = {
     title: string;
     url?: string;
     icon: React.ElementType;
-    allowedRoles?: ("ADMIN" | "USER" | "CAM_OPERATOR")[];
+    allowedRoles?: UserRole[];
     isQuickSearch?: boolean; // Dispara a Command Palette (modal)
     shortcut?: string;
 };
@@ -63,19 +67,19 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Redes e Subredes",
                 url: "/infra/networks",
                 icon: Network,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
             {
                 title: "Departamentos",
                 url: "/infra/departments",
                 icon: Pentagon,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
             {
                 title: "Localizações / Prédios",
                 url: "/infra/locations",
                 icon: MapPin,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
         ],
     },
@@ -88,37 +92,37 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Computadores",
                 url: "/assets/computers",
                 icon: Computer,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
             {
                 title: "Impressoras",
                 url: "/assets/printers",
                 icon: Printer,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
             {
                 title: "Telefonia VoIP",
                 url: "/assets/phones",
                 icon: Phone,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
             {
                 title: "Câmeras CFTV",
                 url: "/assets/cameras",
                 icon: Cctv,
-                allowedRoles: ["ADMIN", "USER", "CAM_OPERATOR"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER", "CAM_OPERATOR"],
             },
             {
                 title: "Switches",
                 url: "/assets/switches",
                 icon: Radio,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
             {
                 title: "Access Points",
                 url: "/assets/access-points",
                 icon: Wifi,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
         ],
     },
@@ -144,14 +148,27 @@ export const sidebarMenuConfig: GroupMenu[] = [
                 title: "Construtor de Relatórios",
                 url: "/reports-audit/reports",
                 icon: LayoutGrid, // ou SlidersHorizontal
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
             },
 
             {
                 title: "Logs de Operações",
                 url: "/reports-audit/audit-logs",
                 icon: History,
-                allowedRoles: ["ADMIN", "USER"],
+                allowedRoles: ["SUPERADM", "ADMIN", "USER"],
+            },
+        ],
+    },
+    {
+        title: "Administração",
+        url: "/users",
+        icon: ShieldCheck,
+        items: [
+            {
+                title: "Usuários do Sistema",
+                url: "/users",
+                icon: Users,
+                allowedRoles: ["SUPERADM"],
             },
         ],
     },

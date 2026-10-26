@@ -2,16 +2,22 @@
 
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { use, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { authClient } from "@/lib/auth-client";
 
-export default function LoginPage() {
+type Props = {
+    searchParams: Promise<{ convite?: string; email?: string }>;
+};
+
+export default function LoginPage({ searchParams }: Props) {
     const router = useRouter();
-    const [email, setEmail] = useState("");
+    const params = use(searchParams);
+    const inviteAccepted = params.convite === "aceito";
+    const [email, setEmail] = useState(params.email ?? "");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const [isPending, setIsPending] = useState(false);
@@ -65,6 +71,16 @@ export default function LoginPage() {
                         NetManager
                     </h1>
                 </div>
+
+                {inviteAccepted && (
+                    <div
+                        role="status"
+                        className="rounded-lg bg-emerald-50 p-3 text-xs font-medium text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400 text-center"
+                    >
+                        Conta criada com sucesso. Entre com o seu e-mail e a
+                        senha que você acabou de definir.
+                    </div>
+                )}
 
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-1">

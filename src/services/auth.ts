@@ -1,4 +1,5 @@
 import { getServerApi } from "@/lib/server-api";
+import type { UserRole } from "@/schemas/user";
 import { ApiResponse } from "@/types/api";
 
 // Tipagem espelhada direto do seu Scalar API
@@ -8,7 +9,7 @@ export type UserSession = {
     email: string;
     image: string | null;
     emailVerified: boolean;
-    role: "ADMIN" | "USER"; // Sua propriedade customizada do banco
+    role: UserRole;
 };
 
 export type SessionResponse = {

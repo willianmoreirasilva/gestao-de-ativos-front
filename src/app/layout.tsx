@@ -23,7 +23,11 @@ export default function RootLayout({
     return (
         <html lang="pt-br" suppressHydrationWarning>
             <head />
-            <body className={`${inter.className} antialiased`}>
+            {/* Extensões do navegador (ex.: ColorZilla) injetam atributos no body */}
+            <body
+                className={`${inter.className} antialiased`}
+                suppressHydrationWarning
+            >
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"

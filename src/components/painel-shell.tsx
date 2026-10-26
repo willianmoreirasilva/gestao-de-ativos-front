@@ -1,0 +1,77 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { authClient } from "@/lib/auth-client";
+import type { UserSession } from "@/services/auth";
+import type { MyProfile } from "@/types/user";
+
+type Props = {
+    // Perfil vindo de GET /api/users/me: única fonte confiável do papel,
+    // pois o Better Auth não expõe o campo role na sessão.
+    profile: MyProfile | null;
+    children: React.ReactNode;
+};
+
+export function PainelShell({ profile, children }: Props) {
+    const router = useRouter();
+
+    const { data: session, isPending } = authClient.useSession();
+
+    useEffect(() => {
+        if (!isPending && (!session || !session.user)) {
+            router.push("/login");
+        }
+    }, [session, isPending, router]);
+
+    if (isPending) {
+        return (
+            <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
+                <div className="flex flex-col items-center gap-2">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+                    <p className="text-xs text-muted-foreground font-medium animate-pulse">
+                        Autenticando sessão...
+                    </p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!session || !session.user) {
+        return null;
+    }
+
+    const isSameUser = profile?.id === session.user.id;
+
+    const mappedUser: UserSession = {
+        id: session.user.id,
+        name: (isSameUser && profile?.name) || session.user.name,
+        email: session.user.email,
+        image:
+            (isSameUser ? profile?.image : null) ?? session.user.image ?? null,
+        emailVerified: session.user.emailVerified,
+        role: isSameUser && profile ? profile.role : "USER",
+    };
+
+    return (
+        <TooltipProvider delayDuration={0}>
+            <SidebarProvider>
+                <AppSidebar user={mappedUser} />
+
+                <div className="flex-1 min-w-0 relative p-4 pt-12 bg-zinc-50 dark:bg-zinc-950 min-h-screen">
+                    <div className="absolute left-4 top-3">
+                        <SidebarTrigger className="hover:bg-zinc-200 dark:hover:bg-zinc-800" />
+                    </div>
+
+                    <main className="w-full max-w-7xl mx-auto space-y-6">
+                        {children}
+                    </main>
+                </div>
+            </SidebarProvider>
+        </TooltipProvider>
+    );
+}

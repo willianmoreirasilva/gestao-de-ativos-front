@@ -22,7 +22,10 @@ export const dashboardService = {
                 error: null,
             };
         } catch (error: any) {
-            console.error("Erro ao carregar Dashboard Executivo:", error);
+            // 401 = sessão expirada; o painel redireciona para o login
+            if (error.response?.status !== 401) {
+                console.error("Erro ao carregar Dashboard Executivo:", error);
+            }
             return {
                 data: null,
                 error:
