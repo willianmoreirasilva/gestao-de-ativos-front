@@ -16,6 +16,7 @@ const ENTITY_OPTIONS = [
     { value: "USER", label: "Usuário" },
     { value: "DEPARTMENT", label: "Departamento" },
     { value: "LOCATION", label: "Localidade" },
+    { value: "IpAddress", label: "IP" },
     { value: "SWITCH", label: "Switch" },
     { value: "COMPUTER", label: "Computador" },
     { value: "PRINTER", label: "Impressora" },
