@@ -1,0 +1,31 @@
+# Variáveis de ambiente
+
+Só os nomes e para que servem. **Nunca** coloque valores reais em documentação nem em commits.
+
+## Frontend (`.env.local`, ignorado pelo Git com `.env*`)
+
+| Variável | Uso | Onde |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | URL base do backend (em dev, `http://localhost:3005`). É pública, porque o navegador usa para o login e para a URL das fotos | `src/lib/server-api.ts`, `src/lib/auth-client.ts`, `src/lib/avatar.ts` |
+| `NODE_ENV` | Definida pelo Next; usada só no `loginAction` sem uso | `src/actions/auth.ts` |
+
+Não existe `.env.example` no front. Só existe esta variável, e ela não é segredo. Não há outras `NEXT_PUBLIC_*`, então não há segredos expostos ao cliente.
+
+## Backend (`.env`, ignorado; modelo em `.env.example`)
+
+| Variável | Obrigatória | Uso | Onde |
+|---|---|---|---|
+| `PORT` | não (padrão 3005) | Porta HTTP | `src/server.ts` |
+| `DATABASE_URL` | **sim** | Conexão PostgreSQL | `src/lib/db.ts`, `prisma.config.ts` |
+| `BETTER_AUTH_SECRET` | **sim** | Assina cookies e tokens do Better Auth; o pacote lê sozinho | `src/lib/auth.ts` |
+| `BETTER_AUTH_URL` | não (padrão `http://localhost:3005`) | `baseURL` do Better Auth | `src/lib/auth.ts:11` |
+| `FRONTEND_URL` | não (padrão `http://localhost:3000`) | Monta o link do convite | `src/services/user.service.ts:185` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS` | para enviar convites | Servidor de e-mail (padrão `smtp.mailtrap.io:2525`) | `src/services/email.service.ts` |
+| `EMAIL_FROM` | não | Remetente dos convites | `src/services/email.service.ts` |
+| `UPLOADS_DIR` | não (padrão `uploads`) | Pasta das fotos de perfil (`<UPLOADS_DIR>/avatars`) | `src/lib/avatar-storage.ts` |
+| `NODE_ENV` | não | Fora de produção, reaproveita o `PrismaClient` global | `src/lib/db.ts` |
+| `HOST`, `CORS_ORIGINS` | — | Declaradas em `src/config/env.ts`, mas **esse módulo não é importado** (M6) | — |
+
+O `.env.example` só lista `PORT`, `DATABASE_URL`, `BETTER_AUTH_SECRET` e `BETTER_AUTH_URL`. Faltam `FRONTEND_URL`, `SMTP_*`, `EMAIL_FROM` e `UPLOADS_DIR` (B6).
+
+O `tsx --watch` **não recarrega** o `.env`. Depois de alterá-lo, reinicie o `pnpm dev`.
