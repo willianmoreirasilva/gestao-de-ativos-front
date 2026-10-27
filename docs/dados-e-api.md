@@ -45,8 +45,8 @@ Toda rota autenticada também passa por `requirePermission(recurso, ação)`, co
 | Método | Rota | Auth | Entrada |
 |---|---|---|---|
 | POST | `/networks` | A+ADM | `{ networkAddress, cidr (20–32), vlanTag?, type }`. Gera todos os IPs da faixa |
-| GET | `/networks` | A | query (paginação, busca, tipo) |
-| GET | `/networks/available-ips` | A | query `type`, `limit` |
+| GET | `/networks` | A | query (paginação, busca, tipo). USER: sem a VLAN de câmeras. O `_count` de IPs em uso só vem para quem vê o uso da rede (`ipUsage`) |
+| GET | `/networks/available-ips` | A | query `type`, `limit`: IPs livres para o cadastro de ativo. USER com `type=CAMERA_VLAN`: 403 |
 | GET | `/networks/:id` | A | — |
 | PATCH | `/networks/:id` | A+ADM | campos da rede |
 | DELETE | `/networks/:id` | A+ADM | — (os IPs são apagados em cascata) |
@@ -57,17 +57,20 @@ Toda rota autenticada também passa por `requirePermission(recurso, ação)`, co
 
 ### Endereços IP (`back:src/routes/ipaddress.ts`)
 
-| Método | Rota | Auth | Observação |
+Escopo por VLAN (`ipNetworkScope`, ver [permissoes.md](./permissoes.md)): **todas** = SUPERADM e ADMIN; **câmeras** = CAM_OPERATOR, só `CAMERA_VLAN`. Rede pedida fora do escopo responde 403.
+
+| Método | Rota | Permissão | Observação |
 |---|---|---|---|
-| GET | `/ip-addresses` | A | listagem filtrada (rede, status) |
-| GET | `/ip-addresses/stats` | A | totais por status |
-| GET | `/ip-addresses/overview-stats` | A | uso por rede (Visão Geral) |
-| GET | `/ip-addresses/verify` | A | query `address`: situação de um IP |
-| GET | `/ip-addresses/available` | A | IPs livres de uma rede, paginados |
-| GET | `/ip-addresses/recent` | A | **quebrado (A3)** |
-| POST | `/ip-addresses/find-available` | A (sem USER) | `{ networkId, quantity (1–254) }`. CAM_OPERATOR só em redes `CAMERA_VLAN` |
-| POST | `/ip-addresses/reserve` | A (sem USER) | `{ networkId, ipAddresses[] (até 254), reason? }`. Os IPs precisam estar na faixa da rede; IP em uso não é sobrescrito. CAM_OPERATOR só em `CAMERA_VLAN` |
-| DELETE | `/ip-addresses/reserve/:id` | A (sem USER) | cancela a reserva. CAM_OPERATOR só em `CAMERA_VLAN` |
+| GET | `/ip-addresses` | `ipUsage` (sem USER) | listagem filtrada (rede, status), com o ativo dono. CAM_OPERATOR: só câmeras |
+| GET | `/ip-addresses/stats` | `ipUsage` | totais por status, no escopo |
+| GET | `/ip-addresses/overview-stats` | `ipUsage` | uso por rede (Visão Geral), no escopo |
+| GET | `/ip-addresses/available` | `ipUsage` | disponibilidade detalhada de uma rede, paginada |
+| GET | `/ip-addresses/recent` | `ipUsage` | últimos IPs, no escopo |
+| GET | `/ip-addresses/verify` | `ipFree` (todos) | query `address`, `expectedType`. Sem `ipUsage` na rede, responde só "livre" ou "indisponível"; IP da VLAN de câmeras é "indisponível" para o USER |
+| POST | `/ip-addresses/find-available` | `ipFree` (todos) | `{ networkId, quantity (1–254) }`, só endereços. USER: VLAN de câmeras responde 404 |
+| POST | `/ip-addresses/reserve` | `ipReservations.create` | `{ networkId, ipAddresses[] (até 254), reason? }`. Os IPs precisam estar na faixa da rede; IP em uso não é sobrescrito |
+| PATCH | `/ip-addresses/reserve/:id` | `ipReservations.update` | `{ reason?, newAddress? }`: edita o motivo e/ou move para outro IP livre. Valida a VLAN de origem e a de destino |
+| DELETE | `/ip-addresses/reserve/:id` | `ipReservations.delete` | cancela a reserva |
 
 ### Ativos
 
@@ -79,10 +82,11 @@ Toda rota autenticada também passa por `requirePermission(recurso, ação)`, co
 | PATCH | `/assets/:id/connectivity` | A | IP e porta do switch |
 | PATCH | `/assets/:id/allocation` | A | departamento e localidade |
 | PUT | `/assets/:id/specs/{computer,printer,phone,camera,switch}` | A | dados técnicos de cada tipo |
-| POST / GET | `/switches` | A | cria (asset + switch) / lista |
-| GET / PATCH / DELETE | `/switches/:id` | A | |
-| POST / GET | `/access-points` | A | **a resposta inclui `adminPassword` e `wifiPassword` (C3)** |
-| GET / PATCH / DELETE | `/access-points/:id` | A | |
+| POST / GET | `/switches` | `networkDevices` create / view | cria (asset + switch) / lista. Sem `viewSecrets`, a lista vem sem MAC, observações e IP de gerência, e a busca não casa por IP nem MAC |
+| GET / PATCH / DELETE | `/switches/:id` | `networkDevices` viewDetails / update / delete | só SUPERADM e ADMIN |
+| POST / GET | `/access-points` | `networkDevices` create / view | idem. **As senhas nunca saem**: só `hasWifiPassword` e `hasAdminPassword` (SUPERADM e ADMIN). Gravadas cifradas (AES-256-GCM) |
+| GET / PATCH / DELETE | `/access-points/:id` | `networkDevices` viewDetails / update / delete | a edição registra na auditoria quais credenciais mudaram, sem o valor |
+| POST | `/access-points/:id/secrets` | `networkDevices.viewSecrets` | devolve as senhas decifradas e grava `VIEW_SECRET` na auditoria (`Cache-Control: no-store`) |
 | GET / POST | `/options/processors` | A (hook) | catálogo de processadores |
 | GET / POST | `/options/operating-systems` | A (hook) | catálogo de sistemas operacionais |
 | GET | `/options/disks` | A (hook) | catálogo de discos. Não existe `POST` (o front chama em código morto, M4) |
@@ -92,7 +96,7 @@ Toda rota autenticada também passa por `requirePermission(recurso, ação)`, co
 | Método | Rota | Auth | Observação |
 |---|---|---|---|
 | GET | `/dashboard/stats` | A | totais de ativos (página `/assets`) |
-| GET | `/infra-dashboard` | A | indicadores de infraestrutura |
+| GET | `/infra-dashboard` | A | indicadores de infraestrutura. Uso de IPs no escopo de `ipUsage`: USER recebe `totalIpsInUse: null` e `networksUsage: []`; CAM_OPERATOR, só a VLAN de câmeras |
 | GET | `/reports/audit-dashboard` | A+SUP | query `period` (`7d`...): resumo, logs recentes, top usuários |
 | POST | `/reports/assets` | A+ADM; CAM_OPERATOR só com tipos = `["CAMERA"]` | relatório dinâmico de ativos (filtros por tipo, alocação, rede, hardware) |
 | GET | `/audit-logs` | A+SUP | query `page`, `limit`, `userId`, `action`, `entity`, `startDate`, `endDate`, `search` |

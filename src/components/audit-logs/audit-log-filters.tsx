@@ -10,6 +10,7 @@ const ACTIONS = [
     { label: "Excluiu", value: "DELETE" },
     { label: "Login", value: "LOGIN" },
     { label: "Logout", value: "LOGOUT" },
+    { label: "Revelou senha", value: "VIEW_SECRET" },
 ];
 
 const ENTITY_OPTIONS = [

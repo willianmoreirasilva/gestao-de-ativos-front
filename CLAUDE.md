@@ -48,9 +48,12 @@ A documentação completa está em `docs/` (índice: `docs/README.md`). Problema
 - **Permissões:** siga a matriz de `docs/permissoes.md`, codificada em `src/lib/permissions.ts`. Esse arquivo é uma **cópia idêntica** do backend: altere os dois juntos, com os testes. Na interface:
   - páginas: `<RequirePermission>`;
   - botões e atalhos: `<Can>` / `useCan()`;
-  - menu: campo `permission`.
+  - menu: campo `permission`;
+  - rotas de detalhe e criação de switch/AP: também há uma checagem de role no `proxy.ts`.
 
   Isso é só UX: quem autoriza é a API.
+
+  Dados sensíveis (senhas de AP, IP e MAC de switch/AP para USER e CAM_OPERATOR) nem chegam ao front. Não os passe em props: o card do AP revela as senhas por uma action própria, que é auditada.
 - Interface e comentários em pt-BR; identificadores em inglês.
 - Arquivos em kebab-case; exportações nomeadas, exceto nas páginas.
 - Componentes privados de rota em `_components/`.

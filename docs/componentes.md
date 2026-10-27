@@ -90,7 +90,9 @@ Outros:
 `dashboard-client-view` (C) junta `dashboard-header`, `dashboard-kpi-cards`, `dashboard-network-usage`, `dashboard-activity-summary` e `dashboard-quick-actions`. A Visão Geral de IPs fica em `app/(painel)/dashboard/overview/_components/`:
 - container e estatísticas;
 - abas: disponíveis, encontrar e reservados;
-- diálogos de reserva e de cancelamento.
+- diálogos de reserva, edição e cancelamento.
+
+O container recebe as redes da busca e as estatísticas, estas só para quem tem `ipUsage`, e renderiza conforme a matriz.
 
 ### Relatórios (`components/reports/`)
 
@@ -126,6 +128,7 @@ Outros:
 | `hooks/use-availableIps.ts` | Busca IPs livres por tipo de VLAN |
 | `lib/utils.ts` | `cn`, `getFieldErrors` (zod), `sanitizePayloadForBackend`, `sanitizeNullable`, `getApVlanType` |
 | `lib/avatar.ts` | Constantes, validação, `resolveAvatarUrl`, `buildAvatarFormData` e `createAvatarPreview` |
+| `lib/permissions.ts` | Matriz (`can`, `assetResource`, `ipNetworkScope`, `canManageVlan`, `canSeeNetworkType`), em cópia idêntica do backend |
 | `lib/user-roles.ts` | `ROLE_LABELS`, `canManageUsers`, `canChangeRole`, `canDeactivate`, `getInitials`, `formatDateBR` |
 | `lib/audit-utils.ts` | `getFormattedEntity` (rótulo da entidade e do subtipo de ativo) |
 | `lib/reports/*` | Monta o payload e formata os filtros do relatório |

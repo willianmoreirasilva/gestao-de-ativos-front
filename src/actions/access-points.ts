@@ -74,3 +74,35 @@ export async function deleteAccessPointAction(id: string) {
         };
     }
 }
+
+type ApiErrorShape = {
+    response?: { data?: { message?: string; error?: string } };
+};
+
+/**
+ * Revela as senhas (Wi-Fi e administração) do AP. A API só responde a quem
+ * tem networkDevices.viewSecrets e registra a visualização na auditoria.
+ */
+export async function revealAccessPointSecretsAction(id: string): Promise<
+    | {
+          success: true;
+          data: { wifiPassword: string | null; adminPassword: string | null };
+      }
+    | { success: false; error: string }
+> {
+    try {
+        const api = await getServerApi();
+        const response = await api.post(`/api/access-points/${id}/secrets`, {});
+        return { success: true, data: response.data.data };
+    } catch (error) {
+        console.error("❌ [revealAccessPointSecretsAction Error]:", error);
+        const data = (error as ApiErrorShape).response?.data;
+        return {
+            success: false,
+            error:
+                data?.message ||
+                data?.error ||
+                "Não foi possível revelar as senhas.",
+        };
+    }
+}

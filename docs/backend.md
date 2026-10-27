@@ -14,7 +14,7 @@
 | Docs da API | `@fastify/swagger` + swagger-ui (`/docs`), Scalar (`/reference`) |
 | Dev | `tsx --watch src/index.ts` (`pnpm dev`). **Não recarrega o `.env`**: reinicie o processo ao mudar variáveis |
 
-Scripts do `package.json`: `dev`, `typecheck` (`tsc --noEmit`), `lint` (`eslint src`), `test` (Vitest) e `backfill:ip-address-int`. Não existem `build` nem `start` (ver A7).
+Scripts do `package.json`: `dev`, `typecheck` (`tsc --noEmit`), `lint` (`eslint src`), `test` (Vitest), `backfill:ip-address-int` e `encrypt:ap-secrets`. Não existem `build` nem `start` (ver A7).
 
 ## Estrutura
 
@@ -59,7 +59,7 @@ Camadas: **route** (schema + preHandler) → **controller** → **service** → 
 | `Asset` | `type` (`AssetType`), `patrimony` (único), `ipId` (único), `switchPort` | `department?`, `location?` (SetNull), `ip?`, `connectedToSwitch?`, especialização 1:1 |
 | `Computer` | `username`, `hostname`, `anydesk`, `mac`, `memory` | `processor?`, `disk?`, `operatingSystem?` |
 | `Switch` | `id` = `asset.id`, `hostname`, `model`, `vendor`, `totalPorts`, `mac` | `connectedAssets[]` |
-| `AccessPoint` | `name`, `model`, `ssid`, `wifiPassword`, `adminUsername`, `adminPassword` (texto puro, C3), `firmwareVersion` | `asset` |
+| `AccessPoint` | `name`, `model`, `ssid`, `wifiPassword` e `adminPassword` (cifradas, `enc:v1:...`, `lib/secret-crypto.ts`), `adminUsername`, `firmwareVersion` | `asset` |
 | `Printer` / `Camera` / `Phone` | `model`, `serial`, `mac`, `channel`, `phoneNumber`... | `asset` (cascade) |
 | `Processor` / `OperatingSystem` / `Disk` | `name` (único) | catálogo para `Computer` |
 
@@ -86,7 +86,7 @@ Camadas: **route** (schema + preHandler) → **controller** → **service** → 
 | `NetworkType` | `GENERAL_DATA`, `CAMERA_VLAN`, `SWITCH_MGMT`, `WIFI_MGMT` |
 | `AssetType` | `COMPUTER`, `PRINTER`, `PHONE`, `SWITCH`, `ACCESS_POINT`, `CAMERA`, `OTHER` |
 | `UserRole` | `SUPERADM`, `ADMIN`, `USER`, `CAM_OPERATOR` |
-| `AuditAction` | `CREATE`, `UPDATE`, `DELETE`, `LOGIN`, `LOGOUT` |
+| `AuditAction` | `CREATE`, `UPDATE`, `DELETE`, `LOGIN`, `LOGOUT`, `VIEW_SECRET` (revelou senha de AP) |
 | `InvitationStatus` | `PENDING`, `ACCEPTED`, `EXPIRED`, `REVOKED` |
 
 As tabelas de domínio usam o nome padrão do Prisma (`"Network"`, `"IpAddress"`...); as de auth e auditoria são mapeadas em minúsculas.
@@ -122,6 +122,9 @@ Não existem. O banco é sincronizado com `prisma db push` (M10). Para gerar o c
   - `requireAuth` usa `auth.api.getSession`, lê `role` e `isActive` do banco a cada requisição e preenche `req.user` (com `role`) e `req.session`. Usuário inativo recebe 401, e as sessões que sobraram são apagadas.
   - `requirePermission(recurso, ação)` aplica a matriz de `lib/permissions.ts`; `requireRole(...roles)` fica para casos fora dela. `requireAdmin` e `requireSuperAdmin` são atalhos de `requireRole`.
   - Ativos: `lib/asset-access.ts` (`assertAssetAccess`, `assetVisibilityWhere`, `hideInvisibleAsset`). Ver [permissoes.md](./permissoes.md#7-situação-atual-implementado).
+  - Switch e AP: `lib/asset-select.ts`, com select explícito por role, `sanitizeAsset` e `auditSnapshot`.
+  - IPs: `lib/network-scope.ts` (`requireNetworkScope`, `ipScopeWhere`, `assertNetworkInScope`). Ver [permissoes.md](./permissoes.md#8-alteração-de-27102026-switchesaps-e-visão-geral-de-ips).
+  - Senhas de AP: `lib/secret-crypto.ts` (AES-256-GCM, `CREDENTIALS_ENCRYPTION_KEY`). A migração dos dados antigos é `pnpm encrypt:ap-secrets [--dry-run]`.
 - **Login:** o hook `before` de `/sign-in` recusa usuários inativos (403).
 - **Chamadas manuais à API:**
   - Mande o valor **assinado** do cookie, tal como vem no `Set-Cookie`. O token cru retorna 401.

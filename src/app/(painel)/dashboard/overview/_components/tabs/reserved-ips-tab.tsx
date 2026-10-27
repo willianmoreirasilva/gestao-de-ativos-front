@@ -1,6 +1,6 @@
 "use client";
 
-import { Ban, Loader2, RotateCcw, Search } from "lucide-react";
+import { Ban, Loader2, Pencil, RotateCcw, Search } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { getReservedIpsAction } from "@/actions/ip-addresses";
@@ -30,6 +30,7 @@ import {
 } from "@/types/ip-address";
 
 import { CancelReservationDialog } from "../dialogs/cancel-reservation-dialog";
+import { EditReservationDialog } from "../dialogs/edit-reservation-dialog";
 
 type ReservedIpsTabProps = {
     networks: NetworkUsageMetric[];
@@ -56,6 +57,9 @@ export function ReservedIpsTab({
 
     const [selectedIpToCancel, setSelectedIpToCancel] =
         useState<IpAddress | null>(null);
+    const [selectedIpToEdit, setSelectedIpToEdit] = useState<IpAddress | null>(
+        null,
+    );
 
     const loadReserved = useCallback(async () => {
         try {
@@ -239,6 +243,17 @@ export function ReservedIpsTab({
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() =>
+                                                    setSelectedIpToEdit(ip)
+                                                }
+                                                className="h-7 text-xs gap-1 cursor-pointer"
+                                            >
+                                                <Pencil className="h-3 w-3" />{" "}
+                                                Editar
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() =>
                                                     setSelectedIpToCancel(ip)
                                                 }
                                                 className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 cursor-pointer"
@@ -270,6 +285,15 @@ export function ReservedIpsTab({
                     }}
                 />
             )}
+
+            <EditReservationDialog
+                ip={selectedIpToEdit}
+                onClose={() => setSelectedIpToEdit(null)}
+                onSuccess={() => {
+                    loadReserved();
+                    onRefreshAll?.();
+                }}
+            />
 
             <CancelReservationDialog
                 ip={selectedIpToCancel}

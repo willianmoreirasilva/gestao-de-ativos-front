@@ -9,9 +9,10 @@ export function DashboardNetworkUsage({
     summary,
     networksUsage,
 }: DashboardNetworkUsageProps) {
-    const totalIps = summary.totalIpsInUse + summary.totalIpsAvailable;
+    const inUse = summary.totalIpsInUse ?? 0;
+    const totalIps = inUse + summary.totalIpsAvailable;
     const usagePercentage =
-        totalIps > 0 ? Math.round((summary.totalIpsInUse / totalIps) * 100) : 0;
+        totalIps > 0 ? Math.round((inUse / totalIps) * 100) : 0;
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

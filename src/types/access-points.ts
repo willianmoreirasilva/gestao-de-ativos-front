@@ -3,15 +3,17 @@ export interface AccessPointItem {
     name: string | null;
     model: string;
     vendor: string | null;
-    mac: string | null;
+    // Campos sensíveis: só para SUPERADM e ADMIN (networkDevices.viewSecrets)
+    mac?: string | null;
     ssid: string | null;
-    wifiPassword?: string | null;
     securityType?: string | null;
     frequencyBand?: string | null;
     adminUsername?: string | null;
-    adminPassword?: string | null;
     firmwareVersion?: string | null;
     notes?: string | null;
+    // As senhas nunca vêm nas leituras: só se existem
+    hasWifiPassword?: boolean;
+    hasAdminPassword?: boolean;
     asset: {
         id: string;
         patrimony: string | null;

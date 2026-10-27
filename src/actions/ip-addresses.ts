@@ -53,6 +53,36 @@ export async function reserveIpsAction(payload: {
 }
 
 /**
+ * 10. PATCH /api/ip-addresses/reserve/:id
+ * Edita o motivo e/ou move a reserva para outro IP livre. A API valida a
+ * VLAN da reserva atual e a do IP novo (CAM_OPERATOR: só câmeras).
+ */
+export async function updateIpReservationAction(
+    id: string,
+    payload: { reason?: string | null; newAddress?: string },
+) {
+    try {
+        const api = await getServerApi();
+        await api.patch(`/api/ip-addresses/reserve/${id}`, payload);
+        revalidateIpPaths();
+        return { success: true, error: null };
+    } catch (error) {
+        const data = (
+            error as {
+                response?: { data?: { message?: string; error?: string } };
+            }
+        ).response?.data;
+        return {
+            success: false,
+            error:
+                data?.error ||
+                data?.message ||
+                "Não foi possível editar a reserva.",
+        };
+    }
+}
+
+/**
  * 9. PATCH /api/ip-addresses/{id}/cancel-reservation
  */
 export async function cancelIpReservationAction(

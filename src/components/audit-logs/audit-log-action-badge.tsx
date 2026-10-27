@@ -36,6 +36,11 @@ export function AuditLogActionBadge({ action }: AuditLogActionBadgeProps) {
                 "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20";
             label = "Logout";
             break;
+        case "VIEW_SECRET":
+            variantClasses =
+                "bg-violet-500/10 text-violet-600 dark:text-violet-400 border-violet-500/20";
+            label = "Revelou senha";
+            break;
         case "EXPORT":
             variantClasses =
                 "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/20";

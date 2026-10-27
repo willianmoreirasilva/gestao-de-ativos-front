@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { findAvailableIpsAction } from "@/actions/ip-addresses";
+import { useRole } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -15,15 +16,14 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import {
-    FindAvailableIpsResponse,
-    NetworkUsageMetric,
-} from "@/types/ip-address";
+import { canManageVlan } from "@/lib/permissions";
+import { FindAvailableIpsResponse, NetworkOption } from "@/types/ip-address";
 
 import { ReserveIpsDialog } from "../dialogs/reserve-ips-dialog";
 
 type FindAvailableIpsTabProps = {
-    networks: NetworkUsageMetric[];
+    // Redes em que a role pode procurar IPs livres (USER: sem câmeras)
+    networks: NetworkOption[];
     onRefreshAll: () => void;
 };
 
@@ -39,6 +39,13 @@ export function FindAvailableIpsTab({
     // Seleção de IPs para reserva
     const [selectedIps, setSelectedIps] = useState<string[]>([]);
     const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
+
+    // Reservar só onde a role gerencia a VLAN (CAM_OPERATOR: câmeras; USER:
+    // nenhuma). A API aplica a mesma regra
+    const role = useRole();
+    const selectedNetwork = networks.find((n) => n.id === selectedNetworkId);
+    const canReserve =
+        !!selectedNetwork && canManageVlan(role, selectedNetwork.type);
 
     const handleSearch = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -174,7 +181,7 @@ export function FindAvailableIpsTab({
                             </p>
                         </div>
 
-                        {result.ips.length > 0 && (
+                        {canReserve && result.ips.length > 0 && (
                             <div className="flex items-center gap-2">
                                 <Button
                                     type="button"
@@ -213,16 +220,20 @@ export function FindAvailableIpsTab({
                                 return (
                                     <label
                                         key={ip}
-                                        className={`flex items-center gap-2 p-2 rounded border text-xs font-mono cursor-pointer transition-colors ${
+                                        className={`flex items-center gap-2 p-2 rounded border text-xs font-mono transition-colors ${
                                             isChecked
                                                 ? "bg-primary/10 border-primary"
                                                 : "bg-muted/30 hover:bg-muted/60"
-                                        }`}
+                                        } ${canReserve ? "cursor-pointer" : ""}`}
                                     >
-                                        <Checkbox
-                                            checked={isChecked}
-                                            onCheckedChange={() => toggleIp(ip)}
-                                        />
+                                        {canReserve && (
+                                            <Checkbox
+                                                checked={isChecked}
+                                                onCheckedChange={() =>
+                                                    toggleIp(ip)
+                                                }
+                                            />
+                                        )}
                                         <span>{ip}</span>
                                     </label>
                                 );
@@ -232,14 +243,16 @@ export function FindAvailableIpsTab({
                 </div>
             )}
 
-            <ReserveIpsDialog
-                open={isReserveDialogOpen}
-                networkId={selectedNetworkId}
-                networkInfo={result?.network}
-                selectedIps={selectedIps}
-                onClose={() => setIsReserveDialogOpen(false)}
-                onSuccess={handleReserveSuccess}
-            />
+            {canReserve && (
+                <ReserveIpsDialog
+                    open={isReserveDialogOpen}
+                    networkId={selectedNetworkId}
+                    networkInfo={result?.network}
+                    selectedIps={selectedIps}
+                    onClose={() => setIsReserveDialogOpen(false)}
+                    onSuccess={handleReserveSuccess}
+                />
+            )}
         </div>
     );
 }

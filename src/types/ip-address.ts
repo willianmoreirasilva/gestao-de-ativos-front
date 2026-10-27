@@ -40,6 +40,15 @@ export type IpStatusStat = {
     count: number;
 };
 
+// Rede para seleção (sem estatísticas de uso)
+export type NetworkOption = {
+    id: string;
+    networkAddress: string;
+    cidr: number;
+    vlanTag: number | null;
+    type: string;
+};
+
 export type NetworkUsageMetric = {
     id: string;
     networkAddress: string;

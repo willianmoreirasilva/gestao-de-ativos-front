@@ -9,7 +9,13 @@ export interface AuditDashboardStatsResponse {
     };
     recentLogs: Array<{
         id: string;
-        action: "CREATE" | "UPDATE" | "DELETE" | "LOGIN" | "LOGOUT";
+        action:
+            | "CREATE"
+            | "UPDATE"
+            | "DELETE"
+            | "LOGIN"
+            | "LOGOUT"
+            | "VIEW_SECRET";
         entity: string;
         entityId: string;
         details?: Record<string, any> | null; // <-- Adicionado

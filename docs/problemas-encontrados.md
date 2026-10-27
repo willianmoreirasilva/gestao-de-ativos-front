@@ -8,6 +8,13 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 
 > **Atualização (26/10/2026, controle de acesso por role):** resolvidos **C1** (cadastro público), **C2** (login de inativo), **C4** (build), **C5** (colunas de reserva), **A2** (papéis no backend), **A3** (IPs recentes) e **A5** (reserva de IP sem trava e sem validar a rede). Também foi corrigido o schema de resposta 401/403 da rota de relatórios, que não aceitava o formato `{ error }` dos middlewares de autenticação (hoje responde 401 sem login). Detalhes em [permissoes.md](./permissoes.md#7-situação-atual-implementado). Os números de linha citados abaixo podem ter mudado nos arquivos alterados.
 
+> **Atualização (27/10/2026, switches/APs e Visão Geral de IPs):** resolvido o **C3**:
+> - as senhas de AP são cifradas com AES-256-GCM e não saem em nenhuma leitura;
+> - revelar a senha é uma rota própria, auditada;
+> - as senhas antigas foram tiradas da auditoria pela migração `pnpm encrypt:ap-secrets`.
+>
+> Também foi corrigido o **A4** nos serviços de switch e AP: a auditoria agora roda dentro da transação. Detalhes em [permissoes.md](./permissoes.md#8-alteração-de-27102026-switchesaps-e-visão-geral-de-ips).
+
 **Selos de confirmação**
 - **[confirmado]:** reproduzido com uma ferramenta ou com uma chamada à API.
 - **[leitura]:** concluído lendo o código, sem reproduzir.
@@ -61,7 +68,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
   - Também verificar `isActive` no `requireAuth`, lendo o usuário do banco ou declarando `isActive` em `user.additionalFields`.
 - **Esforço:** P
 
-### C3. Senhas de Access Points gravadas em texto puro e enviadas a qualquer usuário logado
+### C3. Senhas de Access Points gravadas em texto puro e enviadas a qualquer usuário logado ✅ resolvido (27/10)
 - **Arquivos:**
   - `back:prisma/schema.prisma` (model `AccessPoint`: `wifiPassword` e `adminPassword`)
   - `back:src/validators/access-point.validator.ts:55-59` (schema de resposta)

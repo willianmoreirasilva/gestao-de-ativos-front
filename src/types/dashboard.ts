@@ -5,7 +5,8 @@ export type InfraDashboardData = {
         totalNetworks: number;
         totalDepartments: number;
         totalLocations: number;
-        totalIpsInUse: number;
+        // null: a role não vê estatísticas de uso (USER)
+        totalIpsInUse: number | null;
         totalIpsAvailable: number;
     };
     networksUsage: {

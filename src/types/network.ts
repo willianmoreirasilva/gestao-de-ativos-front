@@ -6,7 +6,8 @@ export type Network = {
     vlanTag: number | null;
     type: "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
     totalIps?: number;
-    _count: {
+    // Ausente para quem não vê o uso desta rede (ipUsage)
+    _count?: {
         ips: number;
     };
     createdAt: string;

@@ -16,7 +16,9 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
+import { can } from "@/lib/permissions";
 import { accessPointService } from "@/services/access-points";
+import { userService } from "@/services/user";
 
 type PageProps = {
     searchParams: Promise<{
@@ -45,17 +47,23 @@ export default async function AccessPointsPage({ searchParams }: PageProps) {
 
     const accessPoints = Array.isArray(data) ? data : [];
 
+    // Cadastrar switch/AP: só SUPERADM e ADMIN (os demais só veem a lista)
+    const { data: profile } = await userService.getMyProfile();
+    const canCreate = can(profile?.role, "networkDevices", "create");
+
     const pageTitle = (
         <PageTitle
             title="Access Points & Redes sem Fio"
             leftSide={<BackButton />}
             rightSide={
-                <Link href="/assets/access-points/add">
-                    <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
-                        <Plus size={15} />
-                        Novo Access Point
-                    </Button>
-                </Link>
+                canCreate && (
+                    <Link href="/assets/access-points/add">
+                        <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
+                            <Plus size={15} />
+                            Novo Access Point
+                        </Button>
+                    </Link>
+                )
             }
         />
     );
@@ -72,8 +80,8 @@ export default async function AccessPointsPage({ searchParams }: PageProps) {
                 {pageTitle}
                 <EmptyState
                     message="Nenhum Access Point cadastrado no inventário de rede."
-                    label="Cadastrar Access Point"
-                    href="/assets/access-points/add"
+                    label={canCreate ? "Cadastrar Access Point" : undefined}
+                    href={canCreate ? "/assets/access-points/add" : undefined}
                 />
             </div>
         );
@@ -132,8 +140,16 @@ export default async function AccessPointsPage({ searchParams }: PageProps) {
                                         >
                                             <EmptyState
                                                 message="Nenhum Access Point encontrado com os filtros aplicados."
-                                                label="Cadastrar Novo AP"
-                                                href="/assets/access-points/add"
+                                                label={
+                                                    canCreate
+                                                        ? "Cadastrar Novo AP"
+                                                        : undefined
+                                                }
+                                                href={
+                                                    canCreate
+                                                        ? "/assets/access-points/add"
+                                                        : undefined
+                                                }
                                             />
                                         </TableCell>
                                     </TableRow>

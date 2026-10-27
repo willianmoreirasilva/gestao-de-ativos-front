@@ -75,13 +75,15 @@ export interface AccessPointDetails {
     vendor?: string | null;
     mac?: string | null;
     ssid?: string | null;
-    wifiPassword?: string | null;
     securityType?: string | null;
     frequencyBand?: string | null;
     adminUsername?: string | null;
-    adminPassword?: string | null;
     firmwareVersion?: string | null;
     notes?: string | null;
+    // As senhas nunca vêm nas leituras: só se existem. O valor sai pela
+    // rota de revelar (revealAccessPointSecretsAction), com auditoria
+    hasWifiPassword?: boolean;
+    hasAdminPassword?: boolean;
 }
 
 export interface AssetItem {

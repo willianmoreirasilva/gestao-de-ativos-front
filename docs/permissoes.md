@@ -1,6 +1,8 @@
 # Permissões por role
 
-Este documento traz a matriz oficial, o diagnóstico feito antes da implementação (seções 2 a 4) e a situação atual (seção 7). O controle de acesso foi implementado em 26/10/2026, na branch `find-errors`.
+Este documento traz a matriz oficial, o diagnóstico feito antes da implementação (seções 2 a 4) e a situação atual (seção 7). O controle de acesso foi implementado em 26/10/2026, na branch `find-errors`. Em 27/10/2026, a matriz ganhou duas alterações, também implementadas (seção 8):
+1. switches e APs com recurso próprio;
+2. a Visão Geral de IPs com escopo por VLAN.
 
 **Para quem vai mexer no código:** toda rota, action ou tela nova precisa seguir a matriz da seção 1, que está codificada em `back:src/lib/permissions.ts` e na cópia idêntica `src/lib/permissions.ts`. Veja a seção 7 para os helpers.
 
@@ -31,7 +33,7 @@ Legenda: ✅ permitido · ❌ negado
 | Editar     | ✅ | ✅ | ❌ | ❌ |
 | Excluir    | ✅ | ✅ | ❌ | ❌ |
 
-### Ativos (exceto câmeras)
+### Ativos comuns (exceto câmeras, switches e APs)
 | Ação       | SUPERADMIN | ADMIN | CAM_OPERATOR | USER |
 |------------|:-:|:-:|:-:|:-:|
 | Visualizar | ✅ | ✅ | ✅ | ✅ |
@@ -39,7 +41,7 @@ Legenda: ✅ permitido · ❌ negado
 | Editar     | ✅ | ✅ | ✅ | ✅ |
 | Excluir    | ✅ | ✅ | ✅ | ✅ |
 
-O USER é o principal usuário do sistema e tem CRUD total em ativos, inclusive nos criados por outras pessoas. A exceção são as câmeras.
+O USER é o principal usuário do sistema e tem CRUD total em ativos, inclusive nos criados por outras pessoas. As exceções são as câmeras, os switches e os APs. O CAM_OPERATOR tem CRUD em ativos comuns e em câmeras, e só visualiza switches e APs na listagem.
 
 ### Ativos do tipo CÂMERA
 | Ação       | SUPERADMIN | ADMIN | CAM_OPERATOR | USER |
@@ -58,6 +60,26 @@ O USER é o principal usuário do sistema e tem CRUD total em ativos, inclusive 
 - Nesses casos, a resposta deve ser 404 ou 403.
 - O filtro tem que ser aplicado no backend, na query.
 
+### Ativos do tipo SWITCH e AP (Access Point)
+| Ação                                            | SUPERADMIN | ADMIN | CAM_OPERATOR | USER |
+|-------------------------------------------------|:-:|:-:|:-:|:-:|
+| Ver na listagem (campos básicos)                | ✅ | ✅ | ✅ | ✅ |
+| Acessar página de detalhes                      | ✅ | ✅ | ❌ | ❌ |
+| Ver dados sensíveis (senhas, credenciais, etc.) | ✅ | ✅ | ❌ | ❌ |
+| Criar                                           | ✅ | ✅ | ❌ | ❌ |
+| Editar                                          | ✅ | ✅ | ❌ | ❌ |
+| Excluir                                         | ✅ | ✅ | ❌ | ❌ |
+
+Requisitos:
+- **Detalhe bloqueado no servidor:** USER e CAM_OPERATOR recebem 403 ou redirecionamento, inclusive digitando a URL. Na listagem, o item aparece sem link e sem editar ou excluir.
+- **Dados sensíveis fora do payload:** não basta esconder na tela. Vale para:
+  - listagens, API, busca e autocomplete;
+  - props de server component para client component;
+  - exportações e relatórios;
+  - respostas de create e update, mensagens de erro e relações.
+- **Troca de tipo:** USER e CAM_OPERATOR não convertem um ativo comum ou uma câmera em switch/AP, nem o contrário.
+- **Sensíveis** (decisão 7): `adminUsername`, `adminPassword`, `wifiPassword`, `firmwareVersion`, `notes`, o MAC e o IP de gerência.
+
 ### Departamentos e Locais
 | Ação       | SUPERADMIN | ADMIN | CAM_OPERATOR | USER |
 |------------|:-:|:-:|:-:|:-:|
@@ -71,6 +93,23 @@ O USER é o principal usuário do sistema e tem CRUD total em ativos, inclusive 
 |---------------------------------|:-:|:-:|:-:|:-:|
 | Relatórios gerais (ativos etc.) | ✅ | ✅ | ❌ | ❌ |
 | Relatórios de câmeras           | ✅ | ✅ | ✅ | ❌ |
+
+### Visão geral de IPs (blocos livres, disponibilidade, reservas)
+| Funcionalidade                                       | SUPERADMIN | ADMIN | CAM_OPERATOR | USER |
+|------------------------------------------------------|:-:|:-:|:-:|:-:|
+| Encontrar IPs / blocos livres                        | ✅ todas as VLANs | ✅ todas as VLANs | ✅ todas as VLANs | ✅ exceto VLAN de câmeras |
+| Ver IPs ocupados e a quem pertencem (ativo, hostname, MAC) | ✅ todas | ✅ todas | ✅ só VLAN de câmeras | ❌ |
+| Consulta de disponibilidade detalhada                | ✅ todas | ✅ todas | ✅ só VLAN de câmeras | ❌ |
+| Ver reservas                                         | ✅ todas | ✅ todas | ✅ só VLAN de câmeras | ❌ |
+| Criar / editar / cancelar reservas                   | ✅ todas | ✅ todas | ✅ só VLAN de câmeras | ❌ |
+| Estatísticas de uso das sub-redes                    | ✅ todas | ✅ todas | ✅ só VLAN de câmeras | ❌ |
+
+Requisitos:
+- **VLAN validada no servidor:** é lida do cadastro de redes no banco (`Network.type = CAMERA_VLAN`), nunca de um valor enviado pelo cliente.
+- **Editar reserva:** valida a VLAN da reserva original **e** a do IP novo.
+- **Fora do escopo:** qualquer tentativa responde 403.
+- **USER:** recebe só IPs livres, sem a VLAN de câmeras e sem nenhum dado de IP ocupado ou reservado.
+- **IP de gerência de switch e AP:** nunca vai com detalhes para USER e CAM_OPERATOR.
 
 ### Logs de auditoria
 | Ação       | SUPERADMIN | ADMIN | CAM_OPERATOR | USER |
@@ -216,7 +255,11 @@ Esforço: **P** (até ~2 h) · **M** (meio dia a 1 dia) · **G** (mais de 1 dia)
 | 3 | Matriz nos dois repositórios | **Cópia idêntica** de `permissions.ts` e `permissions.test.ts` nos dois repositórios |
 | 4 | Dashboard | **Só o SUPERADM** vê o bloco de auditoria (e o seletor de período, que só filtra esse bloco) |
 | 5 | Reserva de IP | **SUPERADM e ADMIN** reservam e cancelam em qualquer rede; **CAM_OPERATOR** só nas redes `CAMERA_VLAN`, que são as únicas oferecidas a ele na tela de reservas; **USER** não reserva |
-| 6 | IP de câmera para o USER | O USER não acessa reservas. Na listagem de IPs, o IP de uma câmera aparece **em uso, sem os dados do ativo**. No cadastro de ativo, a regra de VLAN por tipo, que já existia, impede usar um IP da rede de câmeras |
+| 6 | IP de câmera para o USER | O USER não acessa reservas. No cadastro de ativo, a regra de VLAN por tipo, que já existia, impede usar um IP da rede de câmeras. *(Atualizado em 27/10: o USER não acessa mais a lista de IPs; ver a decisão 9)* |
+| 7 | Campos sensíveis de switch/AP (27/10) | Fora do payload de USER e CAM_OPERATOR: `adminUsername`, `adminPassword`, `wifiPassword`, `firmwareVersion` e `notes` e, na listagem, também o **IP de gerência e o MAC**. Para essas roles, a busca não casa por IP, MAC nem `notes`. As senhas nunca saem nas leituras, nem para ADMIN: só pela ação "Revelar", que é auditada |
+| 8 | IP no cadastro de ativo pelo USER (27/10) | Continua como está: o USER escolhe um IP livre da VLAN do tipo, o backend valida a VLAN e trava o IP (`AVAILABLE → IN_USE`). Isso **não** é uma reserva |
+| 9 | Consulta de um IP pelo USER (27/10) | Pode consultar (`/ip-addresses/verify`), mas a resposta é só "livre" ou "indisponível", sem status nem dono. IP da VLAN de câmeras responde "indisponível" |
+| 10 | VLAN de câmeras na tela de Redes (27/10) | Premissa: como o USER não tem nenhum acesso a câmeras, a VLAN de câmeras também some de `/networks` (404 no detalhe). A contagem de IPs em uso por rede só vai para quem vê o uso daquela rede |
 
 ---
 
@@ -243,7 +286,15 @@ Esforço: **P** (até ~2 h) · **M** (meio dia a 1 dia) · **G** (mais de 1 dia)
 - **Rota:** `preHandler: [requireAuth, requirePermission("recurso", "ação")]` (`src/middlewares/auth.middleares.ts`). `requireRole(...roles)` existe para casos que não estão na matriz.
 - **Ativo por id:** no controller, `await assertAssetAccess(id, req.user.role, ação, { expectedType? })` (`src/lib/asset-access.ts`). Para criação, `assertAssetTypeAccess(role, body.type, "create")`.
 - **Query de ativos:** inclua `assetVisibilityWhere(role)` no `where`. Em relações que trazem o ativo (por exemplo, de um IP), passe o registro por `hideInvisibleAsset(role, registro)`.
-- **Reserva de IP:** `reservationNetworkTypes(role)` devolve os tipos de rede permitidos (`null` = todos).
+- **Switch/AP:**
+  - nas queries, use `switchSelect(role)` e `accessPointSelect(role)` (`src/lib/asset-select.ts`);
+  - passe toda resposta de ativo por `sanitizeAsset(asset, role)`, e o que vai para a auditoria por `auditSnapshot()`;
+  - nunca devolva `wifiPassword` nem `adminPassword`: a senha só sai por `POST /access-points/:id/secrets`.
+- **IPs:**
+  - `requireNetworkScope(role, "ipFree" | "ipUsage" | "ipReservations", ação)` e `ipScopeWhere(scope)` no `where` (`src/lib/network-scope.ts`);
+  - em uma rede pedida explicitamente, `assertNetworkInScope(networkId, scope)`;
+  - para checar uma VLAN, `canManageVlan(role, tipo, ação)`.
+- **Reserva de IP:** `reservationNetworkTypes(role)` continua existindo como atalho (`null` = todos).
 
 **Frontend:**
 - **Página:** envolva o conteúdo com `<RequirePermission resource action>` (`src/components/require-permission.tsx`). Nas páginas de servidor, coloque a busca de dados num componente filho, para que ela nem aconteça sem permissão. Nas páginas client, use um `layout.tsx` com o guard.
@@ -254,7 +305,7 @@ Esforço: **P** (até ~2 h) · **M** (meio dia a 1 dia) · **G** (mais de 1 dia)
 
 | Projeto | Arquivo | O que cobre |
 |---|---|---|
-| ambos | `lib/permissions.test.ts` (idêntico) | Matriz inteira: 4 roles × 11 recursos × 4 ações, contra a transcrição desta página |
+| ambos | `lib/permissions.test.ts` (idêntico) | Matriz inteira contra a transcrição desta página (hoje 4 roles × 14 recursos × 6 ações; ver a seção 8) |
 | back | `src/lib/asset-access.test.ts` | Câmera invisível para USER (404), ADMIN só leitura, tipo atual do banco, rota de especificação de outro tipo (400) |
 | back | `src/services/user.service.test.ts` | Último SUPERADM (com `FOR UPDATE`), autoproteção, inativar, reativar, anonimizar, usuário excluído |
 | back | `src/services/ipaddress.service.test.ts` | Reserva por tipo de rede (CAM_OPERATOR/USER), IP fora da faixa, IP de outra rede, IP em uso |
@@ -273,3 +324,121 @@ Colunas novas, aplicadas com o SQL gerado por `prisma migrate diff`, que só faz
 
 - **A1 (`update-user` com `image` livre):** fora do escopo de roles; segue no relatório.
 - **Corpo JSON malformado responde 500:** o `errorHandler` não trata `FST_ERR_CTP_INVALID_JSON_BODY`. Encontrado durante os testes e registrado em `problemas-encontrados.md`.
+
+---
+
+## 8. Alteração de 27/10/2026: switches/APs e Visão Geral de IPs
+
+### Diagnóstico (antes)
+
+| Item | Status | Evidência |
+|---|---|---|
+| a) Campos sensíveis | — | `Switch`: não tem credenciais (`hostname`, `model`, `vendor`, `totalPorts`, `mac`, `notes`). `AccessPoint`: `wifiPassword`, `adminUsername`, `adminPassword`, além de `firmwareVersion`, `notes` e `mac`. Não há SNMP nem chaves |
+| b) Armazenamento das senhas | 🔴 | Texto puro (`String?`). Iam também em texto puro para a auditoria: o `createdData` de `POST /assets` era o ativo inteiro (`back:src/services/assets.service.ts`) |
+| c) Senhas enviadas ao cliente | ❌ | Para **todas** as roles, em: `/access-points` (schema de resposta com as senhas), `/assets` e a busca (`accessPoint: true`), `POST /reports/assets` (`z.any()`), e as props RSC da lista e do detalhe de AP |
+| d) Auditoria de senha | ❌ | O "olho" era só um toggle no cliente, com a senha já no payload |
+| 1.1 Detalhe bloqueado | ❌ | `/switches/:id`, `/access-points/:id` e `/assets/:id` só exigiam `assets.view`; o front não tinha guarda |
+| 1.3 Troca de tipo | 🟡 | Converter já era impossível (`type` imutável + `expectedType`). Faltava a autorização por tipo para switch/AP |
+| 1.4 Recurso no `can()` | ❌ | `assetResource` só distinguia `cameras` e `assets` |
+| f) CAM_OPERATOR só na VLAN de câmeras | 🟡 | Criar e cancelar reserva já estavam no servidor, lendo `Network.type` do banco (mantido). Editar reserva não existia. As leituras de uso e de reservas não tinham escopo de VLAN, e "Encontrar" estava acoplado à reserva |
+| g) IP ocupado e VLAN de câmeras para o USER | ❌ | Chegavam via `overview-stats`, `GET /ip-addresses` (hostname, usuário, motivo), `/available`, `/verify`, `/recent`, `/stats`, `/networks` e `/networks/available-ips?type=CAMERA_VLAN` |
+
+### Implementação
+
+**Matriz** (`lib/permissions.ts`, nos dois repositórios):
+- **Ações:** `viewDetails` e `viewSecrets`.
+- **Recursos de ativo:** o novo `networkDevices` (switch/AP); `assetResource()` agora devolve `cameras`, `networkDevices` ou `assets`.
+- **IP:** `ipReservations` foi dividido em `ipFree`, `ipUsage` e `ipReservations` (este com `update`).
+- **Escopo:**
+  - `ipNetworkScope(role, recurso)` devolve `null` (sem acesso), `{}` (todas), `{ only }` ou `{ exclude }`;
+  - `canManageVlan(role, tipo)`, `canSeeNetworkType(role, tipo)` e `inNetworkScope(scope, tipo)` trabalham sobre ele;
+  - `reservationNetworkTypes` virou atalho, com o mesmo resultado de antes.
+
+**Backend:**
+- **`lib/asset-select.ts`:**
+  - `switchSelect(role)` e `accessPointSelect(role)` usam select explícito: sem `viewSecrets`, os campos sensíveis nem saem do banco;
+  - `sanitizeAsset(asset, role)` tira o IP e o MAC de switch/AP e troca as senhas por `hasWifiPassword` e `hasAdminPassword`;
+  - `auditSnapshot()` faz o mesmo para a auditoria.
+- **Onde é aplicado:**
+  - `/assets` (lista, busca, detalhe e as respostas de mutação, no controller);
+  - `/switches` e `/access-points`;
+  - relatórios.
+- **Schemas de resposta:** não têm campos de senha, então elas nunca são serializadas. O relatório deixou de ser `z.any()`.
+- **Permissões das rotas:** `/switches/*` e `/access-points/*` usam `networkDevices`: `view` na listagem, `viewDetails` no `:id` e `create`/`update`/`delete` na escrita. Em `GET /assets/:id` vale `assertAssetAccess(..., "viewDetails")`. `POST /assets`, `/specs/switch` e o restante passam a usar `networkDevices` via `assetResource`.
+- **Senhas cifradas com AES-256-GCM** (`lib/secret-crypto.ts`, chave em `CREDENTIALS_ENCRYPTION_KEY`):
+  - a API não sobe sem a chave;
+  - a rota `POST /access-points/:id/secrets` (`viewSecrets`) devolve o valor decifrado e grava `VIEW_SECRET` na auditoria;
+  - a edição de AP registra só **quais** credenciais mudaram (`credentialsChanged`).
+- **`lib/network-scope.ts`:** `requireNetworkScope`, `networkScopeWhere`, `ipScopeWhere` e `assertNetworkInScope`. Uma rede pedida fora do escopo responde 403.
+- **Rotas de IP:**
+
+  | Rotas | Permissão |
+  |---|---|
+  | `find-available`, `verify` | `ipFree` |
+  | `GET /ip-addresses`, `stats`, `overview-stats`, `available`, `recent` | `ipUsage`, com escopo na query |
+  | `PATCH /ip-addresses/reserve/:id` (nova: motivo e/ou mover) | `ipReservations.update`, valida a VLAN de origem e a de destino |
+
+- **Redes e painel:**
+  - `/networks` não mostra a VLAN de câmeras ao USER, e o `_count` de uso só vai a quem vê o uso da rede;
+  - `/networks/available-ips?type=CAMERA_VLAN` responde 403 ao USER;
+  - o `infra-dashboard` traz `totalIpsInUse: null` e `networksUsage: []` para o USER, e só a VLAN de câmeras para o CAM_OPERATOR.
+
+**Frontend:**
+- **`proxy.ts`:** nas rotas `/assets/(switches|access-points)/(add|:id)`, busca a role em `/api/users/me` e redireciona para a listagem (`?acesso=negado`).
+- **Guardas de página:** `layout.tsx` com `RequirePermission` em `[id]` (`viewDetails`) e `add` (`create`).
+- **Listagens de switch e AP:**
+  - sem link, observações e excluir para quem não pode;
+  - IP de gerência como "Restrito";
+  - botão "Novo" só com `create`.
+- **Consulta Rápida:** sem acesso ao detalhe, leva à listagem filtrada.
+- **Card do AP:** senhas mascaradas; o "olho" chama a rota de revelar (auditada); campo vazio na edição mantém a senha atual.
+- **Visão Geral de IPs:**
+  - o servidor só busca estatísticas com `ipUsage`;
+  - o USER vê só "Encontrar IPs livres", sem abas, KPIs nem uso por rede;
+  - o CAM_OPERATOR encontra IPs em todas as redes, mas KPIs, uso, Disponíveis, Reservados e reservar ficam só nas câmeras;
+  - a aba Reservados ganhou "Editar" (motivo e mover).
+- **Outras telas:**
+  - os painéis escondem o uso de IPs quando `totalIpsInUse` é `null`;
+  - a lista de redes mostra "—" sem `_count`;
+  - a auditoria mostra "Revelou senha".
+
+### Testes
+
+| Projeto | Arquivo | O que cobre |
+|---|---|---|
+| ambos | `lib/permissions.test.ts` | Matriz inteira (4 roles × 14 recursos × 6 ações), escopo de IP, `canManageVlan` e `canSeeNetworkType` |
+| back | `src/lib/asset-access.test.ts` | Switch/AP: USER e CAM_OPERATOR só na listagem (403 no detalhe e no CRUD), `POST /assets` com `SWITCH` pelo USER (403), specs de outro tipo |
+| back | `src/lib/asset-select.test.ts` | Select sem campos sensíveis, senhas nunca na leitura, auditoria sem senha, IP e MAC removidos |
+| back | `src/lib/secret-crypto.test.ts` | Ida e volta, IV aleatório, adulteração detectada, chave ausente ou inválida |
+| back | `src/services/ipaddress.service.test.ts` | Ver abaixo |
+
+Casos de `ipaddress.service.test.ts`:
+- CAM_OPERATOR reservando na VLAN de câmeras: permitido;
+- CAM_OPERATOR reservando em outra VLAN: 403;
+- CAM_OPERATOR movendo uma reserva para outra VLAN: 403;
+- CAM_OPERATOR editando uma reserva de outra VLAN: 403;
+- USER reservando ou editando: 403;
+- USER buscando IPs livres na VLAN de câmeras: 404;
+- USER em `overview-stats`: 403;
+- escopo aplicado na query;
+- verify sem status para o USER.
+
+**Bateria pela API:** 120 verificações com um usuário temporário de cada role. Todas passaram, inclusive:
+- nenhuma senha, MAC ou IP de gerência no payload de USER e CAM_OPERATOR;
+- a busca pelo IP do switch não revela o switch;
+- revelar gera `VIEW_SECRET`;
+- reservar, mover e cancelar com escopo de VLAN.
+
+As páginas do front também foram conferidas por role:
+- redirecionamento do proxy;
+- nenhuma senha nem IP de AP no HTML/RSC da lista do USER;
+- Visão Geral sem abas nem estatísticas para o USER.
+
+### Mudanças no banco e no ambiente
+- **Enum:** `AuditAction` ganhou `VIEW_SECRET` (`ALTER TYPE ... ADD VALUE`, gerado por `prisma migrate diff`).
+- **Variável nova:** `CREDENTIALS_ENCRYPTION_KEY` (32 bytes em base64). Sem ela, a API não sobe. Está em `.env.example`.
+- **Migração `pnpm encrypt:ap-secrets [--dry-run]`:**
+  - cifra as senhas que estiverem em texto puro e tira as senhas dos `details` antigos da auditoria;
+  - é idempotente;
+  - **precisa rodar uma vez em cada ambiente**, com a chave daquele ambiente.
+- **Banco local:** a migração cifrou 35 de 36 APs. **Perder a chave significa perder as senhas cifradas.**

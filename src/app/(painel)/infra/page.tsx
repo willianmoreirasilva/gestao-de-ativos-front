@@ -42,13 +42,16 @@ export default async function InfraDashboardPage() {
                   Ao isolar este bloco na sua própria coluna desde a raiz do grid, 
                   ele automaticamente sobe e se alinha com o topo da tela.
                 */}
-                <div className="lg:col-span-6 h-full">
-                    <CapacityChart
-                        inUse={data.summary.totalIpsInUse}
-                        available={data.summary.totalIpsAvailable}
-                        networksUsage={data.networksUsage}
-                    />
-                </div>
+                {/* Uso das sub-redes: só para quem tem ipUsage (USER não) */}
+                {data.summary.totalIpsInUse !== null && (
+                    <div className="lg:col-span-6 h-full">
+                        <CapacityChart
+                            inUse={data.summary.totalIpsInUse}
+                            available={data.summary.totalIpsAvailable}
+                            networksUsage={data.networksUsage}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

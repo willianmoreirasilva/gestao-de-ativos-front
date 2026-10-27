@@ -18,6 +18,7 @@ import {
     SearchAssetItem,
     searchAssetsAction,
 } from "@/actions/assets/search-assets.action";
+import { useCan } from "@/components/permission-provider";
 import { Badge } from "@/components/ui/badge";
 import {
     Command,
@@ -33,6 +34,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog";
+import { assetResource } from "@/lib/permissions";
 
 const ASSET_ROUTE_MAP: Record<string, string> = {
     COMPUTER: "/assets/computers",
@@ -92,6 +94,7 @@ export function QuickSearchModal({
     onOpenChange: (open: boolean) => void;
 }) {
     const router = useRouter();
+    const can = useCan();
     const [query, setQuery] = React.useState("");
     const [results, setResults] = React.useState<SearchAssetItem[]>([]);
     const [loading, setLoading] = React.useState(false);
@@ -131,6 +134,15 @@ export function QuickSearchModal({
         setResults([]);
 
         const routePrefix = ASSET_ROUTE_MAP[asset.type] || "/assets";
+
+        // Sem acesso ao detalhe (switch/AP para USER e CAM_OPERATOR), abre a
+        // listagem filtrada
+        if (!can(assetResource(asset.type), "viewDetails")) {
+            const search = asset.patrimony || asset.displayName;
+            router.push(`${routePrefix}?search=${encodeURIComponent(search)}`);
+            return;
+        }
+
         router.push(`${routePrefix}/${asset.id}`);
     };
 

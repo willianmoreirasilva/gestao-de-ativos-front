@@ -4,6 +4,7 @@ export type AuditAction =
     | "DELETE"
     | "LOGIN"
     | "LOGOUT"
+    | "VIEW_SECRET"
     | "EXPORT"
     | string;
 

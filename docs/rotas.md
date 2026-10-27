@@ -4,6 +4,7 @@
 
 **Auth:**
 - O `src/proxy.ts` exige o cookie `better-auth.session_token` em `/dashboard`, `/assets`, `/infra`, `/reports-audit`, `/settings` e `/users`, incluindo as subrotas.
+- Nas rotas de detalhe e de criação de switch/AP, o proxy também busca a role (`/api/users/me`) e redireciona quem não pode.
 - O `PainelShell` também redireciona no cliente quando não há sessão.
 - O controle por role está em `RequirePermission` (`src/components/require-permission.tsx`), conforme a matriz de [permissoes.md](./permissoes.md). Quem não tem permissão vê "Acesso restrito". A autorização real é do backend.
 
@@ -28,7 +29,7 @@ Layout: `src/app/(painel)/layout.tsx`. Busca `GET /api/users/me` e envolve as p�
 | Caminho | Arquivo | Tipo | Papel | Dados |
 |---|---|---|---|---|
 | `/dashboard` | `(painel)/dashboard/page.tsx` | S | — | `dashboardService.getExecutiveDashboard`: `/api/infra-dashboard` + `/api/dashboard/stats` e, só para SUPERADM, `/api/reports/audit-dashboard`. `revalidate = 0` |
-| `/dashboard/overview` | `(painel)/dashboard/overview/page.tsx` | S | — (reservas: sem USER) | `ipAddressService.getOverviewStats`. A área de reservas não aparece para o USER; para o CAM_OPERATOR, só as redes `CAMERA_VLAN` |
+| `/dashboard/overview` | `(painel)/dashboard/overview/page.tsx` | S | — (ver observação) | `networkService.getNetworks` e, só com `ipUsage`, `ipAddressService.getOverviewStats` |
 
 ### Infraestrutura
 
@@ -45,6 +46,10 @@ Layout: `src/app/(painel)/layout.tsx`. Busca `GET /api/users/me` e envolve as p�
 | `/infra/locations/add` | `infra/locations/add/page.tsx` | S | — | `LocationForm` |
 | `/infra/locations/edit/[id]` | `infra/locations/edit/[id]/page.tsx` | S | — | `locationService.getLocationById` |
 
+**Visão Geral de IPs** (`/dashboard/overview`):
+- **USER:** só vê "Encontrar IPs livres", sem abas, KPIs nem uso por rede, e sem a VLAN de câmeras.
+- **CAM_OPERATOR:** encontra IPs em todas as redes, mas KPIs, uso, Disponíveis, Reservados (com editar e cancelar) e reservar ficam só nas redes `CAMERA_VLAN`.
+
 As rotas de edição não seguem um padrão único: departamentos usa `[id]`, e localidades e redes usam `edit/[id]`.
 
 ### Ativos
@@ -57,6 +62,11 @@ O padrão se repete para cada tipo `<tipo>`: `computers`, `printers`, `phones`, 
 | `/assets/<tipo>` | `assets/<tipo>/page.tsx` | S | Listagem paginada: `getAssets({ type })`, ou `switchService` / `accessPointService` |
 | `/assets/<tipo>/add` | `assets/<tipo>/add/page.tsx` | **C** | Formulário de criação: `create*Action` e `getAssetOptionsAction` (departamentos, localidades, switches) |
 | `/assets/<tipo>/[id]` | `assets/<tipo>/[id]/page.tsx` | S | Detalhe e edição em cartões (técnico, alocação, conectividade). Busca o ativo e as opções de departamento, localidade e switch |
+
+**Switches e APs:**
+- `[id]/layout.tsx` e `add/layout.tsx` exigem `networkDevices.viewDetails` / `create`. Só SUPERADM e ADMIN passam.
+- O `proxy.ts` também redireciona essas URLs para a listagem (`?acesso=negado`).
+- Na listagem, USER e CAM_OPERATOR veem só os campos básicos: sem link, excluir e observações, e o IP aparece como "Restrito".
 
 **Câmeras:** `assets/cameras/layout.tsx` bloqueia o USER e `assets/cameras/add/layout.tsx` bloqueia quem não cria câmeras (ADMIN). Na listagem, os botões de criar e excluir só aparecem para quem pode, e no detalhe o ADMIN vê os cartões sem edição.
 
