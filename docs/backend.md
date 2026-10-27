@@ -16,12 +16,20 @@
 
 Scripts do `package.json`: `dev`, `typecheck` (`tsc --noEmit`), `lint` (`eslint src`), `test` (Vitest), `backfill:ip-address-int` e `encrypt:ap-secrets`. Não existem `build` nem `start` (ver A7).
 
+**Testes** (`vitest.config.ts`, dois projetos, ambos no `pnpm test`):
+- **unit:** `src/**/*.test.ts`, com o `prisma` mockado (`vi.mock("../lib/db.js")`).
+- **integration:** `src/**/*.int.test.ts`, com o app completo via `buildApp({ logger: false })` + `app.inject()` e um banco real e isolado (`TEST_DATABASE_URL`).
+  - O `src/test/global-setup.ts` apaga o schema `public` desse banco e o recria com `prisma migrate diff --from-empty` + `db execute`.
+  - Os helpers ficam em `src/test/helpers.ts`: `resetDb`, `createTestUser(role)` e `login(app, email)`, que devolve o cookie assinado.
+  - Segredos de teste (`BETTER_AUTH_SECRET`, `CREDENTIALS_ENCRYPTION_KEY`) são gerados a cada execução.
+  - Sem `TEST_DATABASE_URL`, o projeto é pulado com aviso. Um nome que não termine em `_test`, ou igual ao `DATABASE_URL`, aborta antes de conectar.
+
 ## Estrutura
 
 ```
 src/
-├── index.ts          # bootstrap: createApp, rotas, startServer
-├── app.ts            # Fastify + zod, swagger, cors, scalar, multipart, errorHandler, hook BigInt
+├── index.ts          # bootstrap: buildApp + startServer
+├── app.ts            # createApp (Fastify + zod, swagger, cors, scalar, multipart, errorHandler, hook BigInt) e buildApp (+ rotas, sem listen)
 ├── server.ts         # listen em 0.0.0.0:PORT (padrão 3005)
 ├── config/env.ts     # schema zod de env (PORT, HOST, CORS_ORIGINS) — sem uso
 ├── plugins/          # cors.ts, swagger.ts, apiReference.ts, errorHandler.ts
