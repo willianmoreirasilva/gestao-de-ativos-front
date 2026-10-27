@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { resolveAvatarUrl } from "@/lib/avatar";
 
+const AVATAR = "/api/avatars/0f8e2c1a-3b4d-4e5f-8a9b-0c1d2e3f4a5b.webp";
+
 describe("resolveAvatarUrl", () => {
     beforeEach(() => {
         vi.stubEnv("NEXT_PUBLIC_API_URL", "http://api.teste");
@@ -17,22 +19,30 @@ describe("resolveAvatarUrl", () => {
         expect(resolveAvatarUrl("")).toBeUndefined();
     });
 
-    it("caminho relativo da API ganha o prefixo NEXT_PUBLIC_API_URL", () => {
-        expect(resolveAvatarUrl("/api/avatars/abc.webp")).toBe(
-            "http://api.teste/api/avatars/abc.webp",
+    it("avatar gerado pela API ganha o prefixo NEXT_PUBLIC_API_URL", () => {
+        expect(resolveAvatarUrl(AVATAR)).toBe(`http://api.teste${AVATAR}`);
+    });
+
+    it("pré-visualização local (blob:) passa direto", () => {
+        expect(resolveAvatarUrl("blob:http://localhost:3000/1")).toBe(
+            "blob:http://localhost:3000/1",
         );
     });
 
-    // Comportamento atual (A1 ainda aberto): URLs absolutas passam direto
-    it("URLs absolutas e pré-visualizações locais passam direto", () => {
-        expect(resolveAvatarUrl("https://exemplo.com/a.png")).toBe(
-            "https://exemplo.com/a.png",
-        );
-        expect(resolveAvatarUrl("blob:http://localhost/1")).toBe(
-            "blob:http://localhost/1",
-        );
-        expect(resolveAvatarUrl("data:image/png;base64,AAAA")).toBe(
+    // A1: uma URL externa vira um pixel de rastreamento de quem abre a tela
+    it("recusa URLs absolutas, data: e caminhos fora de /api/avatars/", () => {
+        for (const image of [
+            "https://rastreador.exemplo/pixel.png",
+            "http://api.teste/api/avatars/a.webp",
+            "//rastreador.exemplo/pixel.png",
             "data:image/png;base64,AAAA",
-        );
+            "javascript:alert(1)",
+            "/api/users/me",
+            "/api/avatars/../users/me",
+            "/api/avatars/foto.png",
+            `${AVATAR}?x=1`,
+        ]) {
+            expect(resolveAvatarUrl(image), image).toBeUndefined();
+        }
     });
 });

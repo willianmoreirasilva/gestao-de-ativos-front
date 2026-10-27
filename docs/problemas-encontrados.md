@@ -107,7 +107,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 
 ## 🟠 Alto
 
-### A1. `PATCH /api/auth/update-user` permite gravar qualquer URL como avatar
+### A1. `PATCH /api/auth/update-user` permite gravar qualquer URL como avatar ✅ resolvido (27/10/2026)
+> **Resolvido:**
+> - **Back:** o hook `before` do Better Auth (`back:src/lib/auth.ts`) responde 400 a qualquer `update-user` que envie `image`. A foto só muda por `PUT`/`DELETE /api/users/me/avatar`.
+> - **Front:** `resolveAvatarUrl` só aceita `/api/avatars/<uuid>.webp` e `blob:`.
+> - **Testes:** `back:src/routes/auth.int.test.ts` e `src/lib/avatar.test.ts`.
+
 - **Arquivo:** `back:src/lib/auth.ts` (o Better Auth expõe `update-user` por padrão)
 - **Problema:**
   - O endpoint aceita `name` e `image` livres.
