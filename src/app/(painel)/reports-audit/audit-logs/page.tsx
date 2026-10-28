@@ -1,8 +1,10 @@
-// src/app/(painel)/audit-logs/page.tsx
+import { redirect } from "next/navigation";
 
+import { AccessDenied } from "@/components/access-denied";
 import { AuditLogsContainer } from "@/components/audit-logs/audit-log-container";
+import { ErrorBox } from "@/components/error-box";
 import { RequirePermission } from "@/components/require-permission";
-import { fetchAuditLogs } from "@/services/audit.service"; // ou sua chamada de serviço/API
+import { fetchAuditLogs } from "@/services/audit.service";
 
 interface AuditLogsPageProps {
     searchParams: Promise<{
@@ -23,7 +25,7 @@ async function AuditLogs({ searchParams }: AuditLogsPageProps) {
     const page = Number(params.page) || 1;
     const limit = Number(params.limit) || 8;
 
-    const initialData = await fetchAuditLogs({
+    const result = await fetchAuditLogs({
         page,
         limit,
         userId: params.userId,
@@ -34,8 +36,28 @@ async function AuditLogs({ searchParams }: AuditLogsPageProps) {
         search: params.search,
     });
 
-    // Renderize o Container (Client Component) e passe o initialData
-    return <AuditLogsContainer initialData={initialData} />;
+    if (result.status === 401) redirect("/login");
+
+    // A API é quem autoriza: o 403 também chega aqui se a role mudou
+    if (result.status === 403) {
+        return (
+            <AccessDenied message="Apenas Superadministradores podem ver os logs de auditoria." />
+        );
+    }
+
+    // Falha (servidor fora do ar, 500...) nunca pode parecer "nenhum log"
+    if (result.error !== null) {
+        return (
+            <div className="px-1.5 md:px-0">
+                <ErrorBox
+                    message={result.error}
+                    retryHref="/reports-audit/audit-logs"
+                />
+            </div>
+        );
+    }
+
+    return <AuditLogsContainer initialData={result.data} />;
 }
 
 // Logs de auditoria: exclusivos do SUPERADM

@@ -219,7 +219,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** decidir no servidor, no layout `(painel)`: se `getMyProfile` retornar 401, `redirect("/login")`. Depois disso, renderizar o shell sem esperar a sessão do cliente.
 - **Esforço:** M
 
-### M2. A auditoria esconde erros (403/500) como lista vazia
+### M2. A auditoria esconde erros (403/500) como lista vazia ✅ resolvido (28/10/2026)
+> **Resolvido:**
+> - `fetchAuditLogs` devolve `{ data, error, status }` (como `services/user.ts`) e sempre usa `/api/audit-logs`.
+> - A página trata cada caso: 401 vai para o login; 403 mostra "Acesso restrito"; servidor fora do ar mostra "Não foi possível conectar ao servidor..."; 500 mostra "O servidor encontrou um erro ao carregar os logs..." (a mensagem técnica da API não aparece). As duas últimas ficam num alerta vermelho com "Tentar novamente", diferente do estado de lista vazia.
+> - O `ErrorBox` virou o componente compartilhado `src/components/error-box.tsx` (a página de usuários usa o mesmo).
+> - Testes em `src/services/audit.service.test.ts`.
 - **Arquivo:** `src/services/audit.service.ts:26-34`
 - **Problema:**
   - Qualquer falha, inclusive o 403 para um usuário `USER`, vira "nenhum log".
