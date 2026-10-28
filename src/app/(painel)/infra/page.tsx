@@ -1,11 +1,11 @@
-import { getInfraDashboardData } from "@/actions/infra-dashboard";
 import { CapacityChart } from "@/components/infra/dashboard/capactity-chart";
 import { DashboardHeader } from "@/components/infra/dashboard/header";
 import { ModuleShortcuts } from "@/components/infra/dashboard/module-shortcuts";
 import { StatsCards } from "@/components/infra/dashboard/stats-cards";
+import { fetchInfraDashboardData } from "@/services/infra-dashboard";
 
 export default async function InfraDashboardPage() {
-    const { data, error } = await getInfraDashboardData();
+    const { data, error } = await fetchInfraDashboardData();
 
     if (error || !data) {
         return (
