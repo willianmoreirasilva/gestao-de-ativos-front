@@ -1,8 +1,14 @@
 import type { NextConfig } from "next";
 
+// Hosts extras que podem abrir o servidor de desenvolvimento (acesso pela
+// rede), separados por vírgula. Só vale no `pnpm dev`.
+const allowedDevOrigins = (process.env.ALLOWED_DEV_ORIGINS ?? "")
+    .split(",")
+    .map((host) => host.trim())
+    .filter(Boolean);
+
 const nextConfig: NextConfig = {
-    /* config options here */
-    allowedDevOrigins: ["10.172.254.110:3000", "10.172.254.110"],
+    allowedDevOrigins,
     experimental: {
         // Upload de avatar: arquivo original de até 5 MB + margem do multipart
         serverActions: {

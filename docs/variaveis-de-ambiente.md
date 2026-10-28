@@ -27,8 +27,12 @@ Não existe `.env.example` no front. Só existe esta variável, e ela não é se
 | `UPLOADS_DIR` | não (padrão `uploads`) | Pasta das fotos de perfil (`<UPLOADS_DIR>/avatars`) | `src/lib/avatar-storage.ts` |
 | `NODE_ENV` | não | Fora de produção, reaproveita o `PrismaClient` global | `src/lib/db.ts` |
 | `ENABLE_API_DOCS` | não (padrão `false`) | Liga a documentação da API: `/docs`, `/reference`, `/swagger.json` e o OpenAPI do Better Auth (`/api/auth/reference`). Só aceita `true` ou `false`; outro valor impede a API de subir. Use `true` só em desenvolvimento | `src/config/env.ts`, `src/app.ts`, `src/lib/auth.ts` |
-| `HOST`, `CORS_ORIGINS` | — | Declaradas e validadas em `src/config/env.ts`, mas **ainda não são usadas** (M6) | — |
+| `HOST` | não (padrão `0.0.0.0`) | Endereço de escuta da API. Em produção, atrás do proxy reverso, use `127.0.0.1` | `src/config/env.ts`, `src/server.ts` |
+| `CORS_ORIGINS` | não (padrão `http://localhost:3000,http://127.0.0.1:3000`) | Origens do front aceitas pelo CORS e pelo `trustedOrigins` do Better Auth, separadas por vírgula. Cada item é esquema + host + porta, sem barra no final; valor inválido impede a API de subir. Em produção, o endereço HTTPS do proxy | `src/config/env.ts`, `src/plugins/cors.ts`, `src/lib/auth.ts` |
+| `TRUST_PROXY` | não (padrão `false`) | `true` quando a API está atrás do proxy reverso: o `req.ip` (e o rate limit) passa a usar o `X-Forwarded-For` (M16). Só ligue com o proxy como único caminho até a API | `src/config/env.ts`, `src/app.ts` |
 
 O `.env.example` só lista `PORT`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` e `ENABLE_API_DOCS` (`false`), `CREDENTIALS_ENCRYPTION_KEY` e `TEST_DATABASE_URL` (vazias). Faltam `FRONTEND_URL`, `SMTP_*`, `EMAIL_FROM` e `UPLOADS_DIR` (B6).
 
 O `tsx --watch` **não recarrega** o `.env`. Depois de alterá-lo, reinicie o `pnpm dev`.
+
+**Front:** `ALLOWED_DEV_ORIGINS` (opcional, lista separada por vírgulas) libera hosts extras para o `pnpm dev` pela rede (`allowedDevOrigins`, em `next.config.ts`); fica no `.env.local`.

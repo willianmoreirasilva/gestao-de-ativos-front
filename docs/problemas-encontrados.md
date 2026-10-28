@@ -266,7 +266,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** registrar só quando `NODE_ENV !== "production"`, ou proteger as rotas com autenticação.
 - **Esforço:** P
 
-### M6. CORS, origens confiáveis e acesso pela rede fixos no código
+### M6. CORS, origens confiáveis e acesso pela rede fixos no código ✅ resolvido (28/10/2026)
+> **Resolvido:**
+> - **Back:** `CORS_ORIGINS` (lista separada por vírgulas, validada em `config/env.ts`: cada item precisa ser uma origem, sem barra nem caminho) alimenta o CORS e o `trustedOrigins` do Better Auth. O padrão é `http://localhost:3000,http://127.0.0.1:3000`; em produção, o endereço HTTPS do proxy. Testes em `env.test.ts` e `app.int.test.ts`.
+> - **Front:** o `allowedDevOrigins` vem de `ALLOWED_DEV_ORIGINS` (só no `pnpm dev`). O IP que estava fixo foi para o `.env.local`.
+> - `HOST` também passou a valer (A7).
+> - **Não alterado:** `crossSubDomainCookies` segue ligado no Better Auth. Com o front e a API sob a mesma origem do proxy ele não é necessário; reveja quando o domínio de produção existir.
 - **Arquivos:**
   - `back:src/plugins/cors.ts:6`
   - `back:src/lib/auth.ts:13`
@@ -314,7 +319,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > **Resolvido:** baseline `0_init` em `back:prisma/migrations`, gerado com `prisma migrate diff --from-empty`.
 > - O banco de desenvolvimento foi comparado com o schema antes: sem drift (as colunas de reserva do C5 existem, o que responde a dúvida 2).
 > - A migration aplicada num banco vazio reproduz o schema exato (diff vazio) e foi marcada como aplicada no banco de desenvolvimento (`migrate resolve --applied 0_init`).
-> - **Produção:** num banco já existente, rode `prisma migrate resolve --applied 0_init` uma vez; num banco novo, `prisma migrate deploy`.
+> - **Produção:** o banco será criado do zero, então basta `prisma migrate deploy`. O `prisma migrate resolve --applied 0_init` é só para bancos antigos criados por `db push`, como o de desenvolvimento.
 > - O `CLAUDE.md` do back descreve o novo fluxo (`migrate dev` e `migrate deploy`).
 - **Arquivos:** `back:prisma.config.ts:10` aponta para `prisma/migrations`, que não existe.
 - **Problema:** não há histórico das mudanças do banco; `db push` pode apagar colunas sem aviso. Ver a dúvida em C5.
@@ -369,6 +374,14 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Problema:** o handler global não trata `FST_ERR_CTP_INVALID_JSON_BODY`; um corpo JSON inválido cai no fallback e responde 500 "Internal Server Error". **[confirmado]** durante os testes de permissão.
 - **Por que importa:** um erro do cliente aparece como falha do servidor e polui o log.
 - **Sugestão:** responder 400 para os erros `FST_ERR_CTP_*` (ou para qualquer erro com `statusCode` 4xx do próprio Fastify).
+- **Esforço:** P
+
+### M16. `trustProxy` do Fastify: o rate limit vê o IP do proxy ✅ resolvido (28/10/2026)
+- **Arquivos:** `back:src/config/env.ts`, `back:src/app.ts`
+- **Problema:** em produção a API fica atrás de um proxy reverso (Nginx/Caddy) na mesma máquina. Sem `trustProxy`, `req.ip` é sempre o IP do proxy, e o rate limit do login (M9, por IP) trata todos os usuários como um só: cinco tentativas erradas de qualquer pessoa bloqueiam o login de todos.
+- **Resolvido:** a variável `TRUST_PROXY` (`true` ou `false`, padrão `false`) liga o `trustProxy` do Fastify, e o `req.ip` passa a ser o do `X-Forwarded-For`. Testes em `back:src/routes/rate-limit.int.test.ts`: ligado, o limite é por IP do cabeçalho; desligado, o cabeçalho é ignorado (não dá para fugir do limite forjando-o).
+- **Em produção:** `TRUST_PROXY=true` e `HOST=127.0.0.1`. Ligado, o Fastify confia em qualquer `X-Forwarded-For` recebido: só ligue com o proxy como único caminho até a API. O proxy deve **sobrescrever** o cabeçalho com o IP real (Nginx: `proxy_set_header X-Forwarded-For $remote_addr;`).
+- **Pendente:** os registros de auditoria de login e logout (`back:src/lib/auth.ts`, hooks) leem o `x-forwarded-for` direto do cabeçalho, sem passar pelo `trustProxy`. Com o proxy sobrescrevendo o cabeçalho funciona, mas vale usar `req.ip` ali.
 - **Esforço:** P
 
 ## 🟢 Baixo
