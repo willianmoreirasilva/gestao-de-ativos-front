@@ -6,7 +6,7 @@ São **dois repositórios independentes**:
 
 | Projeto | Pasta | Stack | Porta |
 |---|---|---|---|
-| Frontend | `gestao-de-ativos-front` | Next.js 16.2 (App Router, Turbopack), React 19.2, TypeScript, Tailwind v4, shadcn/ui, axios, better-auth (cliente), react-hook-form + zod | 3000 |
+| Frontend | `gestao-de-ativos-front` | Next.js 16.4 (App Router, Turbopack), React 19.2, TypeScript, Tailwind v4, shadcn/ui, axios, better-auth (cliente), react-hook-form + zod | 3000 |
 | Backend | `../sysip-backend-2.0` | Node 24, Fastify 5.7, fastify-type-provider-zod, Prisma 7.4 (adapter `pg`) + PostgreSQL, Better Auth 1.4, nodemailer, sharp/file-type | 3005 |
 
 Não há tipos compartilhados por pacote. O contrato existe duas vezes: nos schemas zod do back (`back:src/validators/*`) e nos tipos escritos à mão no front (`src/types/*`).

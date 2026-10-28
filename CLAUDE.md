@@ -15,7 +15,7 @@ A documentação completa está em `docs/` (índice: `docs/README.md`). Problema
 
 ## Stack
 
-- **Base:** Next.js 16.2 (App Router, Turbopack), React 19.2 e TypeScript strict.
+- **Base:** Next.js 16.4 (App Router, Turbopack), React 19.2 e TypeScript strict.
 - **UI:** Tailwind v4 (configurado em CSS, `src/app/globals.css`) e shadcn/ui (`src/components/ui`).
 - **Formulários:** react-hook-form + zod 4.
 - **Dados e auth:** axios e better-auth (cliente), sonner, next-themes.

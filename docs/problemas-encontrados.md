@@ -167,6 +167,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Esforço:** M
 
 ### A6. Cinco vulnerabilidades críticas no Next.js e dependências de segurança desatualizadas
+> **Em andamento (um pacote por vez):**
+> - ✅ **`next` 16.2.7 → 16.4.3** (28/10/2026), junto com o `eslint-config-next`.
+>   - A 16.3.6 ainda deixaria 3 avisos críticos, corrigidos só na 16.4.1; o `pnpm audit` não aponta mais nenhum aviso do `next`.
+>   - Vulnerabilidades críticas do front: de 7 para 2 (`better-auth` e `proxy-addr`).
+> - Próximos: `axios`, `better-auth` (mesma versão nas duas pontas), `fastify` e `@fastify/*`.
+
 - **Arquivos:** `package.json` e `back:package.json`
 - **Problema:**
   - **Front, `next` 16.2.7:** avisos críticos de RCE (GHSA-p293-qw3h-jr36, GHSA-2xp9-vwfh-vxw4, GHSA-vcvr-r3jv-pc5j), corrigidos a partir da **16.3.6**.
