@@ -195,6 +195,9 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Esforço:** M
 
 ### A7. Sem testes, sem CI e sem scripts de verificação no backend
+> **Em andamento (28/10/2026):**
+> - **Back:** scripts `build` (`tsc -p tsconfig.build.json`, sem os testes) e `start` (`node dist/index.js`), já que o back roda como JavaScript compilado. O `tsc` voltou a ficar sem erros: o `createAuditLog` morto de `ip-utils.ts` foi removido e o `headers` do `auth.ts` foi corrigido. O `server.ts` passou a usar `HOST` e `PORT` do `env`. Testado: `node dist/index.js` sobe, escuta em `127.0.0.1` e responde (401 sem login; o login inválido consulta o banco pelo Prisma).
+> - **CI:** `.github/workflows/ci.yml` nos dois repositórios. Bloqueia em `typecheck`, testes e `build`; o `lint` roda como aviso (`continue-on-error`) até o M13 e a limpeza zerarem os erros. Falta a primeira execução no GitHub.
 - **Arquivos:** os dois repositórios
 - **Problema:** não há testes nem CI, e com isso o build quebrado (C4) e os erros de tipo (C5, A3, A4) foram para a branch principal sem ninguém perceber.
 - **Sugestão:**
@@ -420,6 +423,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 2. **Reserva de IPs:** as colunas de reserva existiram no banco algum dia (C5)?
 3. **Access Points:** `getApVlanType` (`src/lib/utils.ts:71`) devolve `GENERAL_DATA` para APs que não são Ruckus, mas `assets.service.ts` só aceita `WIFI_MGMT` para `ACCESS_POINT`. É preciso confirmar se o cadastro de AP passa por essa validação (`access-point.service.ts`) e qual regra vale.
 4. **Ambiente de produção:** como o sistema será publicado (domínio, HTTPS, mesmo host para front e back)? Isso define a configuração do CORS, do cookie (`crossSubDomainCookies`) e do Swagger.
+   - **Resposta (28/10/2026):** servidor Linux próprio, na rede interna da organização, sem nuvem. Front e back no mesmo servidor, atrás de um proxy reverso (Nginx ou Caddy) com HTTPS, que encaminha `/api` para o back. Back e Next escutam só em `127.0.0.1` (`HOST=127.0.0.1` no back). Como o navegador fala só com a origem do proxy, o cookie não precisa de `crossSubDomainCookies`; o `BETTER_AUTH_URL`, o CORS e o `trustedOrigins` devem usar o endereço HTTPS do proxy (ver M6). O Swagger fica desligado (`ENABLE_API_DOCS=false`).
 
 ---
 

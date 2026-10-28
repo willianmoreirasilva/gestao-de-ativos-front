@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+
+    env:
+      # O build só precisa de um valor; nenhuma chamada à API é feita
+      NEXT_PUBLIC_API_URL: http://localhost:3005
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.30.3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm typecheck
+
+      - run: pnpm test
+
+      - run: pnpm build
+
+      # Aviso por enquanto: os erros antigos de lint (M13 e a limpeza dos
+      # itens 🟢) ainda existem. Quando zerarem, remova o continue-on-error
+      # para bloquear.
+      - name: Lint (não bloqueia)
+        run: pnpm lint
+        continue-on-error: true
