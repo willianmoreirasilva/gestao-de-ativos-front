@@ -310,13 +310,22 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** configurar `rateLimit` explicitamente no Better Auth e usar `@fastify/rate-limit` nas rotas públicas.
 - **Esforço:** P
 
-### M10. Sem migrations: o banco depende de `db push`
+### M10. Sem migrations: o banco depende de `db push` ✅ resolvido (28/10/2026)
+> **Resolvido:** baseline `0_init` em `back:prisma/migrations`, gerado com `prisma migrate diff --from-empty`.
+> - O banco de desenvolvimento foi comparado com o schema antes: sem drift (as colunas de reserva do C5 existem, o que responde a dúvida 2).
+> - A migration aplicada num banco vazio reproduz o schema exato (diff vazio) e foi marcada como aplicada no banco de desenvolvimento (`migrate resolve --applied 0_init`).
+> - **Produção:** num banco já existente, rode `prisma migrate resolve --applied 0_init` uma vez; num banco novo, `prisma migrate deploy`.
+> - O `CLAUDE.md` do back descreve o novo fluxo (`migrate dev` e `migrate deploy`).
 - **Arquivos:** `back:prisma.config.ts:10` aponta para `prisma/migrations`, que não existe.
 - **Problema:** não há histórico das mudanças do banco; `db push` pode apagar colunas sem aviso. Ver a dúvida em C5.
 - **Sugestão:** fazer o baseline com `prisma migrate diff`, depois criar a pasta e usar `prisma migrate dev` / `deploy`.
 - **Esforço:** M
 
-### M11. Auditoria apagada junto com o usuário
+### M11. Auditoria apagada junto com o usuário ✅ resolvido (28/10/2026)
+> **Resolvido:** `AuditLog.user` passou de `onDelete: Cascade` para `Restrict`, com a migration `20261028000000_audit_log_restrict` (aplicada no banco de desenvolvimento).
+> - Optei por `Restrict` em vez de `SetNull`: `userId` continua obrigatório, sem mudar tipos nem o front. Uma exclusão física de quem tem histórico passa a ser recusada pelo banco.
+> - A exclusão pela API já é lógica (anonimização), então nada muda no uso normal.
+> - **Produção:** aplique com `prisma migrate deploy`.
 - **Arquivo:** `back:prisma/schema.prisma:240` (`AuditLog.user` com `onDelete: Cascade`)
 - **Problema:** apagar um usuário apaga todo o histórico dele. Hoje a exclusão é lógica, mas qualquer exclusão física, manual ou futura, perde a auditoria.
 - **Sugestão:** `onDelete: Restrict` ou `SetNull`, com `userId` opcional.
@@ -354,7 +363,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 
 ---
 
-### M15. Corpo JSON malformado responde 500
+### M15. Corpo JSON malformado responde 500 ✅ resolvido (28/10/2026)
+> **Resolvido:** o handler global responde com o status 4xx do próprio Fastify para os erros `FST_ERR_*` (JSON malformado vira 400 com "Corpo da requisição inválido: JSON malformado."). Teste em `back:src/app.int.test.ts`.
 - **Arquivo:** `back:src/plugins/errorHandler.ts`
 - **Problema:** o handler global não trata `FST_ERR_CTP_INVALID_JSON_BODY`; um corpo JSON inválido cai no fallback e responde 500 "Internal Server Error". **[confirmado]** durante os testes de permissão.
 - **Por que importa:** um erro do cliente aparece como falha do servidor e polui o log.
