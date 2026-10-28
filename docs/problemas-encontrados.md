@@ -166,7 +166,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
   - Unificar o `createAuditLog`.
 - **Esforço:** M
 
-### A6. Cinco vulnerabilidades críticas no Next.js e dependências de segurança desatualizadas
+### A6. Cinco vulnerabilidades críticas no Next.js e dependências de segurança desatualizadas ✅ resolvido (28/10/2026)
 > **Em andamento (um pacote por vez):**
 > - ✅ **`next` 16.2.7 → 16.4.3** (28/10/2026), junto com o `eslint-config-next`.
 >   - A 16.3.6 ainda deixaria 3 avisos críticos, corrigidos só na 16.4.1; o `pnpm audit` não aponta mais nenhum aviso do `next`.
@@ -176,8 +176,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 >   - o `pnpm audit` não aponta mais avisos do `better-auth`; vulnerabilidades do front: 79 (1 crítica, `proxy-addr`), do back: 109 (sem críticas);
 >   - back: 428 testes passam, incluindo login, avatar e rate limit; o `tsc` segue com os 2 erros que já existiam (`auth.ts:76` e `ip-utils.ts:51`);
 >   - front: `tsc`, testes e `build` passam;
->   - o `@better-auth/cli` do back continua em 1.4.18 (a última versão publicada é a 1.4.21), por ser só ferramenta de desenvolvimento.
-> - Próximos: `fastify` e `@fastify/*`.
+>   - o `@better-auth/cli` 1.4.18 do back foi removido: nada o usava e ele trazia o `core` antigo, que quebrava o `better-auth` 1.7.
+> - ✅ **`fastify` 5.7.4 → 5.12.7** (28/10/2026), no back:
+>   - também `@fastify/cors` 11.3.1, `@fastify/swagger` 9.9.2 e `@fastify/swagger-ui` 6.1.2, que corrige o `@fastify/static`;
+>   - o `pnpm audit` não aponta mais avisos do `fastify` nem do `@fastify/*`; vulnerabilidades do back: de 132 para 90 (sem críticas);
+>   - 428 testes passam; o `tsc` segue com os mesmos 2 erros de antes.
+> - Fica para depois: `@fastify/rate-limit` 11 e `fastify-type-provider-zod` 7 (majors, sem aviso de segurança).
 
 - **Arquivos:** `package.json` e `back:package.json`
 - **Problema:**
