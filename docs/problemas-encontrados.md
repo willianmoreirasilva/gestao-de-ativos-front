@@ -290,7 +290,11 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** ler as origens de `CORS_ORIGINS` (já validada em `config/env.ts`) nos dois lugares.
 - **Esforço:** P
 
-### M7. Hook `preSerialization` converte toda resposta duas vezes
+### M7. Hook `preSerialization` converte toda resposta duas vezes ✅ resolvido (28/10/2026)
+> **Resolvido:** o `JSON.parse(JSON.stringify(...))` virou `toJsonSafe` (`back:src/utils/serealizeBigInt.ts`), uma única passada que gera o mesmo objeto, sem montar e reler o texto. Num payload de 10000 linhas de relatório: de cerca de 140 ms para cerca de 65 ms.
+> - **Por que não remover o hook:** vários schemas de resposta esperam `Date` como texto (`createdAt: z.string()` em `audit-log.validator.ts` e `reports-audit-dashboard.validator.ts`); sem a conversão, a serialização do Zod falharia. O `BigInt.prototype.toJSON` sozinho não resolveria isso.
+> - A conversão duplicada do `report.controller.ts` foi removida (o hook já converte a mesma resposta).
+> - **Testes:** `back:src/utils/serealizeBigInt.test.ts` compara `toJsonSafe` com o comportamento antigo em 13 casos (BigInt, Date, `undefined`, `NaN`, `toJSON`, Buffer...); `back:src/app.int.test.ts` confere `addressInt` como string e `createdAt` como texto numa resposta real.
 - **Arquivo:** `back:src/app.ts:42-49`
 - **Problema:** `JSON.parse(JSON.stringify(payload))` em **toda** resposta, só para converter `BigInt`.
 - **Por que importa:** dobra o custo de serialização nas listagens grandes (relatórios aceitam `limit` de até 10000).
