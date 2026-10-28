@@ -106,9 +106,10 @@ Escopo por VLAN (`ipNetworkScope`, ver [permissoes.md](./permissoes.md)): **toda
 | Rota | Observação |
 |---|---|
 | `/api/ping` | health check `{ pong: true }` |
-| `/docs` | Swagger UI, público (M5) |
-| `/reference` | Scalar, público (M5) |
-| `/swagger.json` | OpenAPI, público (M5) |
+| `/docs` | Swagger UI, só com `ENABLE_API_DOCS=true` (senão 404) |
+| `/reference` | Scalar, só com `ENABLE_API_DOCS=true` |
+| `/swagger.json` | OpenAPI, só com `ENABLE_API_DOCS=true` |
+| `/api/auth/reference`, `/api/auth/open-api/generate-schema` | OpenAPI do Better Auth, só com `ENABLE_API_DOCS=true` |
 
 ## Como o front chama a API
 

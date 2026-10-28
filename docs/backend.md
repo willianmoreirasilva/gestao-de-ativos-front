@@ -11,7 +11,7 @@
 | Auth | Better Auth 1.4.18, adapter Prisma, plugin `openAPI` |
 | Upload | `@fastify/multipart` 10, `sharp` 0.35, `file-type` 22 |
 | E-mail | nodemailer 10 (convites) |
-| Docs da API | `@fastify/swagger` + swagger-ui (`/docs`), Scalar (`/reference`) |
+| Docs da API | `@fastify/swagger` + swagger-ui (`/docs`), Scalar (`/reference`). Só registrados com `ENABLE_API_DOCS=true` (`src/config/env.ts`) |
 | Dev | `tsx --watch src/index.ts` (`pnpm dev`). **Não recarrega o `.env`**: reinicie o processo ao mudar variáveis |
 
 Scripts do `package.json`: `dev`, `typecheck` (`tsc --noEmit`), `lint` (`eslint src`), `test` (Vitest), `backfill:ip-address-int` e `encrypt:ap-secrets`. Não existem `build` nem `start` (ver A7).

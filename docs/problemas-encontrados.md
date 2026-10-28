@@ -232,7 +232,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** remover, ou criar a rota `POST /options/disks` caso o formulário rápido de discos seja retomado.
 - **Esforço:** P
 
-### M5. Swagger e Scalar públicos
+### M5. Swagger e Scalar públicos ✅ resolvido (28/10/2026)
+> **Resolvido:** a documentação fica desligada por padrão.
+> - `/docs`, `/reference`, `/swagger.json` e o OpenAPI do Better Auth só são registrados com `ENABLE_API_DOCS=true`.
+> - A variável é validada em `back:src/config/env.ts` (só `true` ou `false`; o padrão é `false`).
+> - **Testes:** `back:src/plugins/api-docs.int.test.ts` e `back:src/config/env.test.ts`.
+
 - **Arquivos:** `back:src/plugins/swagger.ts:18` (`/docs`) e `back:src/plugins/apiReference.ts:6` (`/reference`, `/swagger.json`)
 - **Problema:** a documentação completa da API responde 200 sem login. **[confirmado]**
 - **Sugestão:** registrar só quando `NODE_ENV !== "production"`, ou proteger as rotas com autenticação.
