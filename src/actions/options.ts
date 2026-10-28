@@ -7,21 +7,11 @@ interface OptionItem {
     name: string;
 }
 
-interface OptionsResponse {
-    data: OptionItem[];
-}
-
 interface SingleOptionResponse {
     data: OptionItem;
 }
 
 // --- PROCESSADORES ---
-export async function getProcessorsAction(): Promise<OptionsResponse> {
-    const api = await getServerApi();
-    const response = await api.get("/api/options/processors");
-    return response.data;
-}
-
 export async function createProcessorAction(
     name: string,
 ): Promise<SingleOptionResponse> {
@@ -31,12 +21,6 @@ export async function createProcessorAction(
 }
 
 // --- SISTEMAS OPERACIONAIS ---
-export async function getOperatingSystemsAction(): Promise<OptionsResponse> {
-    const api = await getServerApi();
-    const response = await api.get("/api/options/operating-systems");
-    return response.data;
-}
-
 export async function createOperatingSystemAction(
     name: string,
 ): Promise<SingleOptionResponse> {
@@ -46,12 +30,6 @@ export async function createOperatingSystemAction(
 }
 
 // --- DISCOS ---
-export async function getDisksAction(): Promise<OptionsResponse> {
-    const api = await getServerApi();
-    const response = await api.get("/api/options/disks");
-    return response.data;
-}
-
 export async function createDiskAction(
     name: string,
 ): Promise<SingleOptionResponse> {

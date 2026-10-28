@@ -1,8 +1,3 @@
-import {
-    getDisksAction,
-    getOperatingSystemsAction,
-    getProcessorsAction,
-} from "@/actions/options";
 import { ReportContainer } from "@/components/reports/report-container";
 import { RequirePermission } from "@/components/require-permission";
 import { BackButton } from "@/components/users/back-button";
@@ -12,6 +7,7 @@ import { ReportQueryInput } from "@/schemas/report.schema";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
 import { networkService } from "@/services/network";
+import { optionsService } from "@/services/options";
 import { getAssetReportAction } from "@/services/reports.service";
 import { switchService } from "@/services/switches";
 import { userService } from "@/services/user";
@@ -281,15 +277,15 @@ async function Reports({ searchParams }: Props) {
             console.error("❌ Erro ao buscar Redes:", err);
             return [];
         }),
-        getProcessorsAction().catch((err) => {
+        optionsService.getProcessors().catch((err) => {
             console.error("❌ Erro ao buscar Processadores:", err);
             return [];
         }),
-        getOperatingSystemsAction().catch((err) => {
+        optionsService.getOperatingSystems().catch((err) => {
             console.error("❌ Erro ao buscar SOs:", err);
             return [];
         }),
-        getDisksAction().catch((err) => {
+        optionsService.getDisks().catch((err) => {
             console.error("❌ Erro ao buscar Discos:", err);
             return [];
         }),

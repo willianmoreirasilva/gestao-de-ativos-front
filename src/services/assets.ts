@@ -2,11 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 
-import {
-    getDisksAction,
-    getOperatingSystemsAction,
-    getProcessorsAction,
-} from "@/actions/options";
 import { getServerApi } from "@/lib/server-api";
 import { ApiResponse } from "@/types/api";
 import {
@@ -18,6 +13,7 @@ import {
 
 import { departmentService } from "./department";
 import { locationService } from "./location";
+import { optionsService } from "./options";
 import { switchService } from "./switches";
 
 interface ActionResponse<T> {
@@ -161,9 +157,9 @@ export async function getAssetOptionsAction() {
             locationsRes,
             switchesRes,
         ] = await Promise.all([
-            getProcessorsAction().catch(() => ({ data: [] })),
-            getOperatingSystemsAction().catch(() => ({ data: [] })),
-            getDisksAction().catch(() => ({ data: [] })),
+            optionsService.getProcessors().catch(() => ({ data: [] })),
+            optionsService.getOperatingSystems().catch(() => ({ data: [] })),
+            optionsService.getDisks().catch(() => ({ data: [] })),
             departmentService.getDepartments(1, 1000),
             locationService.getLocations(0, 100),
             switchService.getSwitches({ page: 1, limit: 1000 }),

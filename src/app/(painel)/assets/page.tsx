@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { getAssetDashboardData } from "@/actions/asset-dashboard.action";
 import { QuickSearchTrigger } from "@/components/assets/quick-search-Trigger";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,6 +21,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { fetchAssetDashboardData } from "@/services/asset-dashboard";
 
 const ASSET_TYPE_CONFIG: Record<
     string,
@@ -78,7 +78,7 @@ const ASSET_TYPE_CONFIG: Record<
 };
 
 export default async function AssetsDashboardPage() {
-    const { data, error } = await getAssetDashboardData();
+    const { data, error } = await fetchAssetDashboardData();
 
     if (error || !data) {
         return (

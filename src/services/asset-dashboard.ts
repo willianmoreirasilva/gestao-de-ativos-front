@@ -1,6 +1,5 @@
-"use server";
-
 import { getServerApi } from "@/lib/server-api";
+import { extractApiError } from "@/services/user";
 
 export interface AssetTypeStat {
     type:
@@ -23,39 +22,25 @@ export interface AssetDashboardData {
     assetsByType: AssetTypeStat[];
 }
 
-interface ActionResponse {
+export async function fetchAssetDashboardData(): Promise<{
     data: AssetDashboardData | null;
     error: string | null;
-}
-
-export async function getAssetDashboardData(): Promise<ActionResponse> {
+}> {
     try {
         const api = await getServerApi();
-        // Consome o endpoint existente que traz as estatísticas de ativos
+        // Estatísticas de ativos, já filtradas pelo backend conforme a role
         const response = await api.get("/api/dashboard/stats");
 
-        return {
-            data: response.data.data,
-            error: null,
-        };
+        return { data: response.data.data, error: null };
     } catch (error: unknown) {
-        console.error("Erro na Action getAssetDashboardData:", error);
-
-        const extractErrorMessage = (err: unknown): string | undefined => {
-            if (typeof err === "object" && err !== null && "response" in err) {
-                const e = err as {
-                    response?: { data?: { error?: string } };
-                };
-                return e.response?.data?.error;
-            }
-            return undefined;
-        };
+        console.error("Erro ao buscar o dashboard de ativos:", error);
 
         return {
             data: null,
-            error:
-                extractErrorMessage(error) ||
+            error: extractApiError(
+                error,
                 "Não foi possível carregar os dados do dashboard de ativos.",
+            ).message,
         };
     }
 }

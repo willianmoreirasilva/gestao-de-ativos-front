@@ -374,6 +374,11 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Esforço:** G
 
 ### M14. Server Components chamam Server Actions para ler dados
+> **Em andamento (28/10/2026), por módulo, um commit cada:**
+> - ✅ **Ativos:** `getAssetDashboardData` virou `fetchAssetDashboardData` (`src/services/asset-dashboard.ts`) e as três leituras de opções (`getProcessorsAction`, `getOperatingSystemsAction`, `getDisksAction`) viraram `optionsService` (`src/services/options.ts`). Todos os chamadores foram atualizados (páginas de ativos, de computador e de relatórios, e `services/assets.ts`); em `actions/options.ts` ficaram só as criações.
+> - Próximos: IPs/redes (dashboard de infra) e relatórios (wrapper do dashboard de auditoria).
+> - **Ficam como actions de propósito:** as leituras chamadas por componentes de cliente, sob demanda (`findAvailableIpsAction`, `getAvailableIpsAction`, `getReservedIpsAction`, `searchAssetsAction`, `findIpByAddressAction`). O cookie de sessão é httpOnly e um componente de cliente não usa `getServerApi`; a action é o caminho certo ali.
+> - `getIpStatsAction`, `getOverviewStatsAction` e `getRecentIpsAction` não têm uso: seguem no M4.
 - **Exemplos:** `src/app/(painel)/reports-audit/reports/page.tsx:284` (`getDisksAction`) e `assets/computers/[id]/page.tsx`
 - **Problema:**
   - Server Actions servem para mutações. Cada função exportada em arquivo `"use server"` vira um endpoint POST público, que segue protegido pelo backend.

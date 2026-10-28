@@ -1,16 +1,12 @@
 import { ShieldAlert } from "lucide-react";
 
-import {
-    getDisksAction,
-    getOperatingSystemsAction,
-    getProcessorsAction,
-} from "@/actions/options";
 import { AssetTechnicalCard } from "@/components/assets/shared/asset-technical-card";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 import { getAssetById } from "@/services/assets";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
+import { optionsService } from "@/services/options";
 import { switchService } from "@/services/switches";
 
 interface Props {
@@ -33,9 +29,9 @@ export default async function ComputerDetailsPage({ params }: Props) {
         getAssetById(id),
         departmentService.getDepartments(),
         locationService.getLocations(),
-        getProcessorsAction(),
-        getOperatingSystemsAction(),
-        getDisksAction(),
+        optionsService.getProcessors(),
+        optionsService.getOperatingSystems(),
+        optionsService.getDisks(),
         switchService.getSwitches({ page: 1, limit: 100 }),
     ]);
 
