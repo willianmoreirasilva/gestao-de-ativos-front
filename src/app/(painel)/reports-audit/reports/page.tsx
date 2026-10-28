@@ -8,7 +8,7 @@ import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
 import { networkService } from "@/services/network";
 import { optionsService } from "@/services/options";
-import { getAssetReportAction } from "@/services/reports.service";
+import { fetchAssetReport } from "@/services/reports.service";
 import { switchService } from "@/services/switches";
 import { userService } from "@/services/user";
 import { ReportOptions } from "@/types/report-options";
@@ -264,7 +264,7 @@ async function Reports({ searchParams }: Props) {
         disksRes,
         switchesRes,
     ] = await Promise.all([
-        getAssetReportAction(queryInput),
+        fetchAssetReport(queryInput),
         departmentService.getDepartments().catch((err) => {
             console.error("❌ Erro ao buscar Departamentos:", err);
             return [];

@@ -1,11 +1,9 @@
-"use server";
-
 import { isAxiosError } from "axios";
 
 import { getServerApi } from "@/lib/server-api";
 import { AssetReportResponse, ReportQueryPayload } from "@/types/report";
 
-export async function getAssetReportAction(
+export async function fetchAssetReport(
     payload: ReportQueryPayload,
 ): Promise<AssetReportResponse> {
     const defaultPage = payload.page ?? 1;
@@ -32,7 +30,7 @@ export async function getAssetReportAction(
             error: null,
         };
     } catch (error: unknown) {
-        console.error("Erro na Server Action getAssetReportAction:", error);
+        console.error("Erro ao buscar o relatório de ativos:", error);
 
         let errorMessage = "Falha ao carregar o relatório de ativos.";
 

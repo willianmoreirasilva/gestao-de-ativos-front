@@ -74,3 +74,36 @@ A documentação completa está em `docs/` (índice: `docs/README.md`). Problema
   - Não apague `../sysip-backend-2.0/uploads/`: são fotos reais.
   - O `tsx --watch` do back não recarrega o `.env`.
 - **Commits:** em pt-BR. Não faça commit sem pedido do usuário.
+
+## Como trabalhar nas correções
+
+Vale para os itens de `docs/problemas-encontrados.md` (nos dois repositórios).
+
+**Ciclo de cada item**, nesta ordem:
+1. **Confirmar:** conferir no código que o problema ainda existe e entender o efeito colateral antes de mexer.
+2. **Testar:** escrever ou rodar o teste que mostra o problema (ou que trava o comportamento que precisa continuar igual).
+3. **Corrigir:** a menor mudança que resolve.
+4. **Verificar:** `pnpm typecheck`, `pnpm test`, `pnpm lint` (sem erros novos) e, quando mexe em tela ou em rota, `pnpm build` mais um teste real: back compilado e front em produção, com usuário temporário **no banco de testes** (nunca no de desenvolvimento).
+5. **Registrar:** atualizar o item em `docs/problemas-encontrados.md` (o que foi feito, como foi verificado, o que ficou de fora) e, se couber, `CLAUDE.md` ou `docs/variaveis-de-ambiente.md`.
+6. **Commit:** em pt-BR, só com autorização do usuário, um commit por item (ou por módulo, quando o item é dividido).
+
+**Regras**
+- Um item por vez. **Parar ao fim de cada item** (ou de cada módulo) e mostrar o resumo antes de seguir.
+- Nas decisões marcadas com ❓ (ex.: política de papéis, escolhas de produto), **perguntar** ao usuário em vez de assumir.
+- Se a verificação mostrar que a correção planejada não é segura, parar, explicar o motivo e propor a alternativa (foi o caso do M7: o hook não podia ser removido).
+- Dizer com clareza o que **não** foi testado.
+
+**Ordem dos itens que faltam**
+1. **M14:** leituras fora de `actions/`, por módulo, um commit cada.
+   - ✅ Ativos (`e09e951`) e IPs/redes (`20801c2`).
+   - Falta **Relatórios**: remover o wrapper `getReportsAuditDashboardAction` e revisar a página `reports`.
+2. **M12:** erros do React Compiler (`setState` em effect, refs no render), **um arquivo por vez**.
+3. **M4:** componentes e actions sem uso (inclui `getIpStatsAction`, `getOverviewStatsAction`, `getRecentIpsAction` e o `createDiskAction`).
+4. **M13:** `any` (122 no front, 23 no back).
+5. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports.
+6. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
+
+**Pendências fora dessa ordem**
+- A7: o CI ainda não rodou no GitHub (falta o primeiro `push`).
+- M16: os hooks de auditoria de login e logout do back leem o `x-forwarded-for` direto; trocar por `req.ip`.
+- Produção: banco novo recebe só `prisma migrate deploy`; `TRUST_PROXY=true`, `HOST=127.0.0.1` e `CORS_ORIGINS` com o endereço HTTPS do proxy.

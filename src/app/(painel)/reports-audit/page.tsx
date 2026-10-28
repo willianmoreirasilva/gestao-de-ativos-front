@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
-import { getReportsAuditDashboardAction } from "@/actions/reports-audit-dashboard.action";
 import { ReportKpiCards } from "@/components/reports/summary/report-kpi-cards";
 import { RequirePermission } from "@/components/require-permission";
 import { Badge } from "@/components/ui/badge";
@@ -25,9 +24,10 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { getFormattedEntity } from "@/lib/audit-utils";
+import { fetchReportsAuditDashboardData } from "@/services/reports-audit.service";
 
 async function ReportsAuditDashboard() {
-    const { data, error } = await getReportsAuditDashboardAction();
+    const { data, error } = await fetchReportsAuditDashboardData();
 
     if (error || !data) {
         return (

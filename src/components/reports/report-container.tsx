@@ -12,7 +12,7 @@ import {
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useState, useTransition } from "react";
 
-import { getAssetReportAction } from "@/services/reports.service";
+import { getAssetReportAction } from "@/actions/reports";
 import type {
     AssetReportData,
     ReportQueryPayload,
