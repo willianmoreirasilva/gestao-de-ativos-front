@@ -2,6 +2,16 @@ import type { UserRole } from "@/schemas/user";
 
 export type { UserRole };
 
+// Usuário logado, como o painel o usa (montado a partir de GET /api/users/me)
+export type UserSession = {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+    emailVerified: boolean;
+    role: UserRole;
+};
+
 // Espelha UserResponseSchema do backend (GET /api/users)
 export type UserListItem = {
     id: string;

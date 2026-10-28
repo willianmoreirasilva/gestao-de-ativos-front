@@ -7,7 +7,7 @@ Só os nomes e para que servem. **Nunca** coloque valores reais em documentaçã
 | Variável | Uso | Onde |
 |---|---|---|
 | `NEXT_PUBLIC_API_URL` | URL base do backend (em dev, `http://localhost:3005`). É pública, porque o navegador usa para o login e para a URL das fotos | `src/lib/server-api.ts`, `src/lib/auth-client.ts`, `src/lib/avatar.ts` |
-| `NODE_ENV` | Definida pelo Next; usada só no `loginAction` sem uso | `src/actions/auth.ts` |
+| `NODE_ENV` | Definida pelo Next; o código do front não a usa | — |
 
 Não existe `.env.example` no front. Só existe esta variável, e ela não é segredo. Não há outras `NEXT_PUBLIC_*`, então não há segredos expostos ao cliente.
 

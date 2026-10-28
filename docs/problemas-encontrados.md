@@ -208,7 +208,11 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** retornar `{ data, error, status }`, como em `services/user.ts`, mostrar uma mensagem de acesso negado e usar sempre `/api/audit-logs`.
 - **Esforço:** P
 
-### M3. Código morto e debug que vaza dados no log
+### M3. Código morto e debug que vaza dados no log ✅ resolvido (28/10/2026)
+> **Resolvido:** foram removidos os arquivos abaixo; antes, uma busca confirmou que nenhum era importado.
+> - **Front:** `src/services/auth.ts`, `src/actions/auth.ts`, o arquivo vazio `axios` e o `package-lock.json`. O tipo `UserSession`, o único usado, foi para `src/types/user.ts`.
+> - **Back:** `user.controller.ts` (o tsc caiu de 4 para 2 erros) e `dist/index.js`; o `.gitignore` foi corrigido de `./dist` para `/dist`.
+
 - **Arquivos:**
   - `src/services/auth.ts`: `authService.getMe`, sem uso. Chama `/api/auth/account-info` e faz `console.log` da resposta inteira (linhas 27 e 43).
   - `src/actions/auth.ts`: `loginAction`, sem uso. Grava o token **sem assinatura** em um cookie `httpOnly: false` (linha 42), o que não funciona com o Better Auth e é inseguro.

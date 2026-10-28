@@ -53,7 +53,7 @@ import { sidebarMenuConfig } from "@/config/sidebar-menu";
 import { authClient } from "@/lib/auth-client";
 import { can } from "@/lib/permissions";
 import { ROLE_LABELS } from "@/lib/user-roles";
-import { UserSession } from "@/services/auth";
+import type { UserSession } from "@/types/user";
 
 import { QuickSearchModal } from "./assets/quick-search-modal";
 import { SidebarLogoFull, SidebarLogoIcon } from "./sidebar-logo";

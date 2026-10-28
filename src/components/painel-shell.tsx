@@ -8,7 +8,7 @@ import { RoleProvider } from "@/components/permission-provider";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { authClient } from "@/lib/auth-client";
-import type { UserSession } from "@/services/auth";
+import type { UserSession } from "@/types/user";
 import type { MyProfile } from "@/types/user";
 
 type Props = {

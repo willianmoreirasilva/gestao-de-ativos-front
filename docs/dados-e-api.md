@@ -134,7 +134,6 @@ Escopo por VLAN (`ipNetworkScope`, ver [permissoes.md](./permissoes.md)): **toda
 | `services/reports-audit.service.ts` | `fetchReportsAuditDashboardData` | `/reports/audit-dashboard` |
 | `services/reports.service.ts` | `getAssetReportAction` | `POST /reports/assets` |
 | `services/audit.service.ts` | `fetchAuditLogs` | `/audit-logs` |
-| `services/auth.ts` | `getMe` (**sem uso**, M3) | `/auth/account-info` |
 
 ### Server Actions (`src/actions/*`, `"use server"`)
 
@@ -148,7 +147,6 @@ Escopo por VLAN (`ipNetworkScope`, ver [permissoes.md](./permissoes.md)): **toda
 | `assets/*.actions.ts` | `create{Computer,Printer,Phone,Camera}AssetAction`, `update*SpecsAction`, `updateAssetConnectivityAction`, `updateAssetAllocationAction`, `findIpByAddressAction`, `searchAssetsAction` | `revalidateAssetPaths` (`assets/helpers.ts`) |
 | `options.ts` | `get/create` para processadores, sistemas e discos | — |
 | `asset-dashboard.action.ts`, `infra-dashboard.ts`, `reports-audit-dashboard.action.ts` | leituras de dashboard | — |
-| `auth.ts` | `loginAction` (**sem uso**, M3) | — |
 
 `getAvailableIpsAction` existe duas vezes:
 - em `actions/ip-addresses.ts`, usada pela aba "IPs disponíveis";
