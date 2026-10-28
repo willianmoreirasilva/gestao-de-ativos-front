@@ -8,7 +8,6 @@ export type UserSession = {
     name: string;
     email: string;
     image: string | null;
-    emailVerified: boolean;
     role: UserRole;
 };
 

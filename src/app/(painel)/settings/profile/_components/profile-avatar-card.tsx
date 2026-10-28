@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { removeMyAvatarAction, updateMyAvatarAction } from "@/actions/users";
 import { AvatarUploader } from "@/components/avatar/avatar-uploader";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
-import { authClient } from "@/lib/auth-client";
 import { type AvatarCrop, buildAvatarFormData } from "@/lib/avatar";
 
 type Props = {
@@ -21,7 +20,6 @@ type Props = {
 // Liga o seletor de avatar às actions do próprio perfil
 export function ProfileAvatarCard({ image, name, email, children }: Props) {
     const router = useRouter();
-    const { refetch } = authClient.useSession();
     const [currentImage, setCurrentImage] = useState(image);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [removeError, setRemoveError] = useState<string | null>(null);
@@ -30,7 +28,6 @@ export function ProfileAvatarCard({ image, name, email, children }: Props) {
     // Atualiza o sidebar e o restante da página após a confirmação do backend
     const syncInterface = async (nextImage: string | null) => {
         setCurrentImage(nextImage);
-        await refetch();
         router.refresh();
     };
 

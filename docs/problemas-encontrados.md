@@ -209,7 +209,13 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 
 ## 🟡 Médio
 
-### M1. O painel inteiro é renderizado no cliente, depois de buscar a sessão
+### M1. O painel inteiro é renderizado no cliente, depois de buscar a sessão ✅ resolvido (28/10/2026)
+> **Resolvido:**
+> - O layout `(painel)` decide no servidor: `getMyProfile` com 401 faz `redirect("/login")`; com API fora do ar ou erro, mostra um aviso com "Tentar novamente", sem deslogar.
+> - O `PainelShell` deixou de ser Client Component e não usa mais `authClient.useSession()`: monta o usuário do sidebar a partir do perfil. A tela "Autenticando sessão..." e a requisição extra de sessão em toda navegação inicial acabaram, e o HTML do painel chega pronto.
+> - As telas de perfil (`profile-form` e `profile-avatar-card`) não chamam mais `useSession().refetch()`: o `router.refresh()` já recarrega o layout com o perfil novo. O tipo `UserSession` perdeu o `emailVerified`, que ninguém usava.
+> - **Verificado** com o back compilado e o front em produção: sem cookie e com cookie inválido vão para `/login`; com sessão válida o e-mail já vem no HTML do servidor; com a API desligada aparece "Não foi possível conectar ao servidor".
+> - **Fica como está:** o `proxy.ts` segue barrando a falta de cookie (é só uma checagem otimista) e o logout continua pelo `authClient.signOut` no sidebar.
 - **Arquivo:** `src/components/painel-shell.tsx:23-46`
 - **Problema:** o `PainelShell` (client) esconde `children` enquanto `authClient.useSession()` carrega (linha 31) e retorna `null` quando não há sessão. Com isso, todo o HTML que os Server Components geraram é descartado na primeira pintura, e o usuário vê "Autenticando sessão..." em toda navegação inicial.
 - **Por que importa:**
