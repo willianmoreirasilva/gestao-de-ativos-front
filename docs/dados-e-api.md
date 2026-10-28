@@ -77,7 +77,7 @@ Escopo por VLAN (`ipNetworkScope`, ver [permissoes.md](./permissoes.md)): **toda
 | Método | Rota | Auth | Observação |
 |---|---|---|---|
 | POST | `/assets` | A | cria um ativo de qualquer `type` com a especialização (computer, printer, phone, camera) e aloca o IP com trava atômica |
-| GET | `/assets` | A | query `type`, `page`, `limit` (**sem máximo, M8**), `search`, filtros |
+| GET | `/assets` | A | query `type`, `page`, `limit` (1 a 100), `search`, filtros |
 | GET / DELETE | `/assets/:id` | A | detalhe / exclusão (libera o IP) |
 | PATCH | `/assets/:id/connectivity` | A | IP e porta do switch |
 | PATCH | `/assets/:id/allocation` | A | departamento e localidade |

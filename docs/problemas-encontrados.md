@@ -268,7 +268,11 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** `BigInt.prototype.toJSON` ou um serializer próprio só onde há `BigInt` (`addressInt`). Já existe `utils/serealizeBigInt.ts`.
 - **Esforço:** P
 
-### M8. Listagens sem limite máximo
+### M8. Listagens sem limite máximo ✅ resolvido (28/10/2026)
+> **Resolvido:** `GET /assets` e `GET /access-points` aceitam `limit` só de 1 a 100; fora disso, 400. É o maior valor do seletor de paginação do front.
+> - **Testes:** `back:src/routes/list-limit.int.test.ts`.
+> - **Fica para depois:** `departments`, `locations` e `switches` vão até 1000, e `reports` até 10000. O próprio front pede `switches?limit=1000` em `src/services/assets.ts`.
+
 - **Arquivos:** `back:src/validators/asset.validator.ts:308` e `back:src/validators/access-point.validator.ts:45`
 - **Problema:** `limit` não tem `.max()`, então `?limit=1000000` carrega a tabela inteira.
 - **Sugestão:** `.max(100)`, como nas outras rotas.
