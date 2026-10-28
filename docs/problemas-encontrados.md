@@ -172,7 +172,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 >   - A 16.3.6 ainda deixaria 3 avisos críticos, corrigidos só na 16.4.1; o `pnpm audit` não aponta mais nenhum aviso do `next`.
 >   - Vulnerabilidades críticas do front: de 7 para 2 (`better-auth` e `proxy-addr`).
 > - ✅ **`axios` 1.17.0 → 1.21.0** (28/10/2026): o `pnpm audit` não aponta mais avisos do `axios` nem do `form-data`. Vulnerabilidades do front: de 127 para 83 (2 críticas, 40 altas). `tsc`, testes e `build` passam.
-> - Próximos: `better-auth` (mesma versão nas duas pontas), `fastify` e `@fastify/*`.
+> - ✅ **`better-auth` → 1.7.14 nas duas pontas** (28/10/2026; front 1.6.14, back 1.4.18):
+>   - o `pnpm audit` não aponta mais avisos do `better-auth`; vulnerabilidades do front: 79 (1 crítica, `proxy-addr`), do back: 109 (sem críticas);
+>   - back: 428 testes passam, incluindo login, avatar e rate limit; o `tsc` segue com os 2 erros que já existiam (`auth.ts:76` e `ip-utils.ts:51`);
+>   - front: `tsc`, testes e `build` passam;
+>   - o `@better-auth/cli` do back continua em 1.4.18 (a última versão publicada é a 1.4.21), por ser só ferramenta de desenvolvimento.
+> - Próximos: `fastify` e `@fastify/*`.
 
 - **Arquivos:** `package.json` e `back:package.json`
 - **Problema:**
