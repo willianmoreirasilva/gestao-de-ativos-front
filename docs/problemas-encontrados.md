@@ -171,7 +171,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > - ✅ **`next` 16.2.7 → 16.4.3** (28/10/2026), junto com o `eslint-config-next`.
 >   - A 16.3.6 ainda deixaria 3 avisos críticos, corrigidos só na 16.4.1; o `pnpm audit` não aponta mais nenhum aviso do `next`.
 >   - Vulnerabilidades críticas do front: de 7 para 2 (`better-auth` e `proxy-addr`).
-> - Próximos: `axios`, `better-auth` (mesma versão nas duas pontas), `fastify` e `@fastify/*`.
+> - ✅ **`axios` 1.17.0 → 1.21.0** (28/10/2026): o `pnpm audit` não aponta mais avisos do `axios` nem do `form-data`. Vulnerabilidades do front: de 127 para 83 (2 críticas, 40 altas). `tsc`, testes e `build` passam.
+> - Próximos: `better-auth` (mesma versão nas duas pontas), `fastify` e `@fastify/*`.
 
 - **Arquivos:** `package.json` e `back:package.json`
 - **Problema:**
