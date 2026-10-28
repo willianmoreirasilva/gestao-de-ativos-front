@@ -20,7 +20,7 @@ Toda rota autenticada também passa por `requirePermission(recurso, ação)`, co
 
 | Método | Rota | Auth | Observação |
 |---|---|---|---|
-| GET/POST | `/api/auth/*` | — | Repassa a requisição ao `auth.handler` (`back:src/routes/auth.ts`). O front usa `sign-in/email`, `get-session`, `sign-out` e `change-password`. O `sign-up/email` está desligado (`disableSignUp`), e o `sign-in` recusa usuários inativos (403) |
+| GET/POST | `/api/auth/*` | — | Repassa a requisição ao `auth.handler` (`back:src/routes/auth.ts`). O front usa `sign-in/email`, `get-session`, `sign-out` e `change-password`. O `sign-up/email` está desligado (`disableSignUp`), e o `sign-in` recusa usuários inativos (403) e tem limite de 5 tentativas por minuto por IP (429) |
 
 ### Usuários (`back:src/routes/user.ts`)
 
@@ -34,8 +34,8 @@ Toda rota autenticada também passa por `requirePermission(recurso, ação)`, co
 | DELETE | `/users/:id/permanent` | A+SUP | — | exclusão por anonimização (dados pessoais, senha e sessões removidos; auditoria preservada) |
 | GET | `/users/me` | A | — | perfil (`id`, `name`, `email`, `image`, `role`, `isActive`, `createdAt`) |
 | PATCH | `/users/me` | A | `{ name }` | perfil |
-| GET | `/users/invitations/validate` | — | query `token` | `{ email, role, expiresAt }` |
-| POST | `/users/invitations/accept` | — | JSON `{ token, name, password }`, ou multipart com `file` + `cropX`/`cropY`/`cropSize` opcionais | 201 usuário criado |
+| GET | `/users/invitations/validate` | — | query `token` | `{ email, role, expiresAt }`. 429 depois de 10/min por token ou 60/min no total |
+| POST | `/users/invitations/accept` | — | JSON `{ token, name, password }`, ou multipart com `file` + `cropX`/`cropY`/`cropSize` opcionais | 201 usuário criado. 429 depois de 5/min por token ou 30/min no total |
 | PUT | `/users/me/avatar` | A | multipart: `cropX`, `cropY`, `cropSize`, `file` (JPG/PNG/WebP ≤ 5 MB) | `{ image }` |
 | DELETE | `/users/me/avatar` | A | — | `{ image: null }` (idempotente) |
 | GET | `/avatars/:file` | — | `<uuid>.webp` | imagem WebP (`nosniff`, cache imutável) |

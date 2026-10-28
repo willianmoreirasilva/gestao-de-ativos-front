@@ -134,6 +134,17 @@ Não existem. O banco é sincronizado com `prisma db push` (M10). Para gerar o c
   - IPs: `lib/network-scope.ts` (`requireNetworkScope`, `ipScopeWhere`, `assertNetworkInScope`). Ver [permissoes.md](./permissoes.md#8-alteração-de-27102026-switchesaps-e-visão-geral-de-ips).
   - Senhas de AP: `lib/secret-crypto.ts` (AES-256-GCM, `CREDENTIALS_ENCRYPTION_KEY`). A migração dos dados antigos é `pnpm encrypt:ap-secrets [--dry-run]`.
 - **Login:** o hook `before` de `/sign-in` recusa usuários inativos (403).
+- **Rate limit** (`src/lib/rate-limit.ts`, com `@fastify/rate-limit`, contadores em memória e janela de 1 minuto):
+
+  | Rota | Limite |
+  |---|---|
+  | `POST /api/auth/sign-in/email` | 5 por IP, que é o IP do navegador: o login é chamado direto do browser |
+  | `GET /users/invitations/validate` | 10 por token e 60 no total |
+  | `POST /users/invitations/accept` | 5 por token, contado no handler, depois de ler o corpo multipart; 30 no total |
+
+  - **Convites:** chegam pelo servidor do Next, sempre com o mesmo IP. Por isso o limite é por token, mais um teto global.
+  - **Ao estourar:** 429 com `retry-after`, e a mensagem vai em `error` e em `message`.
+  - **Para incluir uma rota:** adicione o limite em `RATE_LIMITS` e use `rateLimitHook(nome, chave)`. Os limitadores são criados uma vez por app (`registerRateLimiters`).
 - **Chamadas manuais à API:**
   - Mande o valor **assinado** do cookie, tal como vem no `Set-Cookie`. O token cru retorna 401.
   - Inclua `Origin: http://localhost:3000` no login.

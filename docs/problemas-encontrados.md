@@ -274,7 +274,14 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** `.max(100)`, como nas outras rotas.
 - **Esforço:** P
 
-### M9. Sem rate limit no login nem no aceite de convite
+### M9. Sem rate limit no login nem no aceite de convite ✅ resolvido (28/10/2026)
+> **Resolvido** com `@fastify/rate-limit`, em `back:src/lib/rate-limit.ts`:
+> - **Login:** 5 tentativas por minuto por IP.
+> - **Validar convite:** 10 por minuto por token e 60 no total.
+> - **Aceitar convite:** 5 por minuto por token e 30 no total.
+>
+> Os convites passam pelo servidor do Next, sempre com o mesmo IP, e por isso o limite é por token, mais um teto global. Ao estourar, a resposta é 429 com `retry-after`. Testes: `back:src/routes/rate-limit.int.test.ts`.
+
 - **Arquivos:** `back:src/lib/auth.ts` e `back:src/routes/user.ts:216`
 - **Problema:** o rate limit nativo do Better Auth só vale em produção por padrão, e não há limite nenhum nas rotas públicas de convite.
 - **Sugestão:** configurar `rateLimit` explicitamente no Better Auth e usar `@fastify/rate-limit` nas rotas públicas.
