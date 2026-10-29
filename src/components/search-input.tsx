@@ -2,7 +2,7 @@
 
 import { Search, X } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 
@@ -23,31 +23,38 @@ export function SearchInput({
     const initialParamValue = searchParams.get(queryParamName) || "";
     const [text, setText] = useState(initialParamValue);
 
-    // 🌟 CORREÇÃO DO LOOP: Monitoramos APENAS a variável 'text'
-    useEffect(() => {
-        // Se o texto na caixinha for igual ao que já está na URL, não faz nada (evita disparos extras)
-        const currentParam = searchParams.get(queryParamName) || "";
-        if (text === currentParam) return;
+    // Debounce no próprio onChange: sem useEffect, sem depender de router/searchParams
+    const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-        const delayDebounce = setTimeout(() => {
+    // Cancela a busca pendente ao desmontar
+    useEffect(() => {
+        return () => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+        };
+    }, []);
+
+    const handleChange = (value: string) => {
+        setText(value);
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+
+        // Se o texto já é o que está na URL, não faz nada (evita disparos extras)
+        const currentParam = searchParams.get(queryParamName) || "";
+        if (value === currentParam) return;
+
+        debounceRef.current = setTimeout(() => {
             const params = new URLSearchParams(searchParams.toString());
-            if (text) {
-                params.set(queryParamName, text);
+            if (value) {
+                params.set(queryParamName, value);
                 params.set("page", "1");
             } else {
                 params.delete(queryParamName);
             }
-            // Faz o push de forma silenciosa e limpa
             router.push(`${pathname}?${params.toString()}`, { scroll: false });
         }, 400);
-
-        return () => clearTimeout(delayDebounce);
-
-        // 🌟 ATENÇÃO: Deixamos apenas o 'text' aqui. Adicionar router, pathname ou searchParams
-        // causa instabilidade e loops infinitos em várias versões do Next.js 13/14/15.
-    }, [text]);
+    };
 
     const handleClear = () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
         setText("");
         const params = new URLSearchParams(searchParams.toString());
         params.delete(queryParamName);
@@ -63,7 +70,7 @@ export function SearchInput({
                 type="text"
                 placeholder={placeholder}
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => handleChange(e.target.value)}
                 className="pl-9 pr-9"
             />
 
