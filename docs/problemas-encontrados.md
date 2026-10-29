@@ -421,7 +421,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Pendente:** os registros de auditoria de login e logout (`back:src/lib/auth.ts`, hooks) leem o `x-forwarded-for` direto do cabeçalho, sem passar pelo `trustProxy`. Com o proxy sobrescrevendo o cabeçalho funciona, mas vale usar `req.ip` ali.
 - **Esforço:** P
 
-### M17. Cookie de sessão com `Domain` tirado do `BETTER_AUTH_URL`: não funciona abrindo o sistema por outro host
+### M17. Cookie de sessão com `Domain` tirado do `BETTER_AUTH_URL`: não funciona abrindo o sistema por outro host ✅ resolvido (29/10/2026)
+> **Resolvido (decisão: desligar):** `crossSubDomainCookies` removido de `back:src/lib/auth.ts`; o cookie sai host-only (sem `Domain`). Teste de integração novo em `back:src/routes/auth.int.test.ts` (falhou antes, passa agora; 454 testes do back passam). **Verificado ao vivo:** back compilado com `BETTER_AUTH_URL=http://localhost:3005`, login pelo host `127.0.0.1`: `Set-Cookie` sem `Domain` e `/assets` responde 200 com a sessão. **Não testado:** navegador abrindo por IP da rede ou por domínio com proxy HTTPS. Se front e API um dia ficarem em subdomínios diferentes, será preciso religar a opção.
 - **Arquivo:** `back:src/lib/auth.ts` (`advanced.crossSubDomainCookies.enabled: true`)
 - **Problema:** **[confirmado]** com essa opção ligada, o cookie sai com `Domain=` igual ao host do `BETTER_AUTH_URL` (hoje `Domain=localhost`). Se o navegador abre o sistema por outro host (`127.0.0.1`, o IP da rede que o `ALLOWED_DEV_ORIGINS` libera, ou um domínio diferente do configurado), o navegador **rejeita o cookie**: o login responde 200, nada é gravado e o painel volta para `/login`. Foi o que aconteceu no teste em `http://127.0.0.1:3100`.
 - **Por que importa:** é uma armadilha de configuração (o login "funciona" e a sessão nunca fica), e a produção atrás de um proxy com a mesma origem não precisa de cookie entre subdomínios.
