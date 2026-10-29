@@ -97,11 +97,26 @@ export function ComboboxSearch({
         }
     }, []);
 
+    // Fecha o dropdown e já zera a busca e o item focado
+    const close = React.useCallback(() => {
+        setIsOpen(false);
+        setSearch("");
+        setFocusedIndex(-1);
+    }, []);
+
     const toggleOpen = () => {
-        if (!isOpen) {
+        if (isOpen) {
+            close();
+        } else {
             calculatePosition();
+            setIsOpen(true);
         }
-        setIsOpen((prev) => !prev);
+    };
+
+    // Altera o filtro e volta o índice focado para o início
+    const changeSearch = (text: string) => {
+        setSearch(text);
+        setFocusedIndex(-1);
     };
 
     // Trata clique fora do container
@@ -111,30 +126,22 @@ export function ComboboxSearch({
                 containerRef.current &&
                 !containerRef.current.contains(event.target as Node)
             ) {
-                setIsOpen(false);
+                close();
             }
         }
         document.addEventListener("mousedown", handleClickOutside);
         return () =>
             document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [close]);
 
-    // Reseta a busca e gerencia o foco ao abrir/fechar
+    // Foca o campo de busca ao abrir
     React.useEffect(() => {
-        if (!isOpen) {
-            setSearch("");
-            setFocusedIndex(-1);
-        } else {
+        if (isOpen) {
             requestAnimationFrame(() => {
                 inputRef.current?.focus();
             });
         }
     }, [isOpen]);
-
-    // Reseta o índice focado quando o filtro de busca muda
-    React.useEffect(() => {
-        setFocusedIndex(-1);
-    }, [search]);
 
     // Scroll automático para manter o item selecionado por teclado visível
     React.useEffect(() => {
@@ -180,12 +187,12 @@ export function ComboboxSearch({
                     const selected = filteredOptions[focusedIndex];
                     const selectedKey = getItemKey(selected);
                     onChange(selectedKey === safeValue ? "" : selectedKey);
-                    setIsOpen(false);
+                    close();
                 }
                 break;
             case "Escape":
                 e.preventDefault();
-                setIsOpen(false);
+                close();
                 break;
         }
     };
@@ -253,14 +260,14 @@ export function ComboboxSearch({
                             ref={inputRef}
                             placeholder={searchPlaceholder}
                             value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            onChange={(e) => changeSearch(e.target.value)}
                             autoComplete="off"
                             className="h-7 w-full border-0 bg-transparent p-0 text-xs focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-0 text-zinc-900 dark:text-zinc-100 placeholder:text-muted-foreground"
                         />
                         {search && (
                             <button
                                 type="button"
-                                onClick={() => setSearch("")}
+                                onClick={() => changeSearch("")}
                                 className="p-0.5 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded"
                             >
                                 <X className="h-3 w-3 text-zinc-400" />
@@ -279,7 +286,7 @@ export function ComboboxSearch({
                                 type="button"
                                 onClick={() => {
                                     onChange("");
-                                    setIsOpen(false);
+                                    close();
                                 }}
                                 className="w-full rounded-md px-2.5 py-1.5 text-xs text-left transition-colors flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 font-medium border border-transparent border-dashed border-rose-200 dark:border-rose-900/40 mb-1"
                             >
@@ -307,7 +314,7 @@ export function ComboboxSearch({
                                         data-option-item
                                         onClick={() => {
                                             onChange(isSelected ? "" : optKey);
-                                            setIsOpen(false);
+                                            close();
                                         }}
                                         onMouseEnter={() =>
                                             setFocusedIndex(index)
