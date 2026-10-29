@@ -7,7 +7,7 @@ import {
     ChevronsRight,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useRef } from "react";
+import { useState } from "react";
 
 type PaginationProps = {
     total?: number;
@@ -46,12 +46,7 @@ export function Pagination({
     const currentLimit = propLimit ?? urlLimit;
 
     // 🟢 GUARDA O LIMITE INICIAL APENAS NA PRIMEIRA RENDERIZAÇÃO
-    const initialLimitRef = useRef<number | null>(null);
-    if (initialLimitRef.current === null) {
-        initialLimitRef.current = currentLimit;
-    }
-
-    const initialLimit = initialLimitRef.current;
+    const [initialLimit] = useState(currentLimit);
 
     const isLegacyMode = total === undefined || propTotalPages === undefined;
 

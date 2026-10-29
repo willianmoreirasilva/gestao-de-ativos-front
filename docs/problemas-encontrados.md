@@ -365,7 +365,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > **Em andamento (29/10/2026), um arquivo por vez** (11 arquivos com violações no lint):
 > - ✅ `src/hooks/use-mobile.ts`: trocado por `useSyncExternalStore` (servidor e hidratação assumem desktop, como antes). Lint do arquivo limpo; `tsc`, build e 357 testes passam. **Testado no navegador pelo usuário (sidebar ao estreitar a janela): funcionou.
 > - ✅ `src/components/app-sidebar.tsx`: o `useEffect` que recalculava `openGroups` foi removido. O grupo aberto é derivado de `pathname`; o estado guarda só as aberturas/fechamentos manuais, válidos para a rota em que foram feitos (mesmo comportamento de antes: ao trocar de rota, volta ao padrão). Efeito colateral bom: o servidor já renderiza o grupo aberto, sem piscar. Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
-> - Faltam: `pagination.tsx`, `search-input.tsx`, `quick-search-modal.tsx`, `combobox-search.tsx`, `allocation-edit-modal.tsx`, `system-specs-edit-modal.tsx`, `switch-connection-edit-modal.tsx`, `available-ips-tab.tsx`, `reserved-ips-tab.tsx`, `access-points/add/page.tsx`.
+> - ✅ `src/components/pagination.tsx`: o limite inicial, guardado em `useRef` e lido no render, passou a `useState(currentLimit)` (mesmo efeito: vale só o valor da primeira renderização). Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
+> - Faltam: `search-input.tsx`, `quick-search-modal.tsx`, `combobox-search.tsx`, `allocation-edit-modal.tsx`, `system-specs-edit-modal.tsx`, `switch-connection-edit-modal.tsx`, `available-ips-tab.tsx`, `reserved-ips-tab.tsx`, `access-points/add/page.tsx`.
 - **Arquivos:**
   - `src/components/app-sidebar.tsx:93`
   - `src/components/pagination.tsx:51`
