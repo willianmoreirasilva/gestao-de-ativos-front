@@ -362,6 +362,9 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Esforço:** P
 
 ### M12. Erros do React Compiler: `setState` em effect e refs no render
+> **Em andamento (29/10/2026), um arquivo por vez** (11 arquivos com violações no lint):
+> - ✅ `src/hooks/use-mobile.ts`: trocado por `useSyncExternalStore` (servidor e hidratação assumem desktop, como antes). Lint do arquivo limpo; `tsc`, build e 357 testes passam. **Testado no navegador pelo usuário (sidebar ao estreitar a janela): funcionou.
+> - Faltam: `app-sidebar.tsx`, `pagination.tsx`, `search-input.tsx`, `quick-search-modal.tsx`, `combobox-search.tsx`, `allocation-edit-modal.tsx`, `system-specs-edit-modal.tsx`, `switch-connection-edit-modal.tsx`, `available-ips-tab.tsx`, `reserved-ips-tab.tsx`, `access-points/add/page.tsx`.
 - **Arquivos:**
   - `src/components/app-sidebar.tsx:93`
   - `src/components/pagination.tsx:51`
