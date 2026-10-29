@@ -1,8 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 
 import { type Action, can, type Resource, type Role } from "@/lib/permissions";
-
-const SESSION_COOKIE = "better-auth.session_token";
+import { findSessionCookie } from "@/lib/session-cookie";
 
 /**
  * Rotas que exigem uma permissão além do login. O proxy barra antes de
@@ -52,7 +51,7 @@ async function fetchRole(request: NextRequest): Promise<Role | null> {
 // restritas, a role. A validação real continua no backend; isso evita
 // renderizar páginas do painel (e chamar a API) para quem não pode vê-las.
 export async function proxy(request: NextRequest) {
-    if (!request.cookies.has(SESSION_COOKIE)) {
+    if (!findSessionCookie(request.cookies)) {
         return NextResponse.redirect(new URL("/login", request.nextUrl));
     }
 

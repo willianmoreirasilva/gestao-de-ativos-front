@@ -205,7 +205,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
   - Criar um CI mínimo (GitHub Actions) que rode `tsc` e `lint` nos dois projetos e `next build` no front.
 - **Esforço:** M
 
-### A8. Em produção (HTTPS) o cookie de sessão ganha o prefixo `__Secure-` e o front não o reconhece
+### A8. Em produção (HTTPS) o cookie de sessão ganha o prefixo `__Secure-` e o front não o reconhece ✅ resolvido (29/10/2026)
+> **Resolvido:** `src/lib/session-cookie.ts` (`findSessionCookie`) aceita os dois nomes e devolve nome e valor; `proxy.ts` e `server-api.ts` o usam e repassam o cookie com o nome original. Teste unitário com 3 casos (357 testes passam). **Verificado ao vivo:** back em `NODE_ENV=production` com `BETTER_AUTH_URL=https://...` (cookie `__Secure-...; Secure`) e front em produção: `/assets`, `/infra` e `/assets/printers` responderam 200 com dados. **Não testado:** navegador com HTTPS de verdade (proxy reverso).
 - **Arquivos:** `src/proxy.ts:5` e `:55`, `src/lib/server-api.ts:8` e `:20`
 - **Problema:** **[confirmado]** com `BETTER_AUTH_URL` em `https://...` (e também com `NODE_ENV=production`), o Better Auth devolve `Set-Cookie: __Secure-better-auth.session_token=...; Secure`. Com `http://` o nome é `better-auth.session_token`. O front procura sempre o nome **sem** prefixo:
   - `proxy.ts` não acha o cookie e redireciona toda rota protegida para `/login`;
