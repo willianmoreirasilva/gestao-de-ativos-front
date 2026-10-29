@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { deleteAssetAction } from "@/actions/assets/delete-asset.action";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
-import { deleteAssetAction } from "@/services/assets";
 
 type Props = {
     assetId: string;

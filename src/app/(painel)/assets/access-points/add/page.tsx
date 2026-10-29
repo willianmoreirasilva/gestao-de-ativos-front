@@ -10,6 +10,7 @@ import { FieldErrors, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { createAccessPointAction } from "@/actions/access-points";
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { AccessPointSpecsFormBlock } from "@/components/assets/access-points/access-point-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
@@ -20,7 +21,6 @@ import {
     accessPointFormSchema,
     AccessPointFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddAccessPointPage() {

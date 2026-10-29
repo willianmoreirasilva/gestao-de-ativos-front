@@ -205,6 +205,15 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
   - Criar um CI mínimo (GitHub Actions) que rode `tsc` e `lint` nos dois projetos e `next build` no front.
 - **Esforço:** M
 
+### A8. Em produção (HTTPS) o cookie de sessão ganha o prefixo `__Secure-` e o front não o reconhece
+- **Arquivos:** `src/proxy.ts:5` e `:55`, `src/lib/server-api.ts:8` e `:20`
+- **Problema:** **[confirmado]** com `BETTER_AUTH_URL` em `https://...` (e também com `NODE_ENV=production`), o Better Auth devolve `Set-Cookie: __Secure-better-auth.session_token=...; Secure`. Com `http://` o nome é `better-auth.session_token`. O front procura sempre o nome **sem** prefixo:
+  - `proxy.ts` não acha o cookie e redireciona toda rota protegida para `/login`;
+  - `getServerApi` não encontra o cookie, e as leituras do servidor seguem sem sessão (401).
+- **Por que importa:** na produção prevista (proxy reverso com HTTPS) ninguém consegue entrar: o login responde 200 e o painel volta para `/login`. Nunca apareceu porque o desenvolvimento usa `http://localhost`.
+- **Sugestão:** um helper único (`src/lib/session-cookie.ts`) com os dois nomes possíveis (`__Secure-better-auth.session_token` e `better-auth.session_token`) que devolve o nome e o valor do que existir; `proxy.ts` e `server-api.ts` passam a usá-lo e repassam o cookie com o **nome original** (o que o back espera). Teste unitário do helper. O back não muda.
+- **Esforço:** P
+
 ---
 
 ## 🟡 Médio
@@ -373,15 +382,17 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** tipar primeiro as fronteiras com a API (respostas e erros do axios, com `isAxiosError`) e os builders de relatório.
 - **Esforço:** G
 
-### M14. Server Components chamam Server Actions para ler dados
-> **Em andamento (28/10/2026), por módulo, um commit cada:**
+### M14. Server Components chamam Server Actions para ler dados ✅
+> **Resolvido (29/10/2026), por módulo, um commit cada:**
 > - ✅ **Ativos:** `getAssetDashboardData` virou `fetchAssetDashboardData` (`src/services/asset-dashboard.ts`) e as três leituras de opções (`getProcessorsAction`, `getOperatingSystemsAction`, `getDisksAction`) viraram `optionsService` (`src/services/options.ts`). Todos os chamadores foram atualizados (páginas de ativos, de computador e de relatórios, e `services/assets.ts`); em `actions/options.ts` ficaram só as criações.
 > - ✅ **IPs/redes:** `getInfraDashboardData` virou `fetchInfraDashboardData` (`src/services/infra-dashboard.ts`), usado pela página `/infra`. As leituras de IP e de redes feitas por componentes de cliente seguem como actions (ver abaixo).
 > - ✅ **Relatórios:**
 >   - O wrapper `getReportsAuditDashboardAction` foi removido; a página chama `fetchReportsAuditDashboardData` direto.
 >   - `services/reports.service.ts` perdeu o `"use server"` e a função virou `fetchAssetReport` (usada pela página). A exportação, que roda em componente de cliente, usa a nova action fina `getAssetReportAction` em `src/actions/reports.ts`.
 >   - **Não testado ao vivo:** o clique em exportar (a action só é chamada pelo componente de cliente); as páginas e as chamadas `/api/reports/*` deram 200.
-> - **Próximo (módulo 4): `src/services/assets.ts` e outros arquivos de service com `"use server"`.** Cada função exportada vira um endpoint POST público. O arquivo mistura leituras de servidor (`getAssets`, `getAssetById`), uma mutação (`deleteAssetAction`, chamada por componentes de cliente) e uma leitura chamada de cliente (`getAssetOptionsAction`, nas telas de cadastro). Plano: tirar o `"use server"` do service e mover a mutação e a leitura de cliente para `actions/assets/`.
+> - ✅ **Ativos, parte 2 (módulo 4):** `services/assets.ts` perdeu o `"use server"` e ficou só com `getAssets` e `getAssetById`. A exclusão foi para `actions/assets/delete-asset.action.ts` (`deleteAssetAction`) e a leitura das telas de cadastro para `actions/assets/asset-options.action.ts` (`getAssetOptionsAction`). Seis telas `add/page.tsx` e cinco componentes de exclusão foram atualizados. Não há mais `"use server"` em `src/services/`.
+>   - **Verificado:** `tsc`, build e 354 testes; teste real (back compilado + front em produção, banco de testes): exclusão de uma impressora e selects de `computers/add` e `printers/add` carregando, feito pelo usuário no navegador.
+> - **M14 concluído.**
 > - **Ficam como actions de propósito:** as leituras chamadas por componentes de cliente, sob demanda (`findAvailableIpsAction`, `getAvailableIpsAction`, `getReservedIpsAction`, `searchAssetsAction`, `findIpByAddressAction`). O cookie de sessão é httpOnly e um componente de cliente não usa `getServerApi`; a action é o caminho certo ali.
 > - `getIpStatsAction`, `getOverviewStatsAction` e `getRecentIpsAction` não têm uso: seguem no M4.
 - **Exemplos:** `src/app/(painel)/reports-audit/reports/page.tsx:284` (`getDisksAction`) e `assets/computers/[id]/page.tsx`
@@ -407,6 +418,13 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Resolvido:** a variável `TRUST_PROXY` (`true` ou `false`, padrão `false`) liga o `trustProxy` do Fastify, e o `req.ip` passa a ser o do `X-Forwarded-For`. Testes em `back:src/routes/rate-limit.int.test.ts`: ligado, o limite é por IP do cabeçalho; desligado, o cabeçalho é ignorado (não dá para fugir do limite forjando-o).
 - **Em produção:** `TRUST_PROXY=true` e `HOST=127.0.0.1`. Ligado, o Fastify confia em qualquer `X-Forwarded-For` recebido: só ligue com o proxy como único caminho até a API. O proxy deve **sobrescrever** o cabeçalho com o IP real (Nginx: `proxy_set_header X-Forwarded-For $remote_addr;`).
 - **Pendente:** os registros de auditoria de login e logout (`back:src/lib/auth.ts`, hooks) leem o `x-forwarded-for` direto do cabeçalho, sem passar pelo `trustProxy`. Com o proxy sobrescrevendo o cabeçalho funciona, mas vale usar `req.ip` ali.
+- **Esforço:** P
+
+### M17. Cookie de sessão com `Domain` tirado do `BETTER_AUTH_URL`: não funciona abrindo o sistema por outro host
+- **Arquivo:** `back:src/lib/auth.ts` (`advanced.crossSubDomainCookies.enabled: true`)
+- **Problema:** **[confirmado]** com essa opção ligada, o cookie sai com `Domain=` igual ao host do `BETTER_AUTH_URL` (hoje `Domain=localhost`). Se o navegador abre o sistema por outro host (`127.0.0.1`, o IP da rede que o `ALLOWED_DEV_ORIGINS` libera, ou um domínio diferente do configurado), o navegador **rejeita o cookie**: o login responde 200, nada é gravado e o painel volta para `/login`. Foi o que aconteceu no teste em `http://127.0.0.1:3100`.
+- **Por que importa:** é uma armadilha de configuração (o login "funciona" e a sessão nunca fica), e a produção atrás de um proxy com a mesma origem não precisa de cookie entre subdomínios.
+- **Sugestão (❓ decidir):** desligar o `crossSubDomainCookies`; o cookie passa a valer só para o host que o emitiu (host-only) e funciona em qualquer host. Só manter ligado se algum dia o front e a API ficarem em subdomínios diferentes.
 - **Esforço:** P
 
 ## 🟢 Baixo

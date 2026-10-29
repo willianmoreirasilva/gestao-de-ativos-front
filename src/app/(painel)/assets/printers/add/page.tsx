@@ -5,12 +5,13 @@ import { ArrowLeft, Loader2, Save } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { FieldErrors, useForm } from "react-hook-form";
 import type { Resolver } from "react-hook-form";
+import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type z } from "zod";
 
 import { createPrinterAssetAction } from "@/actions/assets";
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { PrinterSpecsFormBlock } from "@/components/assets/printers/printer-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
@@ -20,7 +21,6 @@ import {
     printerFormSchema,
     type PrinterFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddPrinterPage() {

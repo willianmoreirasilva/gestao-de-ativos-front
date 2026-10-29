@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { deleteAssetAction } from "@/actions/assets/delete-asset.action";
 import { NotesPopover } from "@/components/assets/shared/notes-popover";
 import { Can } from "@/components/permission-provider";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +27,6 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
-import { deleteAssetAction } from "@/services/assets";
 import { AssetItem } from "@/types/assets";
 
 interface CameraRowItemProps {

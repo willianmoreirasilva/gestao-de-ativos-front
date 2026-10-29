@@ -9,6 +9,7 @@ import type { Resolver } from "react-hook-form";
 import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { createSwitchAction } from "@/actions/switches";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
@@ -19,7 +20,6 @@ import {
     switchFormSchema,
     SwitchFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddSwitchPage() {
