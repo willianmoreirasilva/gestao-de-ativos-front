@@ -69,7 +69,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
     const { setTheme } = useTheme();
     const isCollapsed = state === "collapsed";
 
-    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+    // Grupos abertos vêm da rota atual; o estado guarda só o que o usuário
+    // abriu/fechou à mão e vale apenas para a rota em que ele fez isso.
+    const [manualGroups, setManualGroups] = useState<{
+        pathname: string;
+        open: Record<string, boolean>;
+    }>({ pathname, open: {} });
     const [searchOpen, setSearchOpen] = useState(false);
 
     // 🎹 Listener global para o atalho Ctrl+K / Cmd+K
@@ -83,16 +88,6 @@ export function AppSidebar({ user }: AppSidebarProps) {
         document.addEventListener("keydown", handleKeyDown);
         return () => document.removeEventListener("keydown", handleKeyDown);
     }, []);
-
-    useEffect(() => {
-        const updated: Record<string, boolean> = {};
-        for (const group of sidebarMenuConfig) {
-            updated[group.title] = group.items.some(
-                (item) => item.url && item.url === pathname,
-            );
-        }
-        setOpenGroups(updated);
-    }, [pathname]);
 
     return (
         <>
@@ -139,7 +134,15 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                     (pathname === item.url ||
                                         pathname.startsWith(item.url + "/")),
                             );
-                        const isOpen = openGroups[group.title] ?? false;
+                        const manualOpen =
+                            manualGroups.pathname === pathname
+                                ? manualGroups.open[group.title]
+                                : undefined;
+                        const isOpen =
+                            manualOpen ??
+                            group.items.some(
+                                (item) => item.url && item.url === pathname,
+                            );
 
                         // 💡 Se o grupo não possuir URL configurada (ex: Ferramentas sem rota)
                         const hasNoUrl = !groupUrl;
@@ -200,9 +203,14 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                 open={isCollapsed ? false : isOpen}
                                 onOpenChange={(open) => {
                                     if (!isCollapsed) {
-                                        setOpenGroups((prev) => ({
-                                            ...prev,
-                                            [group.title]: open,
+                                        setManualGroups((prev) => ({
+                                            pathname,
+                                            open: {
+                                                ...(prev.pathname === pathname
+                                                    ? prev.open
+                                                    : {}),
+                                                [group.title]: open,
+                                            },
                                         }));
                                     }
                                 }}
