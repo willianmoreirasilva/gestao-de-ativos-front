@@ -371,7 +371,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > - ✅ `src/components/ui/combobox-search.tsx`: os dois `setState` em effect saíram. O reset da busca e do item focado agora acontece em `close()`, chamado por todos os caminhos de fechamento (clique fora, Esc, Enter, clique na opção, limpar, botão do gatilho); o índice focado volta a -1 em `changeSearch`, no `onChange`. Sobrou um effect só para focar o campo ao abrir (sem `setState`). Componente usado em 12 arquivos (formulários e filtros de relatório). Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
 > - ✅ `src/components/allocation-edit-modal.tsx`: o `useEffect([isOpen])` que fazia `form.reset` e `setApiError(null)` saiu. O formulário foi para um componente interno (`AllocationForm`) dentro do `DialogContent`, que desmonta ao fechar; cada abertura recomeça com os valores atuais do ativo e sem erro antigo. Lint: o erro de `set-state-in-effect` e o aviso de `exhaustive-deps` sumiram; sobra um aviso antigo de `catch (error)` sem uso (cai no M13/limpeza). `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou. Os modais `system-specs-edit-modal` e `switch-connection-edit-modal` seguem o mesmo padrão.
 > - ✅ `src/components/assets/computers/components/system-specs-edit-modal.tsx`: mesmo padrão do `allocation-edit-modal` (formulário interno `SystemSpecsForm` dentro do `DialogContent`; o `useEffect` de reset saiu). Lint: o erro de `set-state-in-effect` sumiu; restam os `any` de `computer?: any` (M13). `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
-> - Faltam: `switch-connection-edit-modal.tsx`, `available-ips-tab.tsx`, `reserved-ips-tab.tsx`, `access-points/add/page.tsx`.
+> - ✅ `src/components/assets/shared/components/switch-connection-edit-modal.tsx`: (1) mesmo padrão dos outros modais (formulário interno `SwitchConnectionForm`; o effect de reset saiu); (2) o effect que zerava a porta quando o switch era removido foi para o `onChange` do combobox, e o valor inicial da porta já nasce vazio quando não há switch; (3) `form.watch` virou `useWatch` (sumiu o aviso `incompatible-library`). Sobra um `any` (`form.setError(key as any)`), do M13. `tsc` e 357 testes ok. O primeiro teste no navegador falhou por causa de um bug do back (ver M18), não do modal. Testado no navegador pelo usuário após o M18: funcionou.
+> - Faltam: `available-ips-tab.tsx`, `reserved-ips-tab.tsx`, `access-points/add/page.tsx`.
 - **Arquivos:**
   - `src/components/app-sidebar.tsx:93`
   - `src/components/pagination.tsx:51`
@@ -437,6 +438,16 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Problema:** **[confirmado]** com essa opção ligada, o cookie sai com `Domain=` igual ao host do `BETTER_AUTH_URL` (hoje `Domain=localhost`). Se o navegador abre o sistema por outro host (`127.0.0.1`, o IP da rede que o `ALLOWED_DEV_ORIGINS` libera, ou um domínio diferente do configurado), o navegador **rejeita o cookie**: o login responde 200, nada é gravado e o painel volta para `/login`. Foi o que aconteceu no teste em `http://127.0.0.1:3100`.
 - **Por que importa:** é uma armadilha de configuração (o login "funciona" e a sessão nunca fica), e a produção atrás de um proxy com a mesma origem não precisa de cookie entre subdomínios.
 - **Sugestão (❓ decidir):** desligar o `crossSubDomainCookies`; o cookie passa a valer só para o host que o emitiu (host-only) e funciona em qualquer host. Só manter ligado se algum dia o front e a API ficarem em subdomínios diferentes.
+- **Esforço:** P
+
+### M18. `PATCH /api/assets/:id/connectivity` não desconecta do switch e libera o IP sem querer ✅ corrigido (29/10/2026, testado pelo usuário)
+- **Arquivos:** `back:src/validators/asset.validator.ts` (`UpdateConnectivitySchema`) e `back:src/services/assets.service.ts` (`updateConnectivity`)
+- **Descoberto em:** teste do `switch-connection-edit-modal` no M12: "Remover / Limpar campo" + salvar mostrava o toast de sucesso, mas o ativo seguia ligado ao switch. Não é regressão do M12: o front já mandava `null`.
+- **Causa:** `optionalUuid` converte **campo ausente em `null`**. Com isso a API não distinguia "não mexer" de "limpar" e o service tratava `null` como "manter o valor atual". Efeitos **[confirmados com teste de integração]**:
+  - não é possível desconectar um ativo do switch;
+  - editar só o switch/porta (o modal não envia `newIpId`) fazia `newIpId` virar `null`, e o service **liberava o IP atual para `AVAILABLE`** enquanto o ativo continuava com o `ipId`. Pior que o sintoma original: o IP aparecia livre para outro ativo.
+- **Correção:** `patchUuid` (ausente continua ausente; `""`/`"null"` viram `null`) em `newIpId` e `connectedToSwitchId`; no service, `undefined` mantém, `null` desconecta e, sem switch, a porta vai a `null`. Testes novos em `back:src/routes/connectivity.int.test.ts` (2 falhavam antes; os 3 passam; suíte do back 457 ok).
+- **Fica de fora:** `newIpId: null` explícito ainda libera o IP anterior mas mantém o `ipId` do ativo (nenhuma tela envia isso hoje). Decidir se "null" deve desvincular o IP.
 - **Esforço:** P
 
 ## 🟢 Baixo

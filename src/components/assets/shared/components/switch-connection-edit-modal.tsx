@@ -3,9 +3,9 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Resolver } from "react-hook-form";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
@@ -94,14 +94,15 @@ interface SwitchConnectionEditModalProps {
     switches: OptionItem[];
 }
 
-export function SwitchConnectionEditModal({
-    isOpen,
+// O formulário mora dentro do DialogContent, que desmonta ao fechar: cada
+// abertura recomeça com a conexão atual do ativo, sem reset em effect.
+function SwitchConnectionForm({
     onClose,
     assetId,
     currentSwitchId,
     currentPort,
     switches,
-}: SwitchConnectionEditModalProps) {
+}: Omit<SwitchConnectionEditModalProps, "isOpen">) {
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
@@ -112,28 +113,16 @@ export function SwitchConnectionEditModal({
         ) as Resolver<SwitchConnectionFormValues>,
         defaultValues: {
             connectedToSwitchId: currentSwitchId || "",
-            switchPort: currentPort ? String(currentPort) : "",
+            switchPort:
+                currentSwitchId && currentPort ? String(currentPort) : "",
         },
     });
 
-    const watchedSwitchId = form.watch("connectedToSwitchId");
+    const watchedSwitchId = useWatch({
+        control: form.control,
+        name: "connectedToSwitchId",
+    });
     const isSwitchDisconnected = !watchedSwitchId || watchedSwitchId === "";
-
-    useEffect(() => {
-        if (isOpen) {
-            setApiError(null);
-            form.reset({
-                connectedToSwitchId: currentSwitchId || "",
-                switchPort: currentPort ? String(currentPort) : "",
-            });
-        }
-    }, [isOpen, currentSwitchId, currentPort, form]);
-
-    useEffect(() => {
-        if (isSwitchDisconnected) {
-            form.setValue("switchPort", "");
-        }
-    }, [isSwitchDisconnected, form]);
 
     const handleFormInteraction = () => {
         if (apiError) setApiError(null);
@@ -194,6 +183,135 @@ export function SwitchConnectionEditModal({
     }
 
     return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                onChange={handleFormInteraction}
+                className="space-y-4 pt-2"
+            >
+                <FormField
+                    control={form.control}
+                    name="connectedToSwitchId"
+                    render={({ field, fieldState }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Switch Concentrador
+                            </FormLabel>
+                            <div
+                                onClick={() => {
+                                    form.clearErrors("connectedToSwitchId");
+                                    handleFormInteraction();
+                                }}
+                            >
+                                <ComboboxSearch
+                                    options={switches}
+                                    value={field.value || ""}
+                                    onChange={(val) => {
+                                        field.onChange(val);
+                                        // Sem switch, não há porta
+                                        if (!val) {
+                                            form.setValue("switchPort", "");
+                                        }
+                                    }}
+                                    placeholder="Pesquisar e selecionar switch..."
+                                />
+                            </div>
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="switchPort"
+                    render={({ field, fieldState }) => (
+                        <FormItem>
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Porta Física do Switch
+                            </FormLabel>
+                            <FormControl>
+                                <Input
+                                    {...field}
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    value={field.value || ""}
+                                    placeholder={
+                                        isSwitchDisconnected
+                                            ? "Desconectado do switch concentrador"
+                                            : "Ex: 24 ou 5"
+                                    }
+                                    disabled={isSwitchDisconnected || isPending}
+                                    onChange={(e) => {
+                                        const sanitizedValue =
+                                            e.target.value.replace(/\D/g, "");
+                                        field.onChange(sanitizedValue);
+                                        if (fieldState.error) {
+                                            form.clearErrors("switchPort");
+                                        }
+                                    }}
+                                    className="h-9 text-xs font-mono disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 disabled:text-zinc-400 dark:disabled:text-zinc-500 transition-colors"
+                                    onFocus={() =>
+                                        form.clearErrors("switchPort")
+                                    }
+                                />
+                            </FormControl>
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {apiError && (
+                    <div className="pt-1">
+                        <FieldError errors={[apiError]} />
+                    </div>
+                )}
+
+                <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5 gap-2 sm:gap-0">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onClose}
+                        disabled={isPending}
+                        className="h-9 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900 dark:hover:bg-zinc-200 transition-colors"
+                    >
+                        {isPending ? (
+                            <Loader2 className="animate-spin" size={14} />
+                        ) : (
+                            "Salvar Conexão"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </Form>
+    );
+}
+
+export function SwitchConnectionEditModal({
+    isOpen,
+    onClose,
+    ...formProps
+}: SwitchConnectionEditModalProps) {
+    return (
         <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
             <DialogContent className="sm:max-w-115 bg-white dark:bg-zinc-950 p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-visible transition-colors">
                 <DialogHeader>
@@ -207,133 +325,7 @@ export function SwitchConnectionEditModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        onChange={handleFormInteraction}
-                        className="space-y-4 pt-2"
-                    >
-                        <FormField
-                            control={form.control}
-                            name="connectedToSwitchId"
-                            render={({ field, fieldState }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Switch Concentrador
-                                    </FormLabel>
-                                    <div
-                                        onClick={() => {
-                                            form.clearErrors(
-                                                "connectedToSwitchId",
-                                            );
-                                            handleFormInteraction();
-                                        }}
-                                    >
-                                        <ComboboxSearch
-                                            options={switches}
-                                            value={field.value || ""}
-                                            onChange={field.onChange}
-                                            placeholder="Pesquisar e selecionar switch..."
-                                        />
-                                    </div>
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="switchPort"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Porta Física do Switch
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            type="text"
-                                            inputMode="numeric"
-                                            pattern="[0-9]*"
-                                            value={field.value || ""}
-                                            placeholder={
-                                                isSwitchDisconnected
-                                                    ? "Desconectado do switch concentrador"
-                                                    : "Ex: 24 ou 5"
-                                            }
-                                            disabled={
-                                                isSwitchDisconnected ||
-                                                isPending
-                                            }
-                                            onChange={(e) => {
-                                                const sanitizedValue =
-                                                    e.target.value.replace(
-                                                        /\D/g,
-                                                        "",
-                                                    );
-                                                field.onChange(sanitizedValue);
-                                                if (fieldState.error) {
-                                                    form.clearErrors(
-                                                        "switchPort",
-                                                    );
-                                                }
-                                            }}
-                                            className="h-9 text-xs font-mono disabled:bg-zinc-50 dark:disabled:bg-zinc-900/50 disabled:text-zinc-400 dark:disabled:text-zinc-500 transition-colors"
-                                            onFocus={() =>
-                                                form.clearErrors("switchPort")
-                                            }
-                                        />
-                                    </FormControl>
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        {apiError && (
-                            <div className="pt-1">
-                                <FieldError errors={[apiError]} />
-                            </div>
-                        )}
-
-                        <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5 gap-2 sm:gap-0">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={onClose}
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900 text-zinc-700 dark:text-zinc-300"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900 dark:hover:bg-zinc-200 transition-colors"
-                            >
-                                {isPending ? (
-                                    <Loader2
-                                        className="animate-spin"
-                                        size={14}
-                                    />
-                                ) : (
-                                    "Salvar Conexão"
-                                )}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                <SwitchConnectionForm onClose={onClose} {...formProps} />
             </DialogContent>
         </Dialog>
     );
