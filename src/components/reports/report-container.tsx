@@ -793,14 +793,12 @@ export function ReportContainer({
                                 model={switchModel}
                                 vendor={switchVendor}
                                 totalPorts={switchPorts}
-                                onChange={(field, val) => {
+                                onTextChange={(field, val) => {
                                     if (field === "model")
                                         setSwitchModel(val || "");
-                                    if (field === "vendor")
-                                        setSwitchVendor(val || "");
-                                    if (field === "totalPorts")
-                                        setSwitchPorts(val);
+                                    else setSwitchVendor(val || "");
                                 }}
+                                onTotalPortsChange={setSwitchPorts}
                             />
                         )}
                         {selectedTypes.includes("ACCESS_POINT") && (

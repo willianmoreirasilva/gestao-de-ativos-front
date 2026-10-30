@@ -418,6 +418,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 >     - `system-specs-edit-modal` recebe `ComputerDetails`; saíram fallbacks que a API nunca manda (`processorId`, `operatingSystemId`, `storageDiskId`, `ramMemory`). `computer-row-item` perdeu o `disk.size` (o disco só tem `name`). `asset-technical-card` não precisa mais do cast de `vlanType`.
 >     - Achado no teste: o link "Ver todos" de "Atividade recente" apontava para `/audit-logs` (404); agora vai para `/reports-audit/audit-logs`.
 >     - `any` no front (grep): 39 → 30. Lint: 83 problemas.
+>   - **Módulo 4 (relatórios), testado pelo usuário: funcionou.** 14 `any` removidos, sem casts.
+>     - `reports/page.tsx`: saiu o `extractList` (tratava formatos de resposta que os services nunca devolvem). Cada lista usa o `.data` tipado do service; o `.catch` devolve `{ data: [] }`. Também saíram fallbacks de campos que não existem nos tipos (`title`, `model` de processador e disco, `name` de rede e de switch). O rótulo das redes continua `endereço (VLAN x)`.
+>     - Saiu o `(params as any).model` do filtro de impressora: nada na tela gera `?model=` (o filtro usa `printerModel`). Uma URL antiga com `?model=` deixa de filtrar.
+>     - `types/report.ts`: `FilterValue` no lugar do `any` de `SingleFilter.value`, e `AssetReportData` com os campos que a tabela e a impressão leem. `report-print-modal` usa esse tipo.
+>     - `ReportSwitchFilters` trocou o `onChange(field, val: any)` por `onTextChange` (modelo e fabricante) e `onTotalPortsChange` (número).
+>     - `any` no front (grep): 30 → 16. Lint: 68 problemas.
 >   - **Plano dos próximos módulos:** 2 actions e services de ativos; 3 IPs, redes e dashboard; 4 relatórios; 5 auditoria, formulários e `lib/utils`; 6 back (23, começando por `report-query-builder`).
 - **Exemplos:**
   - `src/lib/utils.ts:26` (`sanitizePayloadForBackend`)

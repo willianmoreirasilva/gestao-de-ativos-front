@@ -3,6 +3,8 @@
 import { FileText, Printer, X } from "lucide-react";
 import React from "react";
 
+import type { AssetReportData } from "@/types/report";
+
 interface PrintModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -13,7 +15,7 @@ interface PrintModalProps {
         withoutIp: number;
         departmentsCount: number;
     };
-    data: any[];
+    data: AssetReportData[];
 }
 
 export function ReportPrintModal({
@@ -196,40 +198,49 @@ export function ReportPrintModal({
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.map((item, index) => (
-                                    <tr
-                                        key={item.id || index}
-                                        className="border-b border-slate-200 hover:bg-slate-50"
-                                    >
-                                        <td className="py-2 px-2 font-mono">
-                                            {item.patrimony || "S/N"}
-                                        </td>
-                                        <td className="py-2 px-2 font-medium">
-                                            {item.computer?.hostname ||
-                                                item.printer?.hostname ||
-                                                item.camera?.hostname ||
-                                                item.phone?.phoneNumber ||
-                                                "-"}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.type}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.department?.name || "-"}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.location?.name || "-"}
-                                        </td>
-                                        <td className="py-2 px-2 font-mono">
-                                            {item.ip?.address || "Sem IP"}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.ip?.network?.vlanTag
-                                                ? `VLAN ${item.ip.network.vlanTag}`
-                                                : "-"}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {data.map((item, index) => {
+                                    const ip =
+                                        typeof item.ip === "object"
+                                            ? item.ip
+                                            : null;
+                                    const ipAddress = ip?.address;
+                                    const vlanTag = ip?.network?.vlanTag;
+
+                                    return (
+                                        <tr
+                                            key={item.id || index}
+                                            className="border-b border-slate-200 hover:bg-slate-50"
+                                        >
+                                            <td className="py-2 px-2 font-mono">
+                                                {item.patrimony || "S/N"}
+                                            </td>
+                                            <td className="py-2 px-2 font-medium">
+                                                {item.computer?.hostname ||
+                                                    item.printer?.hostname ||
+                                                    item.camera?.hostname ||
+                                                    item.phone?.phoneNumber ||
+                                                    "-"}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {item.type}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {item.department?.name || "-"}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {item.location?.name || "-"}
+                                            </td>
+                                            <td className="py-2 px-2 font-mono">
+                                                {ipAddress || "Sem IP"}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {vlanTag
+                                                    ? `VLAN ${vlanTag}`
+                                                    : "-"}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>
