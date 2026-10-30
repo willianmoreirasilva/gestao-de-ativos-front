@@ -101,6 +101,6 @@ export async function createPrinterAssetAction(
 
         return { success: true, data: response.data };
     } catch (error) {
-        return handleError(error, "Erro ao salvar a impressora.") as any;
+        return handleError(error, "Erro ao salvar a impressora.");
     }
 }

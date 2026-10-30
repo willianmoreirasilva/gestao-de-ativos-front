@@ -114,6 +114,6 @@ export async function createCameraAssetAction(
 
         return { success: true, data: response.data };
     } catch (error) {
-        return handleError(error, "Erro ao cadastrar câmera.") as any;
+        return handleError(error, "Erro ao cadastrar câmera.");
     }
 }

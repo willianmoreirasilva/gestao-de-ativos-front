@@ -406,6 +406,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 >   - **Ficou `any` de propósito:** `ActionResponse<T = any>` (helpers.ts) e `types/report.ts:17` (`value?: any`), por dependerem dos módulos seguintes; `audit-log-details-modal.tsx:78` (módulo 5).
 >   - **Achado no teste do usuário (corrigido junto):** cadastrar ativo com patrimônio ou MAC repetido mostrava só "registro já existe". Causa no back: com o adapter pg o Prisma 7 não preenche `meta.target`, então o `errorHandler` caía no 409 genérico. Agora `src/utils/unique-violation.ts` lê o campo da `driverAdapterError` e a mensagem traz o valor (ex.: `O patrimônio "PAT-1" já está em uso por outro ativo.`). Teste: `src/routes/duplicates.int.test.ts`. No front, cadastro e edição de switch e AP liam só `message`; passaram a ler `error` e depois `message`.
 >   - **Testado pelo usuário no navegador: funcionou.**
+>   - **Módulo 2 (actions e services de ativos), testado pelo usuário: funcionou.** 5 `any` removidos, sem casts.
+>     - `handleError` passou a devolver `fieldErrors` como `Record<string, string[]>` ou `undefined` (antes `null`), compatível com `ActionResult`; saíram os 3 `as any` de impressoras, câmeras e telefones.
+>     - `searchAssetsAction` ganhou o tipo local `SearchApiItem` (baseado em `AssetItem`).
+>     - `asset-options.action.ts` usa `SwitchItem`; o nome do switch deixou de ler `sw.switch?.*` e `sw.ip` (campos que a API não manda nessa rota) e lê `hostname`, `model` e `asset.ip.address`.
+>     - `any` no front (grep `: any|<any>|as any|any[]`): 44 → 39. Lint: 92 problemas (27 de ordem de imports).
+>     - Ficam: `ActionResponse<T = any>` e `ActionResult<T = any>` (o `T` padrão vira `unknown` quando todas as chamadas informarem o tipo) e `network?: any` em `types/assets.ts`.
 >   - **Plano dos próximos módulos:** 2 actions e services de ativos; 3 IPs, redes e dashboard; 4 relatórios; 5 auditoria, formulários e `lib/utils`; 6 back (23, começando por `report-query-builder`).
 - **Exemplos:**
   - `src/lib/utils.ts:26` (`sanitizePayloadForBackend`)

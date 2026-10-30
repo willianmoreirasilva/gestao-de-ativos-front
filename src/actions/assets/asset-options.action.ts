@@ -46,14 +46,12 @@ export async function getAssetOptionsAction() {
                 })),
 
                 // Mapeia Switches com suporte a múltiplos atributos de nome
-                switches: (switchesRes.data ?? []).map((sw: any) => ({
+                switches: (switchesRes.data ?? []).map((sw) => ({
                     id: sw.id,
                     name:
-                        sw.switch?.hostname ||
                         sw.hostname ||
-                        sw.switch?.model ||
                         sw.model ||
-                        sw.ip?.address ||
+                        sw.asset.ip?.address ||
                         "Switch Sem Nome",
                 })),
 

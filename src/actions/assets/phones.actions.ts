@@ -101,6 +101,6 @@ export async function createPhoneAssetAction(
 
         return { success: true, data: response.data };
     } catch (error) {
-        return handleError(error, "Erro ao cadastrar o telefone.") as any;
+        return handleError(error, "Erro ao cadastrar o telefone.");
     }
 }

@@ -14,7 +14,7 @@ export interface ActionResponse<T = any> {
     success: boolean;
     data?: T;
     error?: string;
-    fieldErrors?: { [key: string]: string[] } | null;
+    fieldErrors?: Record<string, string[]>;
 }
 
 /**
@@ -28,7 +28,7 @@ export async function handleError(
     return {
         success: false,
         error: apiErrorMessage(error, defaultMessage),
-        fieldErrors: getApiErrorBody(error).fieldErrors || null,
+        fieldErrors: getApiErrorBody(error).fieldErrors,
     };
 }
 
