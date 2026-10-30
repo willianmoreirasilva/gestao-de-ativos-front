@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { apiErrorMessage, describeApiError } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { ipAddressService } from "@/services/ip-address";
 
@@ -40,13 +41,15 @@ export async function reserveIpsAction(payload: {
             error: null,
             count: response.data.count || payload.ipAddresses.length,
         };
-    } catch (error: any) {
+    } catch (error) {
         return {
             success: false,
-            error:
-                error.response?.data?.error ||
-                error.response?.data?.message ||
+            error: apiErrorMessage(
+                error,
                 "Falha ao efetuar reserva de IPs",
+                "error",
+                "message",
+            ),
             count: 0,
         };
     }
@@ -122,19 +125,22 @@ export async function cancelIpReservationAction(
         }
 
         return { success: true, error: null };
-    } catch (error: any) {
+    } catch (error) {
         console.error(
             "[ACTION ERROR] Falha no cancelIpReservationAction:",
-            error?.response?.data || error,
+            describeApiError(error),
         );
 
         return {
             success: false,
-            error:
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                "Falha ao cancelar reserva do IP.",
+            error: apiErrorMessage(
+                error,
+                error instanceof Error && error.message
+                    ? error.message
+                    : "Falha ao cancelar reserva do IP.",
+                "error",
+                "message",
+            ),
         };
     }
 }
@@ -157,14 +163,16 @@ export async function findAvailableIpsAction(
         );
 
         return { success: true, data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error) {
         console.error("[ACTION - findAvailableIpsAction] Erro:", error);
         return {
             success: false,
             data: null,
-            error:
-                error.response?.data?.message ||
+            error: apiErrorMessage(
+                error,
                 "Erro ao consultar bloco de IPs disponíveis.",
+                "message",
+            ),
         };
     }
 }
@@ -188,7 +196,7 @@ export async function getAvailableIpsAction(
             meta: response.meta,
             error: null,
         };
-    } catch (error: any) {
+    } catch (error) {
         return {
             success: false,
             data: [],
@@ -219,7 +227,7 @@ export async function getReservedIpsAction(params: {
             meta: response.meta,
             error: null,
         };
-    } catch (error: any) {
+    } catch (error) {
         return {
             success: false,
             data: [],

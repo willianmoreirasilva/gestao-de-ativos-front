@@ -1,3 +1,4 @@
+import { apiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { can, type Role } from "@/lib/permissions";
 import { getServerApi } from "@/lib/server-api";
 import { AuditPeriod, ExecutiveDashboardData } from "@/types/dashboard";
@@ -34,16 +35,18 @@ export const dashboardService = {
                 },
                 error: null,
             };
-        } catch (error: any) {
+        } catch (error) {
             // 401 = sessão expirada; o painel redireciona para o login
-            if (error.response?.status !== 401) {
+            if (getApiErrorStatus(error) !== 401) {
                 console.error("Erro ao carregar Dashboard Executivo:", error);
             }
             return {
                 data: null,
-                error:
-                    error.response?.data?.error ||
+                error: apiErrorMessage(
+                    error,
                     "Não foi possível carregar os dados da infraestrutura.",
+                    "error",
+                ),
             };
         }
     },

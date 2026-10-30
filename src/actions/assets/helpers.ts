@@ -4,6 +4,12 @@
 
 import { revalidatePath } from "next/cache";
 
+import {
+    apiErrorMessage,
+    describeApiError,
+    getApiErrorBody,
+} from "@/lib/api-error";
+
 export interface ActionResponse<T = any> {
     success: boolean;
     data?: T;
@@ -15,17 +21,14 @@ export interface ActionResponse<T = any> {
  * Auxiliar para tratamento padronizado de erros
  */
 export async function handleError(
-    error: any,
+    error: unknown,
     defaultMessage: string,
 ): Promise<ActionResponse> {
-    console.error(`[ASSET_ACTION_ERROR]:`, error?.response?.data || error);
+    console.error(`[ASSET_ACTION_ERROR]:`, describeApiError(error));
     return {
         success: false,
-        error:
-            error?.response?.data?.message ||
-            error?.response?.data?.error ||
-            defaultMessage,
-        fieldErrors: error?.response?.data?.fieldErrors || null,
+        error: apiErrorMessage(error, defaultMessage),
+        fieldErrors: getApiErrorBody(error).fieldErrors || null,
     };
 }
 

@@ -31,7 +31,7 @@ export async function updatePhoneSpecsAction(
         await revalidateAssetPaths(assetId, "phones");
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar as especificações do telefone.",
@@ -100,7 +100,7 @@ export async function createPhoneAssetAction(
         await revalidateAssetPaths(undefined, "phones");
 
         return { success: true, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(error, "Erro ao cadastrar o telefone.") as any;
     }
 }

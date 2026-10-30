@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { apiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 
 // Revalida todas as listagens afetadas por uma exclusão
@@ -33,20 +34,22 @@ export async function deleteAssetAction(id: string) {
         }
 
         return { error: "", fieldErrors: {} };
-    } catch (error: any) {
+    } catch (error) {
         console.error("❌ [DELETE_ASSET_ACTION_ERROR]:", error);
 
-        if (error.response?.status === 204 || error.response?.status === 200) {
+        const status = getApiErrorStatus(error);
+        if (status === 204 || status === 200) {
             revalidateAllAssetPaths();
             return { error: "", fieldErrors: {} };
         }
 
-        const errorMessage =
-            error.response?.data?.error || error.response?.data?.message;
         return {
-            error:
-                errorMessage ||
+            error: apiErrorMessage(
+                error,
                 "Erro interno do servidor ao tentar remover o ativo.",
+                "error",
+                "message",
+            ),
             fieldErrors: {},
         };
     }

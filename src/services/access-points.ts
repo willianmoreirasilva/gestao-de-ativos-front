@@ -1,3 +1,4 @@
+import { apiErrorMessage } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import {
     AccessPointItem,
@@ -34,12 +35,14 @@ export const accessPointService = {
                 `/api/access-points/${id}`,
             );
             return { data: response.data.data };
-        } catch (error: any) {
+        } catch (error) {
             console.error("❌ [getAccessPointById Error]:", error);
             return {
-                error:
-                    error.response?.data?.message ||
+                error: apiErrorMessage(
+                    error,
                     "Erro ao carregar os detalhes do Access Point.",
+                    "message",
+                ),
             };
         }
     },

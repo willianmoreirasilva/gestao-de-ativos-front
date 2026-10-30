@@ -263,7 +263,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** remover tudo.
 - **Esforço:** P
 
-### M4. Componentes e actions sem uso ✅ resolvido (29/10/2026, aguardando teste do usuário)
+### M4. Componentes e actions sem uso ✅ resolvido (29/10/2026)
 > **Resolvido:** confirmei no código (nenhum importador) antes de apagar.
 > - **14 componentes** removidos (a lista abaixo, todos sem importadores). `computer-actions.tsx` constava na lista e eu o havia editado no M14; mesmo assim ninguém o importava.
 > - **2 arquivos órfãos** que sobraram da remoção: `src/lib/reports/build-report-payload.ts` e `format-report-filters.ts`.
@@ -397,7 +397,16 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
   - `use-mobile`: usar `useSyncExternalStore`.
 - **Esforço:** M
 
-### M13. `any` espalhado (122 no front, 23 no back)
+### M13. `any` espalhado (89 no front em 29/10/2026, 23 no back)
+> **Em andamento, por módulo, um commit cada.** Regras: sem `as unknown as X` nem casts equivalentes; onde não der para tipar direito, o `any` fica e é anotado aqui.
+> - ✅ **Módulo 1: erros do axios** (`any` no front: 89 → 52; lint geral 134 → 97).
+>   - Novo `src/lib/api-error.ts` (com `api-error.test.ts`, 12 casos: validação 400, 403, servidor fora do ar, erro que não é do axios, corpo vazio ou com tipos errados): `getApiErrorBody`, `getApiErrorStatus`, `hasApiErrorData`, `describeApiError` (para log) e `apiErrorMessage(error, fallback, ...chaves)`.
+>   - Os 36 `catch (e: any)` viraram `catch (e)` (unknown). **As mensagens não mudam:** cada ponto mantém a precedência que tinha (`message` só, `error` só, `error` depois `message`, ou o padrão `message` depois `error`), por isso `apiErrorMessage` recebe as chaves. Ex.: o cadastro de AP continua mostrando só `message` (a API de patrimônio duplicado responde em `error`, então ali aparece o texto padrão, como antes).
+>   - `handleError` (`actions/assets/helpers.ts`) agora recebe `unknown`. Mudou só o log: grava o corpo da resposta ou a mensagem, em vez do objeto de erro inteiro.
+>   - **Ficou `any` de propósito:** `ActionResponse<T = any>` (helpers.ts) e `types/report.ts:17` (`value?: any`), por dependerem dos módulos seguintes; `audit-log-details-modal.tsx:78` (módulo 5).
+>   - **Achado no teste do usuário (corrigido junto):** cadastrar ativo com patrimônio ou MAC repetido mostrava só "registro já existe". Causa no back: com o adapter pg o Prisma 7 não preenche `meta.target`, então o `errorHandler` caía no 409 genérico. Agora `src/utils/unique-violation.ts` lê o campo da `driverAdapterError` e a mensagem traz o valor (ex.: `O patrimônio "PAT-1" já está em uso por outro ativo.`). Teste: `src/routes/duplicates.int.test.ts`. No front, cadastro e edição de switch e AP liam só `message`; passaram a ler `error` e depois `message`.
+>   - **Testado pelo usuário no navegador: funcionou.**
+>   - **Plano dos próximos módulos:** 2 actions e services de ativos; 3 IPs, redes e dashboard; 4 relatórios; 5 auditoria, formulários e `lib/utils`; 6 back (23, começando por `report-query-builder`).
 - **Exemplos:**
   - `src/lib/utils.ts:26` (`sanitizePayloadForBackend`)
   - `src/components/audit-logs/audit-log-details-modal.tsx`

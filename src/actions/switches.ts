@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { apiErrorMessage } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import type {
     CreateSwitchPayload,
@@ -20,14 +21,17 @@ export async function createSwitchAction(payload: CreateSwitchPayload) {
         revalidatePath("/assets/computers"); // Caso algum computador precise listar esse switch
 
         return { success: true, data: response.data?.data, error: null };
-    } catch (err: any) {
+    } catch (err) {
         console.error("Erro ao criar switch via action:", err);
         return {
             success: false,
             data: null,
-            error:
-                err.response?.data?.message ||
+            error: apiErrorMessage(
+                err,
                 "Erro interno ao cadastrar o switch.",
+                "error",
+                "message",
+            ),
         };
     }
 }
@@ -47,14 +51,17 @@ export async function updateSwitchAction(
         revalidatePath(`/assets/switches/${id}`);
 
         return { success: true, data: response.data?.data, error: null };
-    } catch (err: any) {
+    } catch (err) {
         console.error(`Erro ao atualizar o switch ${id}:`, err);
         return {
             success: false,
             data: null,
-            error:
-                err.response?.data?.message ||
+            error: apiErrorMessage(
+                err,
                 "Falha ao salvar as modificações do switch.",
+                "error",
+                "message",
+            ),
         };
     }
 }
@@ -77,15 +84,18 @@ export async function deleteSwitchAction(id: string) {
         revalidatePath("/assets/computers");
 
         return { success: true, error: null };
-    } catch (err: any) {
+    } catch (err) {
         console.error(`Erro ao deletar switch ${id}:`, err);
         return {
             success: false,
             // 💡 Busca a propriedade "error" do formato do seu errorHandler
-            error:
-                err.response?.data?.error ||
-                err.response?.data?.message ||
+            error: apiErrorMessage(
+                err,
                 "Não foi possível remover o switch. Tente novamente.",
+                "error",
+                "error",
+                "message",
+            ),
         };
     }
 }

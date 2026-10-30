@@ -1,5 +1,6 @@
 "use server";
 
+import { describeApiError, getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 
 export interface SearchAssetItem {
@@ -96,11 +97,11 @@ export async function searchAssetsAction(
                 mac,
             };
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error(
             "❌ [ERRO API]:",
-            error?.response?.status,
-            error?.response?.data || error?.message,
+            getApiErrorStatus(error),
+            describeApiError(error),
         );
 
         return [];

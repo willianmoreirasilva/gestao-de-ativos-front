@@ -1,3 +1,4 @@
+import { apiErrorMessage } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import type { GetSwitchesParams, SwitchItem } from "@/types/switches";
 
@@ -21,14 +22,16 @@ export const switchService = {
                 meta: response.data?.meta,
                 error: null,
             };
-        } catch (err: any) {
+        } catch (err) {
             console.error("Erro ao buscar switches:", err);
             return {
                 data: [],
                 meta: null,
-                error:
-                    err.response?.data?.message ||
+                error: apiErrorMessage(
+                    err,
                     "Falha ao carregar a lista de switches.",
+                    "message",
+                ),
             };
         }
     },
@@ -44,13 +47,15 @@ export const switchService = {
                 data: response.data?.data as SwitchItem,
                 error: null,
             };
-        } catch (err: any) {
+        } catch (err) {
             console.error(`Erro ao buscar switch ${id}:`, err);
             return {
                 data: null,
-                error:
-                    err.response?.data?.message ||
+                error: apiErrorMessage(
+                    err,
                     "Não foi possível localizar o switch solicitado.",
+                    "message",
+                ),
             };
         }
     },

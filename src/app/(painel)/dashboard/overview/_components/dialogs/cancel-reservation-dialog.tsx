@@ -47,10 +47,11 @@ export function CancelReservationDialog({
                     res?.error || "Não foi possível cancelar a reserva.",
                 );
             }
-        } catch (error: any) {
+        } catch (error) {
             console.error("Erro no cliente ao cancelar reserva:", error);
             toast.error(
-                error?.message || "Erro inesperado ao cancelar reserva.",
+                (error instanceof Error && error.message) ||
+                    "Erro inesperado ao cancelar reserva.",
             );
         } finally {
             setLoading(false);

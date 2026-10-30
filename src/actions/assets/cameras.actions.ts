@@ -33,7 +33,7 @@ export async function updateCameraSpecsAction(
         await revalidateAssetPaths(assetId, "cameras");
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar as especificações da câmera.",
@@ -113,7 +113,7 @@ export async function createCameraAssetAction(
         await revalidateAssetPaths(undefined, "cameras");
 
         return { success: true, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(error, "Erro ao cadastrar câmera.") as any;
     }
 }

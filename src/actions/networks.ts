@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ZodError } from "zod";
 
+import { apiErrorMessage } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { networkSchema } from "@/schemas/network";
 
@@ -75,9 +76,11 @@ export async function upsertNetworkAction(
         };
 
         return {
-            error:
-                apiError.response?.data?.error ||
+            error: apiErrorMessage(
+                apiError,
                 "Falha de comunicação com o servidor de redes.",
+                "error",
+            ),
             fieldErrors: {},
         };
     }
@@ -120,7 +123,7 @@ export async function deleteNetworkAction(id: string) {
             return { error: "", fieldErrors: {} };
         }
         return {
-            error: apiError.response?.data?.error || "Erro ao deletar rede",
+            error: apiErrorMessage(apiError, "Erro ao deletar rede", "error"),
             fieldErrors: {},
         };
     }
@@ -133,10 +136,10 @@ export async function getAvailableIpsAction(type: string, limit: number = 5) {
             `/api/networks/available-ips?type=${type}&limitIps=${limit}`,
         );
         return { data: response.data.data, error: null };
-    } catch (error: any) {
+    } catch (error) {
         return {
             data: [],
-            error: error.response?.data?.error || "Erro ao carregar IPs",
+            error: apiErrorMessage(error, "Erro ao carregar IPs", "error"),
         };
     }
 }
