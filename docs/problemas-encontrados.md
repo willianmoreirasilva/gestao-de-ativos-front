@@ -373,7 +373,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > - ✅ `src/components/assets/computers/components/system-specs-edit-modal.tsx`: mesmo padrão do `allocation-edit-modal` (formulário interno `SystemSpecsForm` dentro do `DialogContent`; o `useEffect` de reset saiu). Lint: o erro de `set-state-in-effect` sumiu; restam os `any` de `computer?: any` (M13). `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
 > - ✅ `src/components/assets/shared/components/switch-connection-edit-modal.tsx`: (1) mesmo padrão dos outros modais (formulário interno `SwitchConnectionForm`; o effect de reset saiu); (2) o effect que zerava a porta quando o switch era removido foi para o `onChange` do combobox, e o valor inicial da porta já nasce vazio quando não há switch; (3) `form.watch` virou `useWatch` (sumiu o aviso `incompatible-library`). Sobra um `any` (`form.setError(key as any)`), do M13. `tsc` e 357 testes ok. O primeiro teste no navegador falhou por causa de um bug do back (ver M18), não do modal. Testado no navegador pelo usuário após o M18: funcionou.
 > - ✅ `src/app/(painel)/dashboard/overview/_components/tabs/available-ips-tab.tsx`: os dois `setState` em effect saíram. (1) A sub-rede selecionada é derivada: `chosenNetworkId || networks[0]?.id`. (2) A busca guarda o resultado com a chave dos filtros (`rede|página|limite|reloadToken`); `loading`, `ips` e `meta` são derivados dessa chave, e o effect só dispara a action e grava a resposta (resposta antiga descartada). Recarregar depois de reservar passou a ser `reloadToken + 1`. A seleção de IPs é zerada nos handlers de rede, página e limite (antes, a cada busca). Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
-> - Faltam: `reserved-ips-tab.tsx`, `access-points/add/page.tsx`.
+> - ✅ `src/app/(painel)/dashboard/overview/_components/tabs/reserved-ips-tab.tsx`: mesmo padrão do `available-ips-tab` (resultado guardado com a chave `rede|busca|página|limite|reloadToken`; `loading`, `ips` e `meta` derivados; o effect só dispara a action; resposta antiga descartada; `reload()` incrementa o token depois de editar/cancelar reserva). Lint do arquivo limpo, `tsc` e 357 testes ok. O teste da busca por motivo falhou por causa de um bug do back (ver M19), não do componente. Testado no navegador pelo usuário após o M19: funcionou.
+> - Faltam: `access-points/add/page.tsx`.
 - **Arquivos:**
   - `src/components/app-sidebar.tsx:93`
   - `src/components/pagination.tsx:51`
@@ -449,6 +450,13 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
   - editar só o switch/porta (o modal não envia `newIpId`) fazia `newIpId` virar `null`, e o service **liberava o IP atual para `AVAILABLE`** enquanto o ativo continuava com o `ipId`. Pior que o sintoma original: o IP aparecia livre para outro ativo.
 - **Correção:** `patchUuid` (ausente continua ausente; `""`/`"null"` viram `null`) em `newIpId` e `connectedToSwitchId`; no service, `undefined` mantém, `null` desconecta e, sem switch, a porta vai a `null`. Testes novos em `back:src/routes/connectivity.int.test.ts` (2 falhavam antes; os 3 passam; suíte do back 457 ok).
 - **Fica de fora:** `newIpId: null` explícito ainda libera o IP anterior mas mantém o `ipId` do ativo (nenhuma tela envia isso hoje). Decidir se "null" deve desvincular o IP.
+- **Esforço:** P
+
+### M19. A busca de IPs reservados não encontra pelo motivo ✅ corrigido (29/10/2026, testado pelo usuário)
+- **Arquivo:** `back:src/services/ipaddress.service.ts` (`listIpAddresses`)
+- **Descoberto em:** teste da aba de IPs reservados no M12. O campo diz "Buscar IP ou motivo", mas digitar parte do motivo não filtrava nada. Não é regressão do M12: o front sempre mandou `search` igual.
+- **Causa:** **[confirmado com teste]** o filtro `search` procurava só em `address`.
+- **Correção:** `OR` entre `address` e `reservationReason` (sem diferenciar maiúsculas). Testes novos em `back:src/routes/ip-search.int.test.ts` (o de motivo falhava antes; os 3 passam; suíte do back 460 ok). O `reservationReason` só é preenchido em RESERVED, então as outras listagens não mudam.
 - **Esforço:** P
 
 ## 🟢 Baixo
