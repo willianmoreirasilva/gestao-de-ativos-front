@@ -263,7 +263,15 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** remover tudo.
 - **Esforço:** P
 
-### M4. Componentes e actions sem uso
+### M4. Componentes e actions sem uso ✅ resolvido (29/10/2026, aguardando teste do usuário)
+> **Resolvido:** confirmei no código (nenhum importador) antes de apagar.
+> - **14 componentes** removidos (a lista abaixo, todos sem importadores). `computer-actions.tsx` constava na lista e eu o havia editado no M14; mesmo assim ninguém o importava.
+> - **2 arquivos órfãos** que sobraram da remoção: `src/lib/reports/build-report-payload.ts` e `format-report-filters.ts`.
+> - **Actions removidas:** `getIpStatsAction`, `getOverviewStatsAction`, `getRecentIpsAction`, `verifyIpAction` (achada na varredura; também sem uso) e `src/actions/options.ts` inteiro (`createProcessorAction`, `createOperatingSystemAction`, `createDiskAction`; o último chamava `POST /api/options/disks`, que não existe no back).
+> - **Service e tipos:** `getStats`, `verifyIp` e `getRecentIps` de `services/ip-address.ts` (sem chamadores) e os tipos `IpStatusStat` e `VerifyIpResponse`. `getOverviewStats` continua (usado em `/dashboard/overview`).
+> - **Verificado:** `tsc`, build e 357 testes ok; varredura de arquivos órfãos e de exports de actions/services sem uso retorna vazia. Lint: 168 → 134 problemas (os `any`, avisos e imports dos arquivos apagados saíram junto).
+> - **Não testado:** navegação no navegador depois da remoção (o build e o `tsc` cobrem referências de import, não rotas dinâmicas).
+
 - **Problema:** 14 componentes só aparecem no próprio arquivo:
   - `assets/computers/components/{asset-edit-header, asset-network-fields, asset-organizational-fields, computer-hardware-fields, quick-option-forms}`
   - `assets/computers/{computer-actions, computer-spec-fields}`

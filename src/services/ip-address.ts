@@ -2,10 +2,8 @@ import { getServerApi } from "@/lib/server-api";
 import {
     FindAvailableIpsResponse,
     IpAddress,
-    IpStatusStat,
     OverviewStatsResponse,
     PaginatedMeta,
-    VerifyIpResponse,
 } from "@/types/ip-address";
 
 export interface IpAddressFilters {
@@ -49,40 +47,6 @@ export const ipAddressService = {
                 error:
                     error.response?.data?.error ||
                     "Erro ao carregar endereços IP",
-            };
-        }
-    },
-
-    // 2. GET /api/ip-addresses/stats
-    async getStats() {
-        const api = await getServerApi();
-        try {
-            const response = await api.get("/api/ip-addresses/stats");
-            return { data: response.data.data as IpStatusStat[], error: null };
-        } catch (error: any) {
-            console.error("Erro ao buscar estatísticas de IPs:", error);
-            return {
-                data: [],
-                error:
-                    error.response?.data?.error ||
-                    "Erro ao carregar estatísticas",
-            };
-        }
-    },
-
-    // 3. GET /api/ip-addresses/verify
-    async verifyIp(address: string, expectedType: string) {
-        const api = await getServerApi();
-        try {
-            const response = await api.get(
-                `/api/ip-addresses/verify?address=${address}&expectedType=${expectedType}`,
-            );
-            return { data: response.data as VerifyIpResponse, error: null };
-        } catch (error: any) {
-            return {
-                data: null,
-                error:
-                    error.response?.data?.error || "Falha na verificação do IP",
             };
         }
     },
@@ -141,24 +105,6 @@ export const ipAddressService = {
                 data: [],
                 meta: { total: 0, page: 1, limit: 10, totalPages: 0 },
                 error: error.response?.data?.error,
-            };
-        }
-    },
-
-    // 6. GET /api/ip-addresses/recent
-    async getRecentIps(limit = 10) {
-        const api = await getServerApi();
-        try {
-            const response = await api.get(
-                `/api/ip-addresses/recent?limit=${limit}`,
-            );
-            return { data: response.data.data as IpAddress[], error: null };
-        } catch (error: any) {
-            return {
-                data: [],
-                error:
-                    error.response?.data?.error ||
-                    "Erro ao carregar IPs recentes",
             };
         }
     },

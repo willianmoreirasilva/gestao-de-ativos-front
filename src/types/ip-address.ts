@@ -35,11 +35,6 @@ export type IpAddress = {
 
 // --- Tipos para Métricas e Respostas dos novos Endpoints ---
 
-export type IpStatusStat = {
-    status: IpStatus;
-    count: number;
-};
-
 // Rede para seleção (sem estatísticas de uso)
 export type NetworkOption = {
     id: string;
@@ -81,12 +76,6 @@ export type FindAvailableIpsResponse = {
     requested: number;
     available: number;
     ips: string[];
-};
-
-export type VerifyIpResponse = {
-    valid: boolean;
-    reason?: string;
-    currentAssetId?: string;
 };
 
 export type PaginatedMeta = {
