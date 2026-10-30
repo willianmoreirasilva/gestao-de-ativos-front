@@ -115,7 +115,12 @@ export interface AssetItem {
     ip: {
         id: string;
         address: string;
-        network?: any | null;
+        network?: {
+            type?: string | null;
+            vlanTag?: number | null;
+            networkAddress?: string;
+            cidr?: number;
+        } | null;
     } | null;
 
     connectedToSwitch?: {

@@ -132,7 +132,7 @@ export function AssetTechnicalCard({
                         assetId={asset.id}
                         assetType={asset.type}
                         ip={asset.ip}
-                        vlanType={asset.vlanType as any} // 👈 Receberá WIFI_MGMT se Ruckus, ou GENERAL_DATA se for outro
+                        vlanType={asset.vlanType} // WIFI_MGMT se Ruckus, GENERAL_DATA nos demais
                         vlanTag={asset.vlanTag}
                         connectedToSwitch={asset.connectedToSwitch}
                         switchPort={asset.switchPort?.toString() || null}

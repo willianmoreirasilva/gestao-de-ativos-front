@@ -30,8 +30,13 @@ export type AuditDashboardData = {
         id: string;
         action: string;
         entity: string;
-        user: string;
-        timestamp: string;
+        entityId: string;
+        createdAt: string;
+        user?: {
+            id: string;
+            name?: string | null;
+            email?: string | null;
+        };
     }[];
     operationsSummary: {
         action: string;
@@ -39,7 +44,7 @@ export type AuditDashboardData = {
     }[];
     topUsers: {
         userName: string;
-        operationsCount: number;
+        count: number;
     }[];
 };
 

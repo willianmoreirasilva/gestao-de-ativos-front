@@ -158,14 +158,20 @@ function SwitchConnectionForm({
                         message: response.error,
                     });
                 } else if (response.fieldErrors) {
-                    Object.entries(response.fieldErrors).forEach(
-                        ([key, messages]) => {
-                            form.setError(key as any, {
-                                type: "server",
-                                message: messages[0],
-                            });
-                        },
-                    );
+                    const { connectedToSwitchId, switchPort } =
+                        response.fieldErrors;
+                    if (connectedToSwitchId?.[0]) {
+                        form.setError("connectedToSwitchId", {
+                            type: "server",
+                            message: connectedToSwitchId[0],
+                        });
+                    }
+                    if (switchPort?.[0]) {
+                        form.setError("switchPort", {
+                            type: "server",
+                            message: switchPort[0],
+                        });
+                    }
                 }
 
                 setApiError(

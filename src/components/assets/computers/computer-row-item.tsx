@@ -35,7 +35,7 @@ export function ComputerRowItem({ asset }: ComputerRowItemProps) {
     const [modalOpen, setModalOpen] = useState(false);
 
     const diskInfo = asset.computer?.disk
-        ? `${asset.computer.disk.name} ${(asset.computer.disk as any).size || ""}`.trim()
+        ? asset.computer.disk.name
         : "Sem Disco";
 
     const identifier =

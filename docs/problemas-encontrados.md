@@ -412,6 +412,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 >     - `asset-options.action.ts` usa `SwitchItem`; o nome do switch deixou de ler `sw.switch?.*` e `sw.ip` (campos que a API não manda nessa rota) e lê `hostname`, `model` e `asset.ip.address`.
 >     - `any` no front (grep `: any|<any>|as any|any[]`): 44 → 39. Lint: 92 problemas (27 de ordem de imports).
 >     - Ficam: `ActionResponse<T = any>` e `ActionResult<T = any>` (o `T` padrão vira `unknown` quando todas as chamadas informarem o tipo) e `network?: any` em `types/assets.ts`.
+>   - **Módulo 3 (IPs, redes e dashboard), testado pelo usuário: funcionou.** 14 `any` removidos, sem casts. Quase não havia `any` de IPs e redes; o recorte virou "dashboard + componentes de ativos que sobraram".
+>     - **Bug achado:** o tipo `AuditDashboardData` (`types/dashboard.ts`) não batia com a API (`createdAt` e `user` objeto, `topUsers[].count`). O `any` escondia isso e o card "Atividade recente" da tela inicial mostrava a data vazia (`log.timestamp`). O tipo foi corrigido e a data aparece relativa ("há 2 horas"), como em `reports-audit`.
+>     - `assets/page.tsx` usa `LucideIcon`; `types/assets.ts` tipa `ip.network`; o aviso de erro do `switch-connection-edit-modal` mapeia só os dois campos do form (sem `key as any`).
+>     - `system-specs-edit-modal` recebe `ComputerDetails`; saíram fallbacks que a API nunca manda (`processorId`, `operatingSystemId`, `storageDiskId`, `ramMemory`). `computer-row-item` perdeu o `disk.size` (o disco só tem `name`). `asset-technical-card` não precisa mais do cast de `vlanType`.
+>     - Achado no teste: o link "Ver todos" de "Atividade recente" apontava para `/audit-logs` (404); agora vai para `/reports-audit/audit-logs`.
+>     - `any` no front (grep): 39 → 30. Lint: 83 problemas.
 >   - **Plano dos próximos módulos:** 2 actions e services de ativos; 3 IPs, redes e dashboard; 4 relatórios; 5 auditoria, formulários e `lib/utils`; 6 back (23, começando por `report-query-builder`).
 - **Exemplos:**
   - `src/lib/utils.ts:26` (`sanitizePayloadForBackend`)

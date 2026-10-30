@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/users/field-error";
+import type { ComputerDetails } from "@/types/assets";
 
 const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 
@@ -65,7 +66,7 @@ interface SystemSpecsEditModalProps {
     isOpen: boolean;
     onClose: () => void;
     assetId: string;
-    computer?: any;
+    computer?: ComputerDetails | null;
     options: {
         processors: OptionItem[];
         operatingSystems: OptionItem[];
@@ -91,13 +92,10 @@ function SystemSpecsForm({
             hostname: computer?.hostname || "",
             username: computer?.username || "",
             anydesk: computer?.anydesk || "",
-            processorId: computer?.processor?.id || computer?.processorId || "",
-            osId:
-                computer?.operatingSystem?.id ||
-                computer?.operatingSystemId ||
-                "",
-            diskId: computer?.disk?.id || computer?.storageDiskId || "",
-            memory: computer?.memory || computer?.ramMemory || "",
+            processorId: computer?.processor?.id || "",
+            osId: computer?.operatingSystem?.id || "",
+            diskId: computer?.disk?.id || "",
+            memory: computer?.memory || "",
             mac: computer?.mac || "",
             notes: computer?.notes || "",
         },

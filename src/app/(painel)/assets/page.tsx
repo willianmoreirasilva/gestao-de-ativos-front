@@ -5,6 +5,7 @@ import {
     HardDrive,
     Laptop,
     Layers,
+    type LucideIcon,
     Network,
     PhoneCall,
     Printer,
@@ -27,7 +28,7 @@ const ASSET_TYPE_CONFIG: Record<
     string,
     {
         label: string;
-        icon: any;
+        icon: LucideIcon;
         color: string;
         href: string;
         description: string;
