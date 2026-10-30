@@ -18,8 +18,8 @@ export default async function SwitchDetailsPage({ params }: Props) {
     const [switchResult, departmentsRes, locationsRes, switchesRes] =
         await Promise.all([
             switchService.getSwitchById(id),
-            departmentService.getDepartments(),
-            locationService.getLocations(),
+            departmentService.getDepartments(1, 1000),
+            locationService.getLocations(1, 1000),
             switchService.getSwitches({ page: 1, limit: 100 }),
         ]);
 

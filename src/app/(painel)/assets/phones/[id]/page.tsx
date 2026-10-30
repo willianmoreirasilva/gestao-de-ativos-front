@@ -18,8 +18,8 @@ export default async function PhoneDetailsPage({ params }: Props) {
     const [assetResult, departmentsRes, locationsRes, switchesRes] =
         await Promise.all([
             getAssetById(id),
-            departmentService.getDepartments(),
-            locationService.getLocations(),
+            departmentService.getDepartments(1, 1000),
+            locationService.getLocations(1, 1000),
             switchService.getSwitches({ page: 1, limit: 100 }),
         ]);
 

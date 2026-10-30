@@ -27,8 +27,8 @@ export default async function ComputerDetailsPage({ params }: Props) {
         switchesRes,
     ] = await Promise.all([
         getAssetById(id),
-        departmentService.getDepartments(),
-        locationService.getLocations(),
+        departmentService.getDepartments(1, 1000),
+        locationService.getLocations(1, 1000),
         optionsService.getProcessors(),
         optionsService.getOperatingSystems(),
         optionsService.getDisks(),

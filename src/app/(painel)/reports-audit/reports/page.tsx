@@ -265,11 +265,11 @@ async function Reports({ searchParams }: Props) {
         switchesRes,
     ] = await Promise.all([
         fetchAssetReport(queryInput),
-        departmentService.getDepartments().catch((err) => {
+        departmentService.getDepartments(1, 1000).catch((err) => {
             console.error("❌ Erro ao buscar Departamentos:", err);
             return [];
         }),
-        locationService.getLocations().catch((err) => {
+        locationService.getLocations(1, 1000).catch((err) => {
             console.error("❌ Erro ao buscar Localidades:", err);
             return [];
         }),

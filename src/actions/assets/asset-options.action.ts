@@ -22,7 +22,7 @@ export async function getAssetOptionsAction() {
             optionsService.getOperatingSystems().catch(() => ({ data: [] })),
             optionsService.getDisks().catch(() => ({ data: [] })),
             departmentService.getDepartments(1, 1000),
-            locationService.getLocations(0, 100),
+            locationService.getLocations(1, 1000),
             switchService.getSwitches({ page: 1, limit: 1000 }),
         ]);
 

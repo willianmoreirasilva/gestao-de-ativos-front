@@ -468,6 +468,14 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Correção:** `OR` entre `address` e `reservationReason` (sem diferenciar maiúsculas). Testes novos em `back:src/routes/ip-search.int.test.ts` (o de motivo falhava antes; os 3 passam; suíte do back 460 ok). O `reservationReason` só é preenchido em RESERVED, então as outras listagens não mudam.
 - **Esforço:** P
 
+### M20. Fichas e filtros carregam só 8 departamentos e 8 localidades ✅ corrigido (29/10/2026, testado pelo usuário)
+- **Arquivos:** `[id]/page.tsx` das 6 fichas de ativo (computers, printers, phones, cameras, switches, access-points), `reports-audit/reports/page.tsx` e `src/actions/assets/asset-options.action.ts`
+- **Descoberto em:** teste do M4. Na ficha, o modal "Modificar Alocação" abria com departamento e localidade vazios. Não é regressão do M12.
+- **Causa:** **[confirmado com 12 departamentos/localidades no banco de testes]** as páginas chamavam `getDepartments()` e `getLocations()` sem argumentos, e o padrão dos services é `limit = 8` (a API devolve do mais novo para o mais antigo). Se o departamento ou a localidade do ativo ficasse fora dos 8 primeiros, o combobox não achava o item para exibir, e a lista de escolha também ficava incompleta. Os filtros de departamento/localidade do relatório sofriam do mesmo mal. O cadastro (`asset-options.action`) pedia `getLocations(0, 100)`.
+- **Correção:** todas as chamadas passam a `(1, 1000)` (o máximo que o back aceita). **Verificado:** antes, com o ativo no "Depto 01", o HTML da ficha trazia só os departamentos 05–12; depois, traz os 12 (e as 12 localidades). 357 testes e build ok.
+- **Fica de fora:** acima de 1000 departamentos ou localidades o problema volta. O caminho definitivo é um combobox com busca no servidor, ou um endpoint de opções sem paginação.
+- **Esforço:** P
+
 ## 🟢 Baixo
 
 ### B1. Configurações duplicadas ou erradas
