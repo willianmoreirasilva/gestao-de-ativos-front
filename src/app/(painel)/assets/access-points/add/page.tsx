@@ -86,15 +86,29 @@ export default function AddAccessPointPage() {
     // 2. Resolve dinamicamente o vlanType baseado na marca (Ruckus -> WIFI_MGMT, Outras -> GENERAL_DATA)
     const currentVlanType = getApVlanType(currentVendor);
 
-    // 3. Reseta a seleção de rede/IP se o usuário alterar o fabricante para um com escopo diferente
+    // 3. Reseta a seleção de rede/IP se o usuário alterar o fabricante para um com
+    // escopo diferente. É uma assinatura do formulário (sistema externo): o
+    // setState acontece no callback, não durante o effect.
     useEffect(() => {
-        if (selectedNetworkId) {
-            setSelectedNetworkId("");
-            setSelectedIpId("");
-            form.setValue("selectedNetworkId", "");
-            form.setValue("selectedIpId", "");
-        }
-    }, [currentVlanType]);
+        let lastVlanType = getApVlanType(form.getValues("vendor"));
+
+        return form.subscribe({
+            name: "vendor",
+            formState: { values: true },
+            callback: ({ values }) => {
+                const nextVlanType = getApVlanType(values.vendor);
+                if (nextVlanType === lastVlanType) return;
+                lastVlanType = nextVlanType;
+
+                if (form.getValues("selectedNetworkId")) {
+                    setSelectedNetworkId("");
+                    setSelectedIpId("");
+                    form.setValue("selectedNetworkId", "");
+                    form.setValue("selectedIpId", "");
+                }
+            },
+        });
+    }, [form]);
 
     useEffect(() => {
         async function fetchFormOptions() {

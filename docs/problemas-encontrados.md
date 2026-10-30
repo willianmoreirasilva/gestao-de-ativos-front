@@ -361,8 +361,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** `onDelete: Restrict` ou `SetNull`, com `userId` opcional.
 - **Esforço:** P
 
-### M12. Erros do React Compiler: `setState` em effect e refs no render
-> **Em andamento (29/10/2026), um arquivo por vez** (11 arquivos com violações no lint):
+### M12. Erros do React Compiler: `setState` em effect e refs no render ✅
+> **Resolvido (29/10/2026), um arquivo por vez** (12 arquivos):
 > - ✅ `src/hooks/use-mobile.ts`: trocado por `useSyncExternalStore` (servidor e hidratação assumem desktop, como antes). Lint do arquivo limpo; `tsc`, build e 357 testes passam. **Testado no navegador pelo usuário (sidebar ao estreitar a janela): funcionou.
 > - ✅ `src/components/app-sidebar.tsx`: o `useEffect` que recalculava `openGroups` foi removido. O grupo aberto é derivado de `pathname`; o estado guarda só as aberturas/fechamentos manuais, válidos para a rota em que foram feitos (mesmo comportamento de antes: ao trocar de rota, volta ao padrão). Efeito colateral bom: o servidor já renderiza o grupo aberto, sem piscar. Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
 > - ✅ `src/components/pagination.tsx`: o limite inicial, guardado em `useRef` e lido no render, passou a `useState(currentLimit)` (mesmo efeito: vale só o valor da primeira renderização). Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
@@ -374,7 +374,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > - ✅ `src/components/assets/shared/components/switch-connection-edit-modal.tsx`: (1) mesmo padrão dos outros modais (formulário interno `SwitchConnectionForm`; o effect de reset saiu); (2) o effect que zerava a porta quando o switch era removido foi para o `onChange` do combobox, e o valor inicial da porta já nasce vazio quando não há switch; (3) `form.watch` virou `useWatch` (sumiu o aviso `incompatible-library`). Sobra um `any` (`form.setError(key as any)`), do M13. `tsc` e 357 testes ok. O primeiro teste no navegador falhou por causa de um bug do back (ver M18), não do modal. Testado no navegador pelo usuário após o M18: funcionou.
 > - ✅ `src/app/(painel)/dashboard/overview/_components/tabs/available-ips-tab.tsx`: os dois `setState` em effect saíram. (1) A sub-rede selecionada é derivada: `chosenNetworkId || networks[0]?.id`. (2) A busca guarda o resultado com a chave dos filtros (`rede|página|limite|reloadToken`); `loading`, `ips` e `meta` são derivados dessa chave, e o effect só dispara a action e grava a resposta (resposta antiga descartada). Recarregar depois de reservar passou a ser `reloadToken + 1`. A seleção de IPs é zerada nos handlers de rede, página e limite (antes, a cada busca). Lint do arquivo limpo, `tsc` e 357 testes ok. Testado no navegador pelo usuário: funcionou.
 > - ✅ `src/app/(painel)/dashboard/overview/_components/tabs/reserved-ips-tab.tsx`: mesmo padrão do `available-ips-tab` (resultado guardado com a chave `rede|busca|página|limite|reloadToken`; `loading`, `ips` e `meta` derivados; o effect só dispara a action; resposta antiga descartada; `reload()` incrementa o token depois de editar/cancelar reserva). Lint do arquivo limpo, `tsc` e 357 testes ok. O teste da busca por motivo falhou por causa de um bug do back (ver M19), não do componente. Testado no navegador pelo usuário após o M19: funcionou.
-> - Faltam: `access-points/add/page.tsx`.
+> - ✅ `src/app/(painel)/assets/access-points/add/page.tsx`: o effect que zerava rede/IP ao mudar o fabricante para um escopo de VLAN diferente virou uma assinatura do formulário (`form.subscribe` no campo `vendor`); o `setState` acontece no callback. Lint: sumiram `set-state-in-effect` e `exhaustive-deps`; resta o `any` de `createAccessPointAction(payload as any)` (M13). Testado no navegador pelo usuário: funcionou.
+> - **M12 concluído:** o lint não tem mais nenhuma violação `react-hooks` (total geral 191 → 168). Bugs do back achados nos testes: M18 e M19.
 - **Arquivos:**
   - `src/components/app-sidebar.tsx:93`
   - `src/components/pagination.tsx:51`
