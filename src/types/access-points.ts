@@ -62,7 +62,7 @@ export interface GetAccessPointsParams {
 }
 
 export interface CreateAccessPointInput {
-    patrimony: string;
+    patrimony?: string | null;
     departmentId?: string | null;
     locationId?: string | null;
     ipId?: string | null;

@@ -196,7 +196,7 @@ export default function AddAccessPointPage() {
         };
 
         try {
-            const result = await createAccessPointAction(payload as any);
+            const result = await createAccessPointAction(payload);
 
             if (result.success) {
                 toast.success("Access Point cadastrado com sucesso!");

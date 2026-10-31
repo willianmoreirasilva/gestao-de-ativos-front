@@ -18,7 +18,7 @@ export interface AuditDashboardStatsResponse {
             | "VIEW_SECRET";
         entity: string;
         entityId: string;
-        details?: Record<string, any> | null; // <-- Adicionado
+        details?: Record<string, unknown> | null;
         createdAt: string;
         user?: {
             id: string;

@@ -146,7 +146,7 @@ export default function AddPrinterPage() {
         };
 
         try {
-            const result = await createPrinterAssetAction(payload as any);
+            const result = await createPrinterAssetAction(payload);
 
             if (result.success) {
                 toast.success("Impressora cadastrada com sucesso!", {

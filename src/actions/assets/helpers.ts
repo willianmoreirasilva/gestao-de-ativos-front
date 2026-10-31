@@ -10,7 +10,7 @@ import {
     getApiErrorBody,
 } from "@/lib/api-error";
 
-export interface ActionResponse<T = any> {
+export interface ActionResponse<T = unknown> {
     success: boolean;
     data?: T;
     error?: string;

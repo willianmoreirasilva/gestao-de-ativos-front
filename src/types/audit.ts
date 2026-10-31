@@ -20,7 +20,7 @@ export interface AuditLog {
     action: AuditAction;
     entity: string;
     entityId: string;
-    details: Record<string, any> | null;
+    details: Record<string, unknown> | null;
     createdAt: string;
     user: AuditUser;
 }

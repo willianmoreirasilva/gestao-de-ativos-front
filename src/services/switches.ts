@@ -14,6 +14,7 @@ export const switchService = {
                     page: params?.page || 1,
                     limit: params?.limit || 8,
                     search: params?.search,
+                    hasIp: params?.hasIp,
                 },
             });
 

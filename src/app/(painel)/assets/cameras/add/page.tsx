@@ -148,7 +148,7 @@ export default function AddCameraPage() {
         };
 
         try {
-            const result = await createCameraAssetAction(payload as any);
+            const result = await createCameraAssetAction(payload);
 
             if (result.success) {
                 toast.success("Câmera cadastrada com sucesso!", {

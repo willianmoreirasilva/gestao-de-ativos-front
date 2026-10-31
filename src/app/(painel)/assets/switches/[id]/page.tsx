@@ -38,8 +38,7 @@ export default async function SwitchDetailsPage({ params }: Props) {
         );
     }
 
-    // Cast seguro para ler propriedades dinâmicas do backend sem erro do TS
-    const rawAsset = switchData.asset as any;
+    const rawAsset = switchData.asset;
 
     // Normaliza a resposta do backend montando o objeto compatível com AssetTechnicalCard
     const assetFormatted: AssetItem = {
@@ -62,7 +61,15 @@ export default async function SwitchDetailsPage({ params }: Props) {
         vlanTag: rawAsset.vlanTag ?? rawAsset.ip?.network?.vlanTag ?? null,
 
         department: rawAsset.department || null,
-        location: rawAsset.location || null,
+        location: rawAsset.location
+            ? {
+                  id: rawAsset.location.id,
+                  name: rawAsset.location.name,
+                  building: rawAsset.location.building ?? null,
+                  floor: rawAsset.location.floor ?? null,
+                  room: rawAsset.location.room ?? null,
+              }
+            : null,
         ip: rawAsset.ip || null,
         switch: {
             id: switchData.id,

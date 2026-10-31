@@ -17,7 +17,15 @@ export const filterOperatorSchema = z.enum([
 export const singleFilterSchema = z.object({
     field: z.string(),
     operator: filterOperatorSchema,
-    value: z.any().optional(),
+    value: z
+        .union([
+            z.string(),
+            z.number(),
+            z.boolean(),
+            z.null(),
+            z.array(z.union([z.string(), z.number()])),
+        ])
+        .optional(),
 });
 
 export const reportQuerySchema = z.object({

@@ -53,7 +53,7 @@ export interface PrinterDetails {
 export interface PhoneDetails {
     id: string;
     hostname?: string | null;
-    phoneNumber: string;
+    phoneNumber?: string | null;
     model?: string | null;
     notes?: string | null;
 }
@@ -168,7 +168,7 @@ export interface SystemSpecsModalOptions {
     disks: OptionItem[];
 }
 
-export interface ActionResult<T = any> {
+export interface ActionResult<T = unknown> {
     success: boolean;
     data?: T;
     error?: string;

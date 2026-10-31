@@ -193,9 +193,7 @@ async function ReportsAuditDashboard() {
                             <div className="space-y-4">
                                 {recentLogs.map((log) => {
                                     // Formata o nome da entidade usando a mesma regra da tabela de logs
-                                    const entityName = getFormattedEntity(
-                                        log as any,
-                                    );
+                                    const entityName = getFormattedEntity(log);
 
                                     return (
                                         <div

@@ -146,7 +146,7 @@ export default function AddPhonePage() {
         };
 
         try {
-            const result = await createPhoneAssetAction(payload as any);
+            const result = await createPhoneAssetAction(payload);
 
             if (result.success) {
                 toast.success("Telefone/Ramal cadastrado com sucesso!", {

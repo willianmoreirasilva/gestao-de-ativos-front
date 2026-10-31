@@ -147,7 +147,7 @@ export default function AddSwitchPage() {
         };
 
         try {
-            const result = await createSwitchAction(payload as any);
+            const result = await createSwitchAction(payload);
 
             if (result.success) {
                 toast.success("Switch cadastrado com sucesso!");

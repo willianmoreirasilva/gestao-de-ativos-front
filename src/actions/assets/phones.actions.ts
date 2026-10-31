@@ -15,7 +15,7 @@ export async function updatePhoneSpecsAction(
     assetId: string,
     payload: {
         hostname?: string | null;
-        phoneNumber: string;
+        phoneNumber?: string | null;
         model?: string | null;
         notes?: string | null;
     },
@@ -90,7 +90,7 @@ export async function createPhoneAssetAction(
             switchPort: parsedSwitchPort,
             phone: {
                 hostname: sanitizeNullable(formData.hostname),
-                phoneNumber: formData.phoneNumber.trim(),
+                phoneNumber: sanitizeNullable(formData.phoneNumber),
                 model: sanitizeNullable(formData.model),
                 notes: sanitizeNullable(formData.notes),
             },

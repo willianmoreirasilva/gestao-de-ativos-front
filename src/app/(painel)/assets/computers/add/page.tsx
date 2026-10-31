@@ -162,7 +162,7 @@ export default function AddComputerPage() {
         };
 
         try {
-            const result = await createComputerAssetAction(payload as any);
+            const result = await createComputerAssetAction(payload);
 
             if (result.success) {
                 toast.success("Computador cadastrado com sucesso!", {

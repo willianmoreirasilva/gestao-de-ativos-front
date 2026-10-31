@@ -23,7 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 const phoneSpecsSchema = z.object({
     hostname: z.string().optional().nullable(),
-    phoneNumber: z.string().min(1, "O número/ramal é obrigatório."),
+    phoneNumber: z.string().optional().nullable(),
     model: z.string().optional().nullable(),
     notes: z.string().optional().nullable(),
 });
@@ -35,7 +35,7 @@ interface PhoneHardwareCardProps {
     phone: {
         id?: string;
         hostname?: string | null;
-        phoneNumber: string;
+        phoneNumber?: string | null;
         model?: string | null;
         notes?: string | null;
     };
@@ -180,8 +180,7 @@ export function PhoneHardwareCard({ assetId, phone }: PhoneHardwareCardProps) {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel className="text-xs font-semibold">
-                                        Número do Ramal{" "}
-                                        <span className="text-rose-500">*</span>
+                                        Número do Ramal
                                     </FormLabel>
                                     <FormControl>
                                         <Input

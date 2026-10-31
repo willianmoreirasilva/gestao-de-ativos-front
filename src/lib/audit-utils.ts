@@ -1,16 +1,16 @@
 import { ENTITY_LABELS } from "@/types/audit";
 
-export interface LogDetails {
-    type?: string;
-    createdData?: { type?: string };
-    before?: { type?: string };
-    after?: { type?: string };
-    [key: string]: any;
-}
+import { isRecord } from "./utils";
+
+export type LogDetails = Record<string, unknown>;
 
 export interface AuditEntityItem {
     entity: string;
     details?: LogDetails | null;
+}
+
+function nestedType(value: unknown): unknown {
+    return isRecord(value) ? value.type : undefined;
 }
 
 /**
@@ -24,12 +24,15 @@ export function getFormattedEntity(log: AuditEntityItem): string {
     if (entityUpper === "ASSET" && log.details) {
         const details = log.details;
 
-        const assetType = (
-            details.type ||
-            details.createdData?.type ||
-            details.before?.type ||
-            details.after?.type
-        )?.toUpperCase();
+        const assetType = [
+            details.type,
+            nestedType(details.createdData),
+            nestedType(details.before),
+            nestedType(details.after),
+        ]
+            .find((value) => typeof value === "string" && value !== "")
+            ?.toString()
+            .toUpperCase();
 
         if (assetType && ENTITY_LABELS[assetType]) {
             return ENTITY_LABELS[assetType];

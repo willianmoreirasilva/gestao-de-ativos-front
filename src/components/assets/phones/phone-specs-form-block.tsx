@@ -72,8 +72,7 @@ export function PhoneSpecsFormBlock<TFieldValues extends FieldValues>({
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
-                                <Hash size={13} /> Ramal / Número{" "}
-                                <span className="text-rose-500">*</span>
+                                <Hash size={13} /> Ramal / Número
                             </FormLabel>
                             <FormControl>
                                 <Input
