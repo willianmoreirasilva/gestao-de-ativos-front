@@ -94,14 +94,9 @@ Vale para os itens de `docs/problemas-encontrados.md` (nos dois repositórios).
 - Dizer com clareza o que **não** foi testado.
 
 **Ordem dos itens que faltam**
-1. **M14:** leituras fora de `actions/`, por módulo, um commit cada.
-   - ✅ Ativos (`e09e951`) e IPs/redes (`20801c2`).
-   - Falta **Relatórios**: remover o wrapper `getReportsAuditDashboardAction` e revisar a página `reports`.
-2. **M12:** erros do React Compiler (`setState` em effect, refs no render), **um arquivo por vez**.
-3. **M4:** componentes e actions sem uso (inclui `getIpStatsAction`, `getOverviewStatsAction`, `getRecentIpsAction` e o `createDiskAction`).
-4. **M13:** `any` (122 no front, 23 no back).
-5. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports.
-6. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
+Já concluídos e commitados: M14 (ativos, IPs/redes e relatórios), M12, M4 e M13 (módulos 1 a 6).
+1. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports (30 erros no lint do front, 27 corrigíveis; os outros: `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx` e o `any` acima).
+2. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
 
 **Pendências fora dessa ordem**
 - A7: o CI ainda não rodou no GitHub (falta o primeiro `push`).
