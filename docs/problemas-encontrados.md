@@ -521,6 +521,31 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Fica de fora:** acima de 1000 departamentos ou localidades o problema volta. O caminho definitivo é um combobox com busca no servidor, ou um endpoint de opções sem paginação.
 - **Esforço:** P
 
+### M21. Relatório: o filtro "Switch" é descartado pela página (nome de parâmetro diferente)
+- **Onde:** `src/components/reports/report-container.tsx:200-201` grava `connectedToSwitchId` na URL; `src/app/(painel)/reports-audit/reports/page.tsx:27,119-123` lê `connectedSwitchId`.
+- **Problema:** **[confirmado]** o filtro "Switch" (ativo conectado a um switch) nunca chega à API, para **nenhum** tipo de ativo: a tela recarrega e o resultado volta sem o filtro. Os dois nomes entraram juntos no commit `eff694f`, então nunca funcionou.
+- **Back está correto:** `report-switch-filter.int.test.ts` (cascata SW-A ← SW-B ← SW-C, mais computador e impressora em SW-A) mostra que `type=switch` + `connectedToSwitchId=SW-A` traz só o SW-B (ligação direta), e que computador e impressora filtram certo.
+- **Sugestão:** `page.tsx` passar a ler `connectedToSwitchId` (2 pontos e o tipo de `searchParams`).
+- **Esforço:** P
+- **Teste:** `src/components/reports/report-url-params.test.ts` confere que cada parâmetro que o container grava na URL é lido pela página (26 casos; falhava em `connectedToSwitchId`). Esse teste achou um segundo caso, `printerSerial` (o container grava, a página nem lê e o back ignora `printer.serial` em silêncio): **não corrigido**, fica fora do teste com comentário. Precisa de decisão (implementar o filtro de serial no back ou tirar o campo da tela).
+- **Status:** ✅ corrigido (03/11/2026). `page.tsx` lê `connectedToSwitchId`. `tsc`, 398 testes e `build` ok; lint igual (46 problemas, nenhum novo). Não testado ao vivo no navegador: aguarda o seu teste (tipo SWITCH + filtro Switch = X deve trazer só os switches ligados direto em X).
+
+### M22. O cadastro aceita ligar um switch nele mesmo ou fechar um ciclo entre switches
+- **Onde:** `PATCH /api/assets/:id/connectivity` e `updateAsset` (`assets.service.ts`, `finalSwitchId`). `validateSwitchPort` só confere se o switch existe e o número da porta; nada compara o switch escolhido com o próprio ativo ou com a cadeia acima dele.
+- **Problema:** **[confirmado]** num teste temporário no banco de teste: `A → A` respondeu 200, `A → B` 200 e depois `B → A` (ciclo) 200. Hoje isso só gera dado incoerente; passa a travar qualquer consulta que suba ou desça a cascata (ver M23).
+- **Sugestão:** ao salvar a ligação de um ativo do tipo SWITCH, recusar com 400 se o switch escolhido for ele mesmo ou se ele aparecer na cadeia acima do escolhido (subir por `connectedToSwitchId` com limite de profundidade). Teste: auto-ligação, ciclo de 2 e de 3 switches, e ligação válida em cascata. Cobrir também a criação e o cadastro de switch (`switch.service.ts`). Já pode existir ciclo gravado: conferir no banco antes.
+- **Esforço:** P a M
+- **Status:** a fazer, antes do M23.
+
+### M23. Melhoria: filtro de switch em cascata nos relatórios (não é defeito)
+- **Pedido:** no filtro "Switch" uma opção **"Incluir ativos em cascata"**, desligada por padrão. Desligada: só a ligação direta (comportamento atual). Ligada: todos os ativos abaixo do switch escolhido, em qualquer nível.
+- **Coluna "Conectado via":** caminho até o switch escolhido (ex.: `SW-A → SW-B`), também na exportação.
+- **Back:** consulta recursiva (`WITH RECURSIVE` via `$queryRaw`) que devolve os ids dos descendentes com a profundidade e o caminho; limite de profundidade; proteção contra ciclo (`UNION` sem repetir id) mesmo com o M22 feito. Integra com o `report-query-builder` como `id IN (...)`.
+- **Front:** o checkbox em `general-filters.tsx`, o parâmetro novo na URL (`cascade=1`), o payload, a coluna e a exportação.
+- **Testes:** cascata de 3 níveis, ciclo, limite de profundidade, opção desligada igual ao atual.
+- **Esforço:** M (back ~1 dia com os testes; front ~meio dia; exportação e colunas do relatório são a parte menos conhecida).
+- **Depende de:** M21 (o filtro precisa chegar à API) e M22 (para não nascer ciclo novo).
+
 ## 🟢 Baixo
 
 ### B1. Configurações duplicadas ou erradas

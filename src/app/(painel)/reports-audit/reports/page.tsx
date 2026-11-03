@@ -24,7 +24,7 @@ interface Props {
         departmentId?: string;
         locationId?: string;
         networkId?: string;
-        connectedSwitchId?: string;
+        connectedToSwitchId?: string;
         // Especificações do Computador
         osId?: string;
         processorId?: string;
@@ -116,11 +116,11 @@ async function Reports({ searchParams }: Props) {
             value: params.networkId,
         });
     }
-    if (params.connectedSwitchId) {
+    if (params.connectedToSwitchId) {
         filters.push({
             field: "connectedToSwitchId",
             operator: "eq",
-            value: params.connectedSwitchId,
+            value: params.connectedToSwitchId,
         });
     }
 
