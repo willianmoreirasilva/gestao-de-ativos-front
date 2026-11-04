@@ -15,6 +15,7 @@ import React, { useState, useTransition } from "react";
 import { getAssetReportAction } from "@/actions/reports";
 import type {
     AssetReportData,
+    ReportCascadeInfo,
     ReportQueryPayload,
     SingleFilter,
 } from "@/types/report";
@@ -29,6 +30,7 @@ import { ReportComputerFilters } from "./filters/report-computer-filters";
 import { ReportPhoneFilters } from "./filters/report-phone-filters";
 import { ReportPrinterFilters } from "./filters/report-printer-filters";
 import { ReportSwitchFilters } from "./filters/report-switch-filters";
+import { ReportCascadeNotice } from "./report-cascade-notice";
 import { ReportPrintModal } from "./report-print-modal";
 import { ReportKpiCards } from "./summary/report-kpi-cards";
 import { ReportTableContent } from "./table/report-table-content";
@@ -43,6 +45,7 @@ interface ReportContainerProps {
         departmentsCount: number;
     };
     options: ReportOptions;
+    cascade?: ReportCascadeInfo;
 }
 
 export function ReportContainer({
@@ -50,6 +53,7 @@ export function ReportContainer({
     meta,
     summary,
     options,
+    cascade,
 }: ReportContainerProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -76,6 +80,9 @@ export function ReportContainer({
     );
     const [connectedToSwitchId, setConnectedToSwitchId] = useState(
         searchParams.get("connectedToSwitchId") || "",
+    );
+    const [includeCascade, setIncludeCascade] = useState(
+        searchParams.get("cascade") === "1",
     );
 
     // Filtros de Computador
@@ -176,6 +183,9 @@ export function ReportContainer({
 
     const [isExportLoading, setIsExportLoading] = useState(false);
     const [exportData, setExportData] = useState<AssetReportData[]>([]);
+    const [exportCascade, setExportCascade] = useState<
+        ReportCascadeInfo | undefined
+    >();
     const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
     const handleApplyFilters = (
@@ -199,6 +209,7 @@ export function ReportContainer({
         if (networkId) params.set("networkId", networkId);
         if (connectedToSwitchId)
             params.set("connectedToSwitchId", connectedToSwitchId);
+        if (connectedToSwitchId && includeCascade) params.set("cascade", "1");
 
         if (showAdvancedFilters) {
             if (selectedTypes.includes("COMPUTER")) {
@@ -431,6 +442,7 @@ export function ReportContainer({
             orderBy: { field: "createdAt", direction: "desc" as const },
             page: 1,
             limit: limitOverride || meta.limit,
+            includeCascade: Boolean(connectedToSwitchId && includeCascade),
         };
     };
 
@@ -442,6 +454,7 @@ export function ReportContainer({
         setLocationId("");
         setNetworkId("");
         setConnectedToSwitchId("");
+        setIncludeCascade(false);
         setSelectedOsId(undefined);
         setSelectedProcessorId(undefined);
         setSelectedDiskId(undefined);
@@ -465,6 +478,7 @@ export function ReportContainer({
         try {
             const res = await getAssetReportAction(buildPayload(10000));
             setExportData(res.data || []);
+            setExportCascade(res.cascade);
             setIsPrintModalOpen(true);
         } catch (error) {
             console.error("Erro na exportação em PDF:", error);
@@ -536,8 +550,11 @@ export function ReportContainer({
             chips.push({
                 key: "switch",
                 label: "Switch Concentrador",
-                value: sw?.hostname || connectedToSwitchId,
-                onRemove: () => setConnectedToSwitchId(""),
+                value: `${sw?.hostname || connectedToSwitchId}${includeCascade ? " (em cascata)" : ""}`,
+                onRemove: () => {
+                    setConnectedToSwitchId("");
+                    setIncludeCascade(false);
+                },
             });
         }
 
@@ -740,6 +757,8 @@ export function ReportContainer({
                     networkId={networkId}
                     onNetworkIdChange={setNetworkId}
                     connectedToSwitchId={connectedToSwitchId}
+                    includeCascade={includeCascade}
+                    onIncludeCascadeChange={setIncludeCascade}
                     onConnectedToSwitchIdChange={setConnectedToSwitchId}
                     options={options}
                 />
@@ -906,7 +925,11 @@ export function ReportContainer({
 
             {/* TABELA DE ATIVOS E PAGINAÇÃO */}
             <div className="bg-card border border-border/80 rounded-2xl overflow-hidden shadow-xs transition-colors">
-                <ReportTableContent data={initialData} />
+                <ReportCascadeNotice cascade={cascade} />
+                <ReportTableContent
+                    data={initialData}
+                    showCascade={Boolean(cascade)}
+                />
                 <Pagination
                     {...meta}
                     itemLabel="relatórios"
@@ -921,6 +944,8 @@ export function ReportContainer({
                 activeFiltersLabels={activeChips}
                 summary={summary}
                 data={exportData}
+                showCascade={Boolean(exportCascade)}
+                cascade={exportCascade}
             />
         </div>
     );

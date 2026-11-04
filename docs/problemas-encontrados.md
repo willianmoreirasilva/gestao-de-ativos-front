@@ -557,14 +557,15 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Verificação:** back `tsc`, 499 testes e lint (5 erros, os mesmos de antes); front `tsc`, 403 testes, `build` e lint (46, igual). **Não testado ao vivo no navegador.**
 - **Status:** ✅ corrigido (04/11/2026), testado pelo usuário no navegador: funcionou.
 
-### M23. Melhoria: filtro de switch em cascata nos relatórios (não é defeito)
-- **Pedido:** no filtro "Switch" uma opção **"Incluir ativos em cascata"**, desligada por padrão. Desligada: só a ligação direta (comportamento atual). Ligada: todos os ativos abaixo do switch escolhido, em qualquer nível.
-- **Coluna "Conectado via":** caminho até o switch escolhido (ex.: `SW-A → SW-B`), também na exportação.
-- **Back:** consulta recursiva (`WITH RECURSIVE` via `$queryRaw`) que devolve os ids dos descendentes com a profundidade e o caminho; limite de profundidade; proteção contra ciclo (`UNION` sem repetir id) mesmo com o M22 feito. Integra com o `report-query-builder` como `id IN (...)`.
-- **Front:** o checkbox em `general-filters.tsx`, o parâmetro novo na URL (`cascade=1`), o payload, a coluna e a exportação.
-- **Testes:** cascata de 3 níveis, ciclo, limite de profundidade, opção desligada igual ao atual.
-- **Esforço:** M (back ~1 dia com os testes; front ~meio dia; exportação e colunas do relatório são a parte menos conhecida).
-- **Depende de:** M21 (o filtro precisa chegar à API) e M22 (para não nascer ciclo novo).
+### M23. Melhoria: filtro de switch em cascata nos relatórios (não é defeito) ✅
+- **Pedido:** no filtro "Switch" uma opção **"Incluir ativos em cascata"**, desligada por padrão. Desligada: só a ligação direta (comportamento anterior). Ligada: todos os ativos abaixo do switch escolhido, em qualquer nível.
+- **Decisões do usuário:** limite de **10 níveis**; o switch escolhido **não entra** no resultado; coluna **"Nível"** (1 = ligado direto) e coluna **"Conectado via"** (caminho a partir do switch escolhido, ex.: `SW-A → SW-B`), também na exportação; **aviso** quando a cascata é cortada no limite.
+- **Back:** `lib/reports/switch-cascade.ts` (`findSwitchCascade`, consulta `WITH RECURSIVE` em `$queryRaw`; `describeCascadePaths`). Um nível a mais é lido só para saber se houve corte. Proteção contra ciclo já gravado: o caminho acumulado impede revisitar um switch, e a raiz nunca volta. O payload ganhou `includeCascade`; sem `switchId` ele é ignorado. No `getAssetReportData`, a lista de ids da cascata substitui a ligação direta (`id IN (...)`) e se combina com os demais filtros (tipo, departamento etc.). Cada linha da página/exportação recebe `cascadeLevel` e `cascadePath`; a resposta ganha `cascade: { maxDepth, truncated }` (só com a cascata ligada; o schema de resposta da rota foi estendido para não descartar o campo, como no M24).
+- **Front:** checkbox "Incluir ativos em cascata" (aparece com um switch escolhido), parâmetro `cascade=1` na URL, `includeCascade` no payload (inclusive o da exportação), chip "(em cascata)", colunas "Nível" e "Conectado via" na tabela da tela e na da impressão/PDF, aviso `ReportCascadeNotice` na tela e no PDF quando `truncated`. `fetchAssetReport` repassa o campo `cascade`.
+- **Testes:** back `report-switch-filter.int.test.ts` (+5 casos: 3 níveis com nível e caminho, switch escolhido fora, combinação com tipo, cascata desligada sem colunas extras, corte em 10 níveis com `truncated`, ciclo antigo gravado); front `report-cascade.test.tsx` (4: tabela, impressão, aviso de corte; renderizados em jsdom) e o teste de contrato de URL (`cascade`).
+- **Verificação:** back `tsc`, 505 testes e lint (5 erros, os mesmos de antes); front `tsc`, 409 testes, `build` ok e lint (46, igual). **Não testado ao vivo no navegador.**
+- **Observações:** a ordem do resultado segue `createdAt` desc, não por nível. O caminho usa o hostname do switch (ou patrimônio/modelo, se não houver). Os ativos além do 10º nível não entram no resultado nem nos totais (o aviso diz isso).
+- **Status:** ✅ implementado (04/11/2026), testado pelo usuário no navegador: funcionou.
 
 ### M25. Relatório: o filtro de número de série da impressora não existia
 - **Onde:** `report-container.tsx` guardava `printerSerial` e o gravava na URL, mas **não havia input** na tela (`report-printer-filters.tsx` só tinha o modelo), a página não lia o parâmetro e o back ignorava `printer.serial` (o enum `allowedFilterFields` o aceitava, o `normalizeFilters` e o `report-query-builder` não). Achado pelo teste de contrato do M21.

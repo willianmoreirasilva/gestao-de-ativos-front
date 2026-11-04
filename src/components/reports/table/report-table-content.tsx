@@ -8,6 +8,8 @@ import type { AssetReportData } from "@/types/report";
 interface ReportTableContentProps {
     data: AssetReportData[];
     isLoading?: boolean;
+    // Colunas "Nível" e "Conectado via" (filtro de switch em cascata)
+    showCascade?: boolean;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -23,7 +25,10 @@ const TYPE_LABELS: Record<string, string> = {
 export function ReportTableContent({
     data,
     isLoading,
+    showCascade = false,
 }: ReportTableContentProps) {
+    const columnCount = showCascade ? 8 : 6;
+
     return (
         <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
@@ -35,13 +40,19 @@ export function ReportTableContent({
                         <th className="py-3 px-4">Departamento</th>
                         <th className="py-3 px-4">Localidade</th>
                         <th className="py-3 px-4">Endereço IP</th>
+                        {showCascade && (
+                            <>
+                                <th className="py-3 px-4">Nível</th>
+                                <th className="py-3 px-4">Conectado via</th>
+                            </>
+                        )}
                     </tr>
                 </thead>
                 <tbody className="divide-y divide-border/60 text-foreground">
                     {isLoading ? (
                         <tr>
                             <td
-                                colSpan={6}
+                                colSpan={columnCount}
                                 className="py-8 text-center text-muted-foreground font-medium"
                             >
                                 Carregando relatório...
@@ -50,7 +61,7 @@ export function ReportTableContent({
                     ) : data.length === 0 ? (
                         <tr>
                             <td
-                                colSpan={6}
+                                colSpan={columnCount}
                                 className="py-8 text-center text-muted-foreground"
                             >
                                 Nenhum ativo encontrado para os filtros
@@ -117,6 +128,16 @@ export function ReportTableContent({
                                             </Badge>
                                         )}
                                     </td>
+                                    {showCascade && (
+                                        <>
+                                            <td className="py-3 px-4 text-muted-foreground">
+                                                {item.cascadeLevel ?? "-"}
+                                            </td>
+                                            <td className="py-3 px-4 text-muted-foreground">
+                                                {item.cascadePath || "-"}
+                                            </td>
+                                        </>
+                                    )}
                                 </tr>
                             );
                         })

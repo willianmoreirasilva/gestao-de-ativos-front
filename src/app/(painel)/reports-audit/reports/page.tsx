@@ -25,6 +25,7 @@ interface Props {
         locationId?: string;
         networkId?: string;
         connectedToSwitchId?: string;
+        cascade?: string;
         // Especificações do Computador
         osId?: string;
         processorId?: string;
@@ -262,6 +263,10 @@ async function Reports({ searchParams }: Props) {
         orderBy: { field: "createdAt", direction: "desc" },
         page,
         limit,
+        // A cascata só faz sentido com um switch escolhido
+        includeCascade: Boolean(
+            params.connectedToSwitchId && params.cascade === "1",
+        ),
     };
 
     const [
@@ -365,6 +370,7 @@ async function Reports({ searchParams }: Props) {
                     }
                 }
                 options={options}
+                cascade={reportResult?.cascade}
             />
         </div>
     );

@@ -27,6 +27,7 @@ export async function fetchAssetReport(
                 withoutIp: 0,
                 departmentsCount: 0,
             },
+            ...(response.data?.cascade && { cascade: response.data.cascade }),
             error: null,
         };
     } catch (error: unknown) {

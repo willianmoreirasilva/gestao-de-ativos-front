@@ -23,6 +23,8 @@ interface GeneralFiltersProps {
     onNetworkIdChange: (id: string) => void;
     connectedToSwitchId: string;
     onConnectedToSwitchIdChange: (id: string) => void;
+    includeCascade: boolean;
+    onIncludeCascadeChange: (value: boolean) => void;
     options: ReportOptions;
 }
 
@@ -41,6 +43,8 @@ export function GeneralFilters({
     onNetworkIdChange,
     connectedToSwitchId,
     onConnectedToSwitchIdChange,
+    includeCascade,
+    onIncludeCascadeChange,
     options,
 }: GeneralFiltersProps) {
     const departmentOptions = useMemo(
@@ -206,6 +210,19 @@ export function GeneralFilters({
                         searchPlaceholder="Buscar switch..."
                         emptyMessage="Nenhum switch encontrado."
                     />
+                    {connectedToSwitchId && (
+                        <label className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={includeCascade}
+                                onChange={(e) =>
+                                    onIncludeCascadeChange(e.target.checked)
+                                }
+                                className="h-3.5 w-3.5 accent-primary"
+                            />
+                            Incluir ativos em cascata
+                        </label>
+                    )}
                 </div>
             </div>
         </div>

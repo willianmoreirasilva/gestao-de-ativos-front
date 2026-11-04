@@ -3,7 +3,7 @@
 import { FileText, Printer, X } from "lucide-react";
 import React from "react";
 
-import type { AssetReportData } from "@/types/report";
+import type { AssetReportData, ReportCascadeInfo } from "@/types/report";
 
 interface PrintModalProps {
     isOpen: boolean;
@@ -16,6 +16,9 @@ interface PrintModalProps {
         departmentsCount: number;
     };
     data: AssetReportData[];
+    // Colunas "Nível" e "Conectado via" (filtro de switch em cascata)
+    showCascade?: boolean;
+    cascade?: ReportCascadeInfo;
 }
 
 export function ReportPrintModal({
@@ -24,6 +27,8 @@ export function ReportPrintModal({
     activeFiltersLabels,
     summary,
     data,
+    showCascade = false,
+    cascade,
 }: PrintModalProps) {
     if (!isOpen) return null;
 
@@ -170,6 +175,14 @@ export function ReportPrintModal({
                             </div>
                         </div>
 
+                        {cascade?.truncated && (
+                            <p className="text-xs font-semibold text-amber-800">
+                                Resultado limitado a {cascade.maxDepth} níveis:
+                                há ativos mais abaixo na cascata que não
+                                aparecem neste relatório.
+                            </p>
+                        )}
+
                         {/* Tabela Principal */}
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
@@ -195,6 +208,16 @@ export function ReportPrintModal({
                                     <th className="py-2 px-2 font-bold">
                                         VLAN
                                     </th>
+                                    {showCascade && (
+                                        <>
+                                            <th className="py-2 px-2 font-bold">
+                                                Nível
+                                            </th>
+                                            <th className="py-2 px-2 font-bold">
+                                                Conectado via
+                                            </th>
+                                        </>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
@@ -238,6 +261,18 @@ export function ReportPrintModal({
                                                     ? `VLAN ${vlanTag}`
                                                     : "-"}
                                             </td>
+                                            {showCascade && (
+                                                <>
+                                                    <td className="py-2 px-2">
+                                                        {item.cascadeLevel ??
+                                                            "-"}
+                                                    </td>
+                                                    <td className="py-2 px-2">
+                                                        {item.cascadePath ||
+                                                            "-"}
+                                                    </td>
+                                                </>
+                                            )}
                                         </tr>
                                     );
                                 })}

@@ -40,6 +40,7 @@ export const reportQuerySchema = z.object({
     }),
     page: z.coerce.number().int().min(1).default(1),
     limit: z.coerce.number().int().min(1).max(100).default(20),
+    includeCascade: z.boolean().optional(),
 });
 
 export type FilterOperator = z.infer<typeof filterOperatorSchema>;
