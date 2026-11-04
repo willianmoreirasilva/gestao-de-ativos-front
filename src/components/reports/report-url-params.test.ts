@@ -20,9 +20,8 @@ describe("parâmetros de URL do relatório", () => {
         ...new Set(
             [...container.matchAll(/params\.set\("(\w+)"/g)].map((m) => m[1]),
         ),
-        // "page" e "limit" são lidos à parte. "printerSerial" ainda não existe na
-        // página nem no back (o filtro de serial é ignorado): ver nota no M21
-    ].filter((key) => !["page", "limit", "printerSerial"].includes(key));
+        // "page" e "limit" são lidos à parte
+    ].filter((key) => !["page", "limit"].includes(key));
 
     it("o container grava algum filtro", () => {
         expect(written.length).toBeGreaterThan(10);

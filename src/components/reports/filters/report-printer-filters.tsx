@@ -6,12 +6,14 @@ import React from "react";
 interface ReportPrinterFiltersProps {
     printerModel?: string;
     model?: string; // Fallback de compatibilidade
+    printerSerial?: string;
     onChange: (field: string, val: string | undefined) => void;
 }
 
 export function ReportPrinterFilters({
     printerModel,
     model,
+    printerSerial,
     onChange,
 }: ReportPrinterFiltersProps) {
     const value = printerModel ?? model ?? "";
@@ -40,6 +42,23 @@ export function ReportPrinterFilters({
                             )
                         }
                         placeholder="Ex: LaserJet Pro M404"
+                        className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                    />
+                </div>
+                <div>
+                    <label className="text-[10px] font-medium text-muted-foreground mb-1 block">
+                        Número de Série
+                    </label>
+                    <input
+                        type="text"
+                        value={printerSerial ?? ""}
+                        onChange={(e) =>
+                            onChange(
+                                "printerSerial",
+                                e.target.value || undefined,
+                            )
+                        }
+                        placeholder="Ex: VNB3K12345"
                         className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                     />
                 </div>

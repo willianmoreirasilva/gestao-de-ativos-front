@@ -48,6 +48,7 @@ interface Props {
         phoneNumber?: string;
         // Especificações da impressora
         printerModel?: string;
+        printerSerial?: string;
     }>;
 }
 
@@ -243,6 +244,14 @@ async function Reports({ searchParams }: Props) {
             field: "printer.model",
             operator: "contains",
             value: printerModel.trim(),
+        });
+    }
+
+    if (params.printerSerial?.trim()) {
+        filters.push({
+            field: "printer.serial",
+            operator: "contains",
+            value: params.printerSerial.trim(),
         });
     }
 

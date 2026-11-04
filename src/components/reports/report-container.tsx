@@ -327,6 +327,12 @@ export function ReportContainer({
                     operator: "contains",
                     value: printerModel,
                 });
+            if (printerSerial)
+                filters.push({
+                    field: "printer.serial",
+                    operator: "contains",
+                    value: printerSerial,
+                });
         }
 
         if (selectedTypes.includes("SWITCH")) {
@@ -587,6 +593,14 @@ export function ReportContainer({
                 onRemove: () => setPrinterModel(""),
             });
         }
+        if (selectedTypes.includes("PRINTER") && printerSerial) {
+            chips.push({
+                key: "printerSerial",
+                label: "Série Impressora",
+                value: printerSerial,
+                onRemove: () => setPrinterSerial(""),
+            });
+        }
 
         // --- SWITCH ---
         if (selectedTypes.includes("SWITCH")) {
@@ -778,12 +792,16 @@ export function ReportContainer({
                         {selectedTypes.includes("PRINTER") && (
                             <ReportPrinterFilters
                                 model={printerModel}
+                                printerSerial={printerSerial}
                                 onChange={(field, val) => {
                                     if (
                                         field === "model" ||
                                         field === "printerModel"
                                     ) {
                                         setPrinterModel(val || "");
+                                    }
+                                    if (field === "printerSerial") {
+                                        setPrinterSerial(val || "");
                                     }
                                 }}
                             />

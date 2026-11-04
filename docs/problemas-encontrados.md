@@ -540,7 +540,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Back está correto:** `report-switch-filter.int.test.ts` (cascata SW-A ← SW-B ← SW-C, mais computador e impressora em SW-A) mostra que `type=switch` + `connectedToSwitchId=SW-A` traz só o SW-B (ligação direta), e que computador e impressora filtram certo.
 - **Sugestão:** `page.tsx` passar a ler `connectedToSwitchId` (2 pontos e o tipo de `searchParams`).
 - **Esforço:** P
-- **Teste:** `src/components/reports/report-url-params.test.ts` confere que cada parâmetro que o container grava na URL é lido pela página (26 casos; falhava em `connectedToSwitchId`). Esse teste achou um segundo caso, `printerSerial` (o container grava, a página nem lê e o back ignora `printer.serial` em silêncio): **não corrigido**, fica fora do teste com comentário. Precisa de decisão (implementar o filtro de serial no back ou tirar o campo da tela).
+- **Teste:** `src/components/reports/report-url-params.test.ts` confere que cada parâmetro que o container grava na URL é lido pela página (26 casos; falhava em `connectedToSwitchId`). Esse teste achou um segundo caso, `printerSerial` (o container grava, a página nem lê e o back ignora `printer.serial` em silêncio): tratado no M25.
 - **Status:** ✅ corrigido (03/11/2026). `page.tsx` lê `connectedToSwitchId`. `tsc`, 398 testes e `build` ok; lint igual (46 problemas, nenhum novo). Não testado ao vivo no navegador: aguarda o seu teste (tipo SWITCH + filtro Switch = X deve trazer só os switches ligados direto em X).
 
 ### M22. O cadastro aceita ligar um switch nele mesmo ou fechar um ciclo entre switches ✅
@@ -565,6 +565,14 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Testes:** cascata de 3 níveis, ciclo, limite de profundidade, opção desligada igual ao atual.
 - **Esforço:** M (back ~1 dia com os testes; front ~meio dia; exportação e colunas do relatório são a parte menos conhecida).
 - **Depende de:** M21 (o filtro precisa chegar à API) e M22 (para não nascer ciclo novo).
+
+### M25. Relatório: o filtro de número de série da impressora não existia
+- **Onde:** `report-container.tsx` guardava `printerSerial` e o gravava na URL, mas **não havia input** na tela (`report-printer-filters.tsx` só tinha o modelo), a página não lia o parâmetro e o back ignorava `printer.serial` (o enum `allowedFilterFields` o aceitava, o `normalizeFilters` e o `report-query-builder` não). Achado pelo teste de contrato do M21.
+- **Decisão do usuário:** implementar o filtro (em vez de remover o campo).
+- **Correção:** back: `specific.printer.serial` no schema e nos tipos, `case "printer.serial"` no `normalizeFilters` (que também passa a incluir o tipo PRINTER, como o modelo faz) e `contains` sem diferenciar maiúsculas no `report-query-builder`. Front: input "Número de Série" no filtro de impressoras, leitura de `printerSerial` na página, filtro no payload da exportação (`buildPayload`) e chip "Série Impressora".
+- **Testes:** `report-types.int.test.ts` (serial "abc" traz só a impressora com `ABC123`; falhava antes e trazia as duas); `report-url-params.test.ts` deixou de excluir o `printerSerial`.
+- **Verificação:** back `tsc`, 500 testes e lint (5 erros, os mesmos de antes); front `tsc`, 404 testes, `build` ok e lint (46, igual). **Não testado ao vivo no navegador.**
+- **Status:** ✅ corrigido (04/11/2026), testado pelo usuário no navegador: funcionou.
 
 ## 🟢 Baixo
 
