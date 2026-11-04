@@ -18,6 +18,14 @@ export interface AccessPointItem {
         id: string;
         patrimony: string | null;
         vlanType?: string | null; // 👈 Adicionado
+        connectedToSwitchId?: string | null;
+        switchPort?: number | null;
+        connectedToSwitch?: {
+            id: string;
+            hostname: string | null;
+            model: string;
+            vendor: string | null;
+        } | null;
         department: {
             id: string;
             name: string;

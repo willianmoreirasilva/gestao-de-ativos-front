@@ -190,6 +190,8 @@ export default function AddAccessPointPage() {
             departmentId: data.departmentId || null,
             locationId: data.unitId || data.locationId || null,
             ipId: targetIpId,
+            connectedToSwitchId: data.switchId || null,
+            switchPort: data.switchId ? Number(data.switchPort) || null : null,
             notes: data.notes || null,
             // Opcional: envia a vlanType resolvida para persistência/auditoria no backend
             vlanType: getApVlanType(data.vendor),

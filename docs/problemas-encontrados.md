@@ -521,6 +521,19 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Fica de fora:** acima de 1000 departamentos ou localidades o problema volta. O caminho definitivo é um combobox com busca no servidor, ou um endpoint de opções sem paginação.
 - **Esforço:** P
 
+### M24. Switch e AP ligados a um switch: a ligação não aparece (e, no cadastro, nem é gravada)
+- **Descoberto em:** teste do M21. O toast dizia "salvo", mas a ligação não aparecia, só para switch e AP (computador, telefone, impressora e câmera funcionavam).
+- **Causa (confirmada pelo banco e por teste de integração, não só pelo status):** eram **dois defeitos**, nenhum é regressão desta revisão (o `git log -S` mostra que os schemas de resposta nunca tiveram o campo; vem de `a96befc`, "switch/AP como recurso próprio", e de `14c5ed9`, que pôs o campo no schema de criação do AP sem nunca gravá-lo).
+  1. **Edição (caso 3 do relatório): gravava, mas a ficha não mostrava.** No banco de desenvolvimento, `5c65b037… → b5211253…` (porta 1) estava gravado. `PATCH /api/assets/:id/connectivity` funcionava. Mas `GET /api/switches/:id` e `GET /api/access-points/:id` não devolviam `connectedToSwitchId`, `switchPort` nem `connectedToSwitch`: o schema de resposta (`SwitchResponseSchema`, `AccessPointResponseSchema`) descartava os campos, e a ficha do AP ainda fixava `connectedToSwitchId: null`.
+  2. **Cadastro (caso 1 + 2): nunca gravava.** O formulário de novo switch e o de novo AP tinham o campo de switch/porta, mas o payload da página não o enviava. E o back descartava: `CreateSwitchSchema` não tinha o campo e o `createAccessPoint` aceitava o campo no schema mas não o escrevia no `Asset`.
+- **Correção:**
+  - Back: `CreateSwitchSchema` ganhou `connectedToSwitchId` e `switchPort`; `createSwitch` e `createAccessPoint` gravam a ligação, validando com a nova `validateUplink` (porta sem switch dá 400, switch inexistente 404, porta ocupada ou maior que o limite do switch segue a regra existente); as consultas incluem `connectedToSwitch` e os schemas de resposta devolvem os três campos (`ConnectedSwitchSchema` compartilhado).
+  - Front: as páginas de cadastro de switch e de AP enviam `connectedToSwitchId` e `switchPort`; as fichas mapeiam `connectedToSwitch` para o card.
+- **Teste:** `src/routes/switch-ap-uplink.int.test.ts` (7 casos): cadastra e edita switch e AP ligados a um switch, lê **do banco** que a ligação foi gravada e que o `GET` devolve a ligação; mais porta sem switch (400), switch inexistente (404) e porta ocupada (409). Os 4 primeiros falharam antes da correção.
+- **Verificação:** back `tsc`, 493 testes e lint (5 erros, os mesmos de antes); front `tsc`, 398 testes, `build` e lint (46, igual). **Não testado ao vivo no navegador**: aguarda o seu teste (cadastrar switch e AP com switch; abrir a ficha do `5c65b037…`).
+- **Campos desconhecidos:** o back descarta em silêncio (zod `object` sem `strict`), o que escondeu este defeito. **Não recomendo `.strict()` agora:** o próprio front envia campo que o back não conhece (o cadastro de AP manda `vlanType`), então rejeitar quebraria o cadastro. Fica como item futuro: limpar os payloads do front, depois usar `.strict()` nas rotas de escrita, com teste por rota.
+- **Lição para o M22:** a sonda de auto-ligação e ciclo foi refeita conferindo o banco: `A→A`, `A→B` e `B→A` **foram gravados** (200 e ligação no banco). Ou seja, o M22 está confirmado de verdade.
+
 ### M21. Relatório: o filtro "Switch" é descartado pela página (nome de parâmetro diferente)
 - **Onde:** `src/components/reports/report-container.tsx:200-201` grava `connectedToSwitchId` na URL; `src/app/(painel)/reports-audit/reports/page.tsx:27,119-123` lê `connectedSwitchId`.
 - **Problema:** **[confirmado]** o filtro "Switch" (ativo conectado a um switch) nunca chega à API, para **nenhum** tipo de ativo: a tela recarrega e o resultado volta sem o filtro. Os dois nomes entraram juntos no commit `eff694f`, então nunca funcionou.

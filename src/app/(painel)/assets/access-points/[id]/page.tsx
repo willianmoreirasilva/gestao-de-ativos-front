@@ -59,8 +59,16 @@ export default async function AccessPointDetailsPage({ params }: Props) {
         locationId: rawAsset.location?.id || null,
         ipId: rawAsset.ip?.id || null,
 
-        connectedToSwitchId: null,
-        switchPort: null,
+        connectedToSwitchId: rawAsset.connectedToSwitchId ?? null,
+        switchPort: rawAsset.switchPort ?? null,
+        connectedToSwitch: rawAsset.connectedToSwitch
+            ? {
+                  ...rawAsset.connectedToSwitch,
+                  hostname:
+                      rawAsset.connectedToSwitch.hostname ||
+                      rawAsset.connectedToSwitch.model,
+              }
+            : null,
 
         vlanType: targetVlanType, // 👈 Agora o valor de 'targetVlanType' está sendo lido aqui!
         vlanTag: rawAsset.ip?.network?.vlanTag ?? null,

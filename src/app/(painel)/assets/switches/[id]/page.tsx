@@ -54,6 +54,14 @@ export default async function SwitchDetailsPage({ params }: Props) {
         // Propriedades de porta e switch pai tratadas com fallback
         connectedToSwitchId: rawAsset.connectedToSwitchId || null,
         switchPort: rawAsset.switchPort ? Number(rawAsset.switchPort) : null,
+        connectedToSwitch: rawAsset.connectedToSwitch
+            ? {
+                  ...rawAsset.connectedToSwitch,
+                  hostname:
+                      rawAsset.connectedToSwitch.hostname ||
+                      rawAsset.connectedToSwitch.model,
+              }
+            : null,
 
         // Como é uma página exclusiva de SWITCH, a VLAN é SWITCH_MGMT
         vlanType:

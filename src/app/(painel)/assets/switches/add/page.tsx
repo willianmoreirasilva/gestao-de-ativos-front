@@ -138,6 +138,8 @@ export default function AddSwitchPage() {
             departmentId: data.departmentId || null,
             locationId: data.unitId || data.locationId || null,
             ipId: targetIpId,
+            connectedToSwitchId: data.switchId || null,
+            switchPort: data.switchId ? Number(data.switchPort) || null : null,
             hostname: data.hostname || null,
             model: data.model,
             vendor: data.vendor || null,
