@@ -94,8 +94,8 @@ Vale para os itens de `docs/problemas-encontrados.md` (nos dois repositórios).
 - Dizer com clareza o que **não** foi testado.
 
 **Ordem dos itens que faltam**
-Já concluídos e commitados: M14 (ativos, IPs/redes e relatórios), M12, M4 e M13 (módulos 1 a 6).
-1. **M24, M22 e M23** (ligação de switch/AP, ciclo entre switches e filtro em cascata nos relatórios), nesta ordem. Detalhes em `docs/problemas-encontrados.md`.
+Já concluídos e commitados: M14, M12, M4, M13 (módulos 1 a 6), M21, M22 e M24.
+1. **M23** (filtro em cascata nos relatórios). M24 e M22 estão feitos. Detalhes em `docs/problemas-encontrados.md`.
 2. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports (30 erros no lint do front, 27 corrigíveis; os outros: `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx` e o `any` acima).
 3. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
 

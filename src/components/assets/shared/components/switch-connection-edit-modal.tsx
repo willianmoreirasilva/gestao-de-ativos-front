@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { FieldError } from "@/components/users/field-error";
+import { connectivityErrorField } from "@/lib/connectivity-error";
 import { OptionItem } from "@/types/assets";
 
 const switchConnectionSchema = z
@@ -149,11 +150,9 @@ function SwitchConnectionForm({
                 router.refresh();
                 onClose();
             } else {
-                if (
-                    response.error?.toLowerCase().includes("ocupada") ||
-                    response.error?.toLowerCase().includes("porta")
-                ) {
-                    form.setError("switchPort", {
+                const errorField = connectivityErrorField(response.error);
+                if (errorField) {
+                    form.setError(errorField, {
                         type: "server",
                         message: response.error,
                     });
