@@ -578,6 +578,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Status:** ✅ corrigido (04/11/2026), testado pelo usuário no navegador: funcionou.
 
 ## 🟢 Baixo
+> **`eslint --fix` (05/11/2026):** `pnpm exec eslint --fix src` reordenou imports e exports em 19 arquivos de `components/ui` (só ordem, sem mudança de código), ; o `any` de `computer-specs-form-block.tsx` (parte do M13) virou `PathValue<TFieldValues, Path<TFieldValues>>`. Lint do front: **0 erros**, 16 avisos (`no-unused-vars`), antes 46 problemas. `tsc`, 445 testes e `build` ok. O lint do back continua com 5 erros (`any`), a zerar antes do CI bloqueante.
 
 ### B1. Configurações duplicadas ou erradas ✅ resolvido (05/11/2026)
 > **Resolvido:** `eslint.config.mts` removido (o ESLint usa o `.mjs`, que vem primeiro na busca). `components.json` passou a ter `"config": ""`, o valor do shadcn para Tailwind v4. Removidas do `package.json` as dependências que só o `.mts` usava (`eslint-config-prettier`, `eslint-plugin-react`, `globals`, `typescript-eslint`); uma busca no repositório (fora de `node_modules`) mostrou que nenhum outro arquivo as importava. Verificado: `tsc`, 409 testes, `build` ok e lint igual (46 problemas), antes e depois. **Não testado:** `npx shadcn add` com o `components.json` novo; testar na primeira vez que for preciso adicionar um componente.

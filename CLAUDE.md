@@ -95,11 +95,11 @@ Vale para os itens de `docs/problemas-encontrados.md` (nos dois repositórios).
 - Dizer com clareza o que **não** foi testado.
 
 **Ordem dos itens que faltam**
-Já concluídos e commitados: M14, M12, M4, M13 (módulos 1 a 6), M16, M21, M22, M23, M24 e M25.
+Já concluídos e commitados: M14, M12, M4, M13 (módulos 1 a 6), M16, M21, M22, M23, M24, M25 e os itens 🟢 (B1 a B6, A7 resolvido).
 1. **M16** (IP da auditoria de login/logout por `request.ip`): concluído e commitado.
-2. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports (30 erros no lint do front, 27 corrigíveis; os outros: `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx` e o `any` de `computer-specs-form-block.tsx:343`).
+2. **`eslint --fix`** (feito, falta o commit): o lint do front está com 0 erros e 16 avisos de variável sem uso (`no-unused-vars`). O lint do back segue com 5 erros (`any`); zerar antes do passo 4.
 3. **Campos desconhecidos (`.strict()`):** o back descarta em silêncio o que o schema não conhece. Antes, limpar os payloads do front (o cadastro de AP manda `vlanType`); depois `.strict()` nas rotas de escrita, com teste por rota. Ver o M24.
-4. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
+4. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`), depois de zerar os 5 erros do back.
 
 **Pendências fora dessa ordem**
 - Produção: banco novo recebe só `prisma migrate deploy`; `TRUST_PROXY=true`, `HOST=127.0.0.1` e `CORS_ORIGINS` com o endereço HTTPS do proxy.
