@@ -22,7 +22,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="pt-br" className={inter.variable} suppressHydrationWarning>
+        <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
             <head />
             {/* Extensões do navegador (ex.: ColorZilla) injetam atributos no body */}
             <body className="antialiased" suppressHydrationWarning>

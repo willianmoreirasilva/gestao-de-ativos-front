@@ -7,7 +7,9 @@ import { use, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { authClient } from "@/lib/auth-client";
+import { loginErrorMessage } from "@/lib/auth-errors";
 
 type Props = {
     searchParams: Promise<{ convite?: string; email?: string }>;
@@ -46,9 +48,7 @@ export default function LoginPage({ searchParams }: Props) {
                 },
                 onError: (ctx) => {
                     setIsPending(false);
-                    setError(
-                        ctx.error.message || "E-mail ou senha incorretos.",
-                    );
+                    setError(loginErrorMessage(ctx.error));
                 },
             },
         );
@@ -97,9 +97,8 @@ export default function LoginPage({ searchParams }: Props) {
                     </div>
                     <div className="space-y-1">
                         <Label htmlFor="password">Senha</Label>
-                        <Input
+                        <PasswordInput
                             id="password"
-                            type="password"
                             placeholder="••••••••"
                             required
                             disabled={isPending}
@@ -109,7 +108,10 @@ export default function LoginPage({ searchParams }: Props) {
                     </div>
 
                     {error && (
-                        <div className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400 text-center">
+                        <div
+                            role="alert"
+                            className="rounded-lg bg-red-50 p-3 text-xs font-medium text-red-600 dark:bg-red-950/30 dark:text-red-400 text-center"
+                        >
                             {error}
                         </div>
                     )}

@@ -608,7 +608,11 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** migrar aos poucos para os tokens e `cn()`.
 - **Esforço:** M
 
-### B4. Acessibilidade
+### B4. Acessibilidade ✅ corrigido (05/11/2026)
+> **Resolvido:** `login/page.tsx`: a mensagem de erro ganhou `role="alert"`. `layout.tsx`: `lang="pt-BR"`. `audit-log-filters.tsx`: `aria-label` nos dois `select` ("Filtrar por ação" e "Filtrar por entidade") e também nos controles que o item não listava e que estavam sem nome acessível: a busca ("Pesquisar"), o botão só com ícone ("Limpar pesquisa") e os dois campos de data ("Data inicial" e "Data final"). Nenhuma mudança visual.
+> **Complemento (pedido do usuário, 05/11/2026):** (1) o login mostrava o texto cru do Better Auth ("Invalid email or password"); `src/lib/auth-errors.ts` (`loginErrorMessage`) troca por "E-mail ou senha incorretos." (códigos `INVALID_EMAIL_OR_PASSWORD`, `INVALID_PASSWORD`, `INVALID_EMAIL`, `USER_NOT_FOUND` e status 401), mantém as mensagens que o back já devolve em português (429, limite de tentativas; 403, conta desativada), mostra "Não foi possível conectar ao servidor..." sem resposta ou em 5xx e nunca devolve inglês desconhecido. (2) novo `components/ui/password-input.tsx` (campo de senha com botão olho, `aria-label` "Mostrar senha"/"Ocultar senha" e `aria-pressed`), usado só no login. Testes: `auth-errors.test.ts` (4) e dois casos em `login-page.test.tsx`. Conferido no navegador (build de produção): o botão alterna `password`/`text`. **Não testado:** o login com senha errada contra o back de verdade (o formato `code`/`status` do erro vem do cliente do Better Auth; os testes usam esse formato). O mesmo botão pode ser aplicado depois em `accept-invite` e `change-password-form`, que ainda usam `type="password"` puro.
+>
+> **Testes (novos):** `audit-log-filters.test.tsx` (todos os controles localizáveis por rótulo) e `login-page.test.tsx` (login com erro mostra um `role="alert"` com a mensagem); os dois falhavam antes. **Verificação:** `tsc`, 411 testes, `build` do zero e lint igual (46). **Não testado:** leitor de tela de verdade.
 - **Problemas:**
   - Os `<select>` dos filtros da auditoria não têm rótulo (`src/components/audit-logs/audit-log-filters.tsx:122` e `:139`).
   - A mensagem de erro do login não usa `role="alert"` (`src/app/login/page.tsx`).
