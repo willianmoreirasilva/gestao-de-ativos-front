@@ -579,7 +579,8 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 
 ## 🟢 Baixo
 
-### B1. Configurações duplicadas ou erradas
+### B1. Configurações duplicadas ou erradas ✅ resolvido (05/11/2026)
+> **Resolvido:** `eslint.config.mts` removido (o ESLint usa o `.mjs`, que vem primeiro na busca). `components.json` passou a ter `"config": ""`, o valor do shadcn para Tailwind v4. Removidas do `package.json` as dependências que só o `.mts` usava (`eslint-config-prettier`, `eslint-plugin-react`, `globals`, `typescript-eslint`); uma busca no repositório (fora de `node_modules`) mostrou que nenhum outro arquivo as importava. Verificado: `tsc`, 409 testes, `build` ok e lint igual (46 problemas), antes e depois. **Não testado:** `npx shadcn add` com o `components.json` novo; testar na primeira vez que for preciso adicionar um componente.
 - **ESLint:** há dois configs, `eslint.config.mjs` (usado) e `eslint.config.mts` (sem efeito, e com regras diferentes).
 - **shadcn:** `components.json:7` aponta para `tailwind.config.js`, que não existe no Tailwind v4.
 - **Esforço:** P
