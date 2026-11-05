@@ -17,6 +17,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { canManageVlan } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 import { FindAvailableIpsResponse, NetworkOption } from "@/types/ip-address";
 
 import { ReserveIpsDialog } from "../dialogs/reserve-ips-dialog";
@@ -220,11 +221,13 @@ export function FindAvailableIpsTab({
                                 return (
                                     <label
                                         key={ip}
-                                        className={`flex items-center gap-2 p-2 rounded border text-xs font-mono transition-colors ${
+                                        className={cn(
+                                            "flex items-center gap-2 p-2 rounded border text-xs font-mono transition-colors",
                                             isChecked
                                                 ? "bg-primary/10 border-primary"
-                                                : "bg-muted/30 hover:bg-muted/60"
-                                        } ${canReserve ? "cursor-pointer" : ""}`}
+                                                : "bg-muted/30 hover:bg-muted/60",
+                                            canReserve ? "cursor-pointer" : "",
+                                        )}
                                     >
                                         {canReserve && (
                                             <Checkbox

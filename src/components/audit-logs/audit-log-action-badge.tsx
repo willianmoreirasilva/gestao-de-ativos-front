@@ -1,5 +1,7 @@
 import React from "react";
 
+import { cn } from "@/lib/utils";
+
 interface AuditLogActionBadgeProps {
     action: string;
 }
@@ -50,7 +52,10 @@ export function AuditLogActionBadge({ action }: AuditLogActionBadgeProps) {
 
     return (
         <span
-            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors ${variantClasses}`}
+            className={cn(
+                "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border transition-colors",
+                variantClasses,
+            )}
         >
             {label}
         </span>

@@ -2,6 +2,7 @@
 
 import { Wifi } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { NetworkUsageMetric } from "@/types/ip-address";
 
 type IpNetworkUsageProps = {
@@ -67,13 +68,14 @@ export function IpNetworkUsage({ networksUsage }: IpNetworkUsageProps) {
                                 {/* Barra Multicor de Uso */}
                                 <div className="w-full bg-muted/60 h-2.5 rounded-full overflow-hidden flex">
                                     <div
-                                        className={`h-full transition-all duration-300 ${
+                                        className={cn(
+                                            "h-full transition-all duration-300",
                                             pct > 85
                                                 ? "bg-destructive"
                                                 : pct > 65
                                                   ? "bg-amber-500"
-                                                  : "bg-primary"
-                                        }`}
+                                                  : "bg-primary",
+                                        )}
                                         style={{ width: `${pct}%` }}
                                     />
                                 </div>

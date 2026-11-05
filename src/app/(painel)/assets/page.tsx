@@ -22,6 +22,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { fetchAssetDashboardData } from "@/services/asset-dashboard";
 
 const ASSET_TYPE_CONFIG: Record<
@@ -208,7 +209,10 @@ export default async function AssetsDashboardPage() {
                                     <CardHeader className="p-4 pb-3 flex flex-row items-start justify-between space-y-0">
                                         <div className="flex items-center gap-4">
                                             <div
-                                                className={`p-3 rounded-xl border transition-all duration-200 ${config.color}`}
+                                                className={cn(
+                                                    "p-3 rounded-xl border transition-all duration-200",
+                                                    config.color,
+                                                )}
                                             >
                                                 <Icon className="h-6 w-6" />
                                             </div>

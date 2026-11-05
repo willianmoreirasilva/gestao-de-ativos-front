@@ -1,5 +1,7 @@
 import { Building2, Laptop, MapPin, Network } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 type DashboardKpiCardsProps = {
     totalAssets: number;
     totalNetworks: number;
@@ -62,7 +64,12 @@ export function DashboardKpiCards({
                             </p>
                         </div>
                         <div
-                            className={`p-3 rounded-xl ${kpi.bg} ${kpi.color} shrink-0`}
+                            className={cn(
+                                "p-3 rounded-xl",
+                                kpi.bg,
+                                kpi.color,
+                                "shrink-0",
+                            )}
                         >
                             <Icon className="h-5 w-5" />
                         </div>

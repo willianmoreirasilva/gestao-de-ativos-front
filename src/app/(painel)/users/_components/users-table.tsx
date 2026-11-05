@@ -15,6 +15,7 @@ import {
     ROLE_BADGE_VARIANT,
     ROLE_LABELS,
 } from "@/lib/user-roles";
+import { cn } from "@/lib/utils";
 import type { UserRole } from "@/schemas/user";
 import type { UserListItem } from "@/types/user";
 
@@ -75,9 +76,10 @@ export function UsersTable({
                             return (
                                 <TableRow
                                     key={user.id}
-                                    className={`transition-colors hover:bg-muted/40 ${
-                                        user.isActive ? "" : "opacity-70"
-                                    }`}
+                                    className={cn(
+                                        "transition-colors hover:bg-muted/40",
+                                        user.isActive ? "" : "opacity-70",
+                                    )}
                                 >
                                     <TableCell className="py-3">
                                         <div className="flex items-center gap-3 min-w-0">
@@ -91,11 +93,12 @@ export function UsersTable({
                                             <div className="min-w-0">
                                                 <div className="flex items-center gap-2">
                                                     <span
-                                                        className={`truncate font-medium ${
+                                                        className={cn(
+                                                            "truncate font-medium",
                                                             user.name
                                                                 ? "text-foreground"
-                                                                : "text-muted-foreground italic"
-                                                        }`}
+                                                                : "text-muted-foreground italic",
+                                                        )}
                                                     >
                                                         {user.name ||
                                                             "Sem nome"}

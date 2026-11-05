@@ -12,6 +12,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { OptionItem } from "@/types/assets";
 
 import { SwitchConnectionEditModal } from "./components/switch-connection-edit-modal";
@@ -172,7 +173,10 @@ export function AssetConnectivityCard({
                                 />
                                 <Badge
                                     variant="outline"
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-md ${currentVlan.className}`}
+                                    className={cn(
+                                        "text-xs font-medium px-2.5 py-0.5 rounded-md",
+                                        currentVlan.className,
+                                    )}
                                 >
                                     {currentVlan.label}
                                 </Badge>

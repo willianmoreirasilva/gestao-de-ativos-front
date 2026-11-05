@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import { useCan } from "@/components/permission-provider";
 import type { Action, Resource } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 
 type QuickAction = {
     title: string;
@@ -72,7 +73,11 @@ export function DashboardQuickActions() {
                         >
                             <div className="flex items-start justify-between">
                                 <div
-                                    className={`p-2.5 rounded-lg ${act.bg} ${act.color}`}
+                                    className={cn(
+                                        "p-2.5 rounded-lg",
+                                        act.bg,
+                                        act.color,
+                                    )}
                                 >
                                     <Icon className="h-5 w-5" />
                                 </div>

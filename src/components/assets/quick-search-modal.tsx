@@ -35,6 +35,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { assetResource } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 
 const ASSET_ROUTE_MAP: Record<string, string> = {
     COMPUTER: "/assets/computers",
@@ -181,7 +182,10 @@ function QuickSearchBody({ onClose }: { onClose: () => void }) {
                                 >
                                     <div className="flex items-center gap-3.5 min-w-0">
                                         <div
-                                            className={`p-2.5 rounded-xl border shrink-0 ${typeConfig.color}`}
+                                            className={cn(
+                                                "p-2.5 rounded-xl border shrink-0",
+                                                typeConfig.color,
+                                            )}
                                         >
                                             <IconComponent className="h-5 w-5" />
                                         </div>

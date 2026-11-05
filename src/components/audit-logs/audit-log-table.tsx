@@ -4,6 +4,7 @@ import React from "react";
 
 import { UserAvatar } from "@/components/avatar/user-avatar";
 import { getFormattedEntity } from "@/lib/audit-utils";
+import { cn } from "@/lib/utils";
 import type { AuditLog } from "@/types/audit";
 
 import { AuditLogActionBadge } from "./audit-log-action-badge";
@@ -62,9 +63,10 @@ export function AuditLogTable({
                                 <tr
                                     key={log.id}
                                     onClick={() => onSelectLog?.(log)}
-                                    className={`hover:bg-muted/50 transition-colors ${
-                                        onSelectLog ? "cursor-pointer" : ""
-                                    }`}
+                                    className={cn(
+                                        "hover:bg-muted/50 transition-colors",
+                                        onSelectLog ? "cursor-pointer" : "",
+                                    )}
                                 >
                                     <td className="py-3.5 px-4">
                                         <div className="flex items-center gap-2.5">

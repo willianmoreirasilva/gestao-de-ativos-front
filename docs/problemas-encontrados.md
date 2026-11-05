@@ -597,7 +597,10 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** usar `Inter({ variable: "--font-sans" })` e um único `--font-sans` no `@theme inline`.
 - **Esforço:** P
 
-### B3. Cores fixas em vez dos tokens do tema
+### B3. Cores fixas em vez dos tokens do tema (parte do `cn()` ✅ feita em 05/11/2026; cores são item futuro)
+> **Parte 1, `cn()` (feita):** as 37 ocorrências de `className={`...`}` com template string (24 arquivos, não 26 como estava) passaram a usar `cn()`, sem mudar nenhuma cor. Conversão por script, com revisão manual dos dois templates aninhados do `app-sidebar.tsx`. Como o `cn()` usa `twMerge` (que descarta classe conflitante), testei todas as combinações de ramos de cada ocorrência: os valores dinâmicos (`kpi.bg`, `theme.bar`, `vlanConfig`, etc.) não conflitam com as classes fixas. Efeito visível em 3 lugares, onde antes a classe errada vencia pela ordem do CSS e agora vale a que o código quer: (1) botão do usuário no menu lateral recolhido (`w-9` perdia para `w-full`); (2) campo de IP manual com erro (o anel verde `ring-emerald` vencia o `ring-destructive`; agora o anel é vermelho); (3) `font-medium` + `font-semibold` nos filtros (sem diferença, `semibold` já vencia). Verificado: `tsc`, 409 testes, `build` do zero, prettier e lint igual (46). **Não testado ao vivo:** o painel com login; vale olhar o menu recolhido, o IP manual com erro e o formulário de rede em edição.
+>
+> **Parte 2, cores (item futuro, não feito):** hoje há ~2.300 classes de cor da paleta fixa (`zinc`, `red`, `blue`...) contra ~1.000 com tokens, e o modo escuro depende de `dark:` manual. Os tokens atuais não equivalem à escala `zinc` usada (no escuro, `card` é quase `zinc-950` e não há token para `zinc-900`), então trocar direto mudaria a aparência. Abordagem combinada: (1) primeiro criar os tokens que faltam (ex.: o do `zinc-900` no escuro) com **os mesmos valores usados hoje**, para a troca de classes fixas por tokens não alterar a aparência; (2) depois migrar aos poucos, **por módulo, quando cada tela for alterada**. Concentração atual: `assets/shared`, `components/` (menu lateral) e `infra/dashboard`.
 - **Problema:**
   - Há cerca de 629 classes com cor fixa (`bg-zinc-*`, `bg-red-*`, etc.), contra cerca de 270 com os tokens (`bg-card`, `bg-muted`...).
   - O modo escuro fica dependente de `dark:` manual.

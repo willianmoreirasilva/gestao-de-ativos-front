@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
 import { getApVlanType } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { AccessPointItem } from "@/types/access-points";
 
 interface AccessPointRowItemProps {
@@ -104,11 +105,12 @@ export function AccessPointRowItem({ apItem }: AccessPointRowItemProps) {
                         </span>
                         <div className="flex items-center">
                             <span
-                                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                className={cn(
+                                    "text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider",
                                     isRuckus
                                         ? "bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40"
-                                        : "bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40"
-                                }`}
+                                        : "bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40",
+                                )}
                             >
                                 {vlanType}
                             </span>

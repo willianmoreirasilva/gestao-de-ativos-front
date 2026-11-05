@@ -16,6 +16,7 @@ import { useCan, useRole } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { reservationNetworkTypes } from "@/lib/permissions";
+import { cn } from "@/lib/utils";
 import { NetworkOption, OverviewStatsResponse } from "@/types/ip-address";
 
 import { IpNetworkUsage } from "./ip-network-usage";
@@ -93,7 +94,10 @@ export function IpOverviewContainer({
                     className="gap-2 cursor-pointer text-xs self-start sm:self-auto"
                 >
                     <RefreshCw
-                        className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
+                        className={cn(
+                            "h-3.5 w-3.5",
+                            isRefreshing ? "animate-spin" : "",
+                        )}
                     />
                     Atualizar dados
                 </Button>

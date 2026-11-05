@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import { InfraDashboardData } from "@/types/dashboard";
 
 type DashboardNetworkUsageProps = {
@@ -112,13 +113,14 @@ export function DashboardNetworkUsage({
 
                                     <div className="w-full bg-muted/60 h-2 rounded-full overflow-hidden">
                                         <div
-                                            className={`h-full transition-all duration-300 rounded-full ${
+                                            className={cn(
+                                                "h-full transition-all duration-300 rounded-full",
                                                 pct > 85
                                                     ? "bg-destructive"
                                                     : pct > 65
                                                       ? "bg-amber-500"
-                                                      : "bg-primary"
-                                            }`}
+                                                      : "bg-primary",
+                                            )}
                                             style={{ width: `${pct}%` }}
                                         />
                                     </div>

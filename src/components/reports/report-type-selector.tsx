@@ -12,6 +12,7 @@ import {
 import React from "react";
 
 import { useCan } from "@/components/permission-provider";
+import { cn } from "@/lib/utils";
 
 const ASSET_TYPES = [
     { id: "COMPUTER", label: "Computador", icon: Laptop },
@@ -59,18 +60,20 @@ export function ReportTypeSelector({
                             key={type.id}
                             type="button"
                             onClick={() => toggleType(type.id)}
-                            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+                            className={cn(
+                                "flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer",
                                 isSelected
                                     ? "bg-primary/10 text-primary border-primary/30 shadow-xs"
-                                    : "bg-background text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground"
-                            }`}
+                                    : "bg-background text-muted-foreground border-border hover:bg-muted/50 hover:text-foreground",
+                            )}
                         >
                             <div
-                                className={`w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-colors ${
+                                className={cn(
+                                    "w-3.5 h-3.5 rounded-md border flex items-center justify-center transition-colors",
                                     isSelected
                                         ? "bg-primary border-primary text-primary-foreground"
-                                        : "border-muted-foreground/40 bg-background"
-                                }`}
+                                        : "border-muted-foreground/40 bg-background",
+                                )}
                             >
                                 {isSelected && (
                                     <Check className="w-2.5 h-2.5 stroke-[3]" />

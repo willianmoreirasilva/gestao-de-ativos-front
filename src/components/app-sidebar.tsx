@@ -53,6 +53,7 @@ import { sidebarMenuConfig } from "@/config/sidebar-menu";
 import { authClient } from "@/lib/auth-client";
 import { can } from "@/lib/permissions";
 import { ROLE_LABELS } from "@/lib/user-roles";
+import { cn } from "@/lib/utils";
 import type { UserSession } from "@/types/user";
 
 import { QuickSearchModal } from "./assets/quick-search-modal";
@@ -151,11 +152,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
                             <>
                                 <group.icon
                                     size={15}
-                                    className={`shrink-0 transition-transform duration-200 hover:scale-110 ${
+                                    className={cn(
+                                        "shrink-0 transition-transform duration-200 hover:scale-110",
                                         isGroupActive
                                             ? "text-blue-600 dark:text-blue-500"
-                                            : "text-zinc-400"
-                                    }`}
+                                            : "text-zinc-400",
+                                    )}
                                 />
                                 {!isCollapsed && (
                                     <span className="font-sans antialiased">
@@ -172,26 +174,29 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                 onClick={() =>
                                     toast.info(`Mais ${group.title} em breve!`)
                                 }
-                                className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors w-full cursor-pointer ${
+                                className={cn(
+                                    "flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors w-full cursor-pointer",
                                     isCollapsed
                                         ? "justify-center p-2 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                                        : "px-3 py-2 text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200"
-                                }`}
+                                        : "px-3 py-2 text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200",
+                                )}
                             >
                                 {headerContentInner}
                             </button>
                         ) : (
                             <Link
                                 href={groupUrl ?? "/"}
-                                className={`flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors ${
+                                className={cn(
+                                    "flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider outline-none transition-colors",
                                     isCollapsed
                                         ? "justify-center p-2 cursor-pointer w-full text-zinc-500 hover:text-zinc-900"
-                                        : `px-3 py-2 cursor-pointer flex-1 ${
+                                        : cn(
+                                              "px-3 py-2 cursor-pointer flex-1",
                                               isGroupActive
                                                   ? "text-zinc-900 dark:text-zinc-50 font-extrabold"
-                                                  : "text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200"
-                                          }`
-                                }`}
+                                                  : "text-zinc-400 hover:text-zinc-800 dark:text-zinc-500 dark:hover:text-zinc-200",
+                                          ),
+                                )}
                             >
                                 {headerContentInner}
                             </Link>
@@ -217,15 +222,17 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                 className="w-full space-y-1"
                             >
                                 <div
-                                    className={`w-full flex items-center rounded-md transition-colors ${
+                                    className={cn(
+                                        "w-full flex items-center rounded-md transition-colors",
                                         isCollapsed
                                             ? "justify-center py-1"
-                                            : `justify-between ${
+                                            : cn(
+                                                  "justify-between",
                                                   isGroupActive
                                                       ? "bg-zinc-100/70 dark:bg-zinc-800/40"
-                                                      : "hover:bg-zinc-100/50 dark:hover:bg-zinc-800/30"
-                                              }`
-                                    }`}
+                                                      : "hover:bg-zinc-100/50 dark:hover:bg-zinc-800/30",
+                                              ),
+                                    )}
                                 >
                                     {isCollapsed ? (
                                         <Tooltip delayDuration={0}>
@@ -332,21 +339,23 @@ export function AppSidebar({ user }: AppSidebarProps) {
                                                                                 item.url ||
                                                                                 "#"
                                                                             }
-                                                                            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 font-sans antialiased ${
+                                                                            className={cn(
+                                                                                "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 font-sans antialiased",
                                                                                 isActive
                                                                                     ? "bg-blue-600 text-white shadow-md shadow-blue-600/10 hover:bg-blue-700 font-semibold"
-                                                                                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
-                                                                            }`}
+                                                                                    : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100",
+                                                                            )}
                                                                         >
                                                                             <item.icon
                                                                                 size={
                                                                                     18
                                                                                 }
-                                                                                className={`shrink-0 transition-transform duration-200 hover:scale-110 ${
+                                                                                className={cn(
+                                                                                    "shrink-0 transition-transform duration-200 hover:scale-110",
                                                                                     isActive
                                                                                         ? "text-white"
-                                                                                        : "text-zinc-400"
-                                                                                }`}
+                                                                                        : "text-zinc-400",
+                                                                                )}
                                                                             />
                                                                             <span>
                                                                                 {
@@ -374,11 +383,12 @@ export function AppSidebar({ user }: AppSidebarProps) {
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <button
-                                className={`flex w-full items-center rounded-lg transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 outline-none ${
+                                className={cn(
+                                    "flex w-full items-center rounded-lg transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 outline-none",
                                     isCollapsed
                                         ? "justify-center p-0 h-9 w-9"
-                                        : "p-1.5 gap-3 text-left"
-                                }`}
+                                        : "p-1.5 gap-3 text-left",
+                                )}
                             >
                                 <UserAvatar
                                     image={user.image}

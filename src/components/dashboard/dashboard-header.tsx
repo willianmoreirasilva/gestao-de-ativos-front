@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 
+import { cn } from "@/lib/utils";
 import { AuditPeriod } from "@/types/dashboard";
 
 export function DashboardHeader({
@@ -52,11 +53,12 @@ export function DashboardHeader({
                                 key={p}
                                 onClick={() => handlePeriodChange(p)}
                                 disabled={isPending}
-                                className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                                className={cn(
+                                    "px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer",
                                     isActive
                                         ? "bg-background text-foreground shadow-xs font-semibold"
-                                        : "text-muted-foreground hover:text-foreground"
-                                }`}
+                                        : "text-muted-foreground hover:text-foreground",
+                                )}
                             >
                                 {labels[p]}
                             </button>
