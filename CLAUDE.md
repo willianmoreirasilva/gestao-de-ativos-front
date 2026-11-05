@@ -102,5 +102,4 @@ Já concluídos e commitados: M14, M12, M4, M13 (módulos 1 a 6), M16, M21, M22,
 4. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
 
 **Pendências fora dessa ordem**
-- A7: o primeiro `push` foi feito; falta conferir o resultado do CI no GitHub.
 - Produção: banco novo recebe só `prisma migrate deploy`; `TRUST_PROXY=true`, `HOST=127.0.0.1` e `CORS_ORIGINS` com o endereço HTTPS do proxy.

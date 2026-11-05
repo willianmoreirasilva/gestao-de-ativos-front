@@ -194,10 +194,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** atualizar, nesta ordem, `next`, `axios`, `better-auth` (as duas pontas na mesma versão), `fastify` e `@fastify/*`. Rodar o build e testar o login depois de cada atualização.
 - **Esforço:** M
 
-### A7. Sem testes, sem CI e sem scripts de verificação no backend
-> **Em andamento (28/10/2026):**
+### A7. Sem testes, sem CI e sem scripts de verificação no backend ✅ resolvido (05/11/2026)
+> **Resolvido (05/11/2026):** o CI rodou nos dois repositórios e passou (2/2 em cada: push e pull request). No back, o log do GitHub mostra o Postgres 17 saudável, `TEST_DATABASE_URL` apontando para `sysip_test`, 23 arquivos e 508 testes passando, nenhum pulado; os 14 arquivos `*.int.test.ts` rodaram com banco de verdade. Gatilhos: back em push na `main`, `dev` e `find-errors` e PR para `main` e `dev`; front em push na `main` e `find-errors` e PR para `main`. O lint segue como aviso até zerar os erros (ver a ordem no CLAUDE.md).
+>
+> **Histórico (28/10/2026):**
 > - **Back:** scripts `build` (`tsc -p tsconfig.build.json`, sem os testes) e `start` (`node dist/index.js`), já que o back roda como JavaScript compilado. O `tsc` voltou a ficar sem erros: o `createAuditLog` morto de `ip-utils.ts` foi removido e o `headers` do `auth.ts` foi corrigido. O `server.ts` passou a usar `HOST` e `PORT` do `env`. Testado: `node dist/index.js` sobe, escuta em `127.0.0.1` e responde (401 sem login; o login inválido consulta o banco pelo Prisma).
-> - **CI:** `.github/workflows/ci.yml` nos dois repositórios. Bloqueia em `typecheck`, testes e `build`; o `lint` roda como aviso (`continue-on-error`) até o M13 e a limpeza zerarem os erros. Falta a primeira execução no GitHub.
+> - **CI:** `.github/workflows/ci.yml` nos dois repositórios. Bloqueia em `typecheck`, testes e `build`; o `lint` roda como aviso (`continue-on-error`) até o M13 e a limpeza zerarem os erros.
 - **Arquivos:** os dois repositórios
 - **Problema:** não há testes nem CI, e com isso o build quebrado (C4) e os erros de tipo (C5, A3, A4) foram para a branch principal sem ninguém perceber.
 - **Sugestão:**
