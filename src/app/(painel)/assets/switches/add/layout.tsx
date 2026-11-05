@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { RequirePermission } from "@/components/require-permission";
+
+export const metadata: Metadata = { title: "Novo switch" };
 
 // Cadastro de switch: só SUPERADM e ADMIN
 export default function AddSwitchLayout({

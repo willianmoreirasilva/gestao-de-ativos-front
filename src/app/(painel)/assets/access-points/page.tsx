@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AccessPointRowItem } from "@/components/assets/access-points/access-point-row-item";
@@ -19,6 +20,8 @@ import { PageTitle } from "@/components/users/page-title";
 import { can } from "@/lib/permissions";
 import { accessPointService } from "@/services/access-points";
 import { userService } from "@/services/user";
+
+export const metadata: Metadata = { title: "Access Points" };
 
 type PageProps = {
     searchParams: Promise<{

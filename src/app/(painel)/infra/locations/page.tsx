@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { LocationItem } from "@/components/infra/locations/location-item";
@@ -17,6 +18,8 @@ import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
 import { locationService } from "@/services/location";
+
+export const metadata: Metadata = { title: "Localizações / Prédios" };
 
 type Props = {
     searchParams: Promise<{ page?: string; limit?: string; q?: string }>;

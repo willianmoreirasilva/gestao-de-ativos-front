@@ -9,6 +9,7 @@ import {
     ShieldCheck,
     Users,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ReportKpiCards } from "@/components/reports/summary/report-kpi-cards";
@@ -25,6 +26,8 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { getFormattedEntity } from "@/lib/audit-utils";
 import { fetchReportsAuditDashboardData } from "@/services/reports-audit.service";
+
+export const metadata: Metadata = { title: "Relatórios & Auditoria" };
 
 async function ReportsAuditDashboard() {
     const { data, error } = await fetchReportsAuditDashboardData();

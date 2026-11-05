@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { RequirePermission } from "@/components/require-permission";
 import { can } from "@/lib/permissions";
 import { ipAddressService } from "@/services/ip-address";
@@ -6,6 +8,8 @@ import { userService } from "@/services/user";
 import type { NetworkOption } from "@/types/ip-address";
 
 import { IpOverviewContainer } from "./_components/ip-overview-container";
+
+export const metadata: Metadata = { title: "Visão Geral de IPs" };
 
 export const revalidate = 0;
 

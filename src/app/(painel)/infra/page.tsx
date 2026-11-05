@@ -1,8 +1,12 @@
+import type { Metadata } from "next";
+
 import { CapacityChart } from "@/components/infra/dashboard/capactity-chart";
 import { DashboardHeader } from "@/components/infra/dashboard/header";
 import { ModuleShortcuts } from "@/components/infra/dashboard/module-shortcuts";
 import { StatsCards } from "@/components/infra/dashboard/stats-cards";
 import { fetchInfraDashboardData } from "@/services/infra-dashboard";
+
+export const metadata: Metadata = { title: "Infraestrutura & Redes" };
 
 export default async function InfraDashboardPage() {
     const { data, error } = await fetchInfraDashboardData();

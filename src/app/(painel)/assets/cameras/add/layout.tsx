@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { RequirePermission } from "@/components/require-permission";
+
+export const metadata: Metadata = { title: "Nova câmera" };
 
 // Cadastro de câmera: SUPERADM e CAM_OPERATOR
 export default function AddCameraLayout({

@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { AccessDenied } from "@/components/access-denied";
 import { ErrorBox } from "@/components/error-box";
 import { Pagination } from "@/components/pagination";
@@ -10,6 +12,8 @@ import type { UserListItem } from "@/types/user";
 
 import { InviteUserDialog } from "./_components/invite-user-dialog";
 import { UsersTable } from "./_components/users-table";
+
+export const metadata: Metadata = { title: "Usuários do Sistema" };
 
 type Props = {
     searchParams: Promise<{ page?: string; limit?: string; q?: string }>;

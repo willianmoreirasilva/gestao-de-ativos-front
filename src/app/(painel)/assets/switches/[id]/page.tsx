@@ -1,4 +1,5 @@
 import { ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 
 import { AssetTechnicalCard } from "@/components/assets/shared/asset-technical-card";
 import { BackButton } from "@/components/users/back-button";
@@ -7,6 +8,8 @@ import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
 import { switchService } from "@/services/switches";
 import type { AssetItem } from "@/types/assets";
+
+export const metadata: Metadata = { title: "Switch" };
 
 interface Props {
     params: Promise<{ id: string }>;

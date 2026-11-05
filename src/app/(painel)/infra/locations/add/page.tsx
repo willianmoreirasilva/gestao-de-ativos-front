@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
+
 import { LocationForm } from "@/components/infra/locations/location-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+
+export const metadata: Metadata = { title: "Nova localização" };
 
 export default function Page() {
     return (

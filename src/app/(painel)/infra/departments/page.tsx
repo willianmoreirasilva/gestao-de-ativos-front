@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { DepartmentItem } from "@/components/infra/departments/department-item";
@@ -17,6 +18,8 @@ import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
 import { departmentService } from "@/services/department";
+
+export const metadata: Metadata = { title: "Departamentos" };
 
 type Props = {
     // 1. Inclua o parâmetro limit no searchParams

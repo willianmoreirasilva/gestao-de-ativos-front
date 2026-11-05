@@ -1,4 +1,4 @@
-import { apiErrorMessage } from "@/lib/api-error";
+import { apiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { Network } from "@/types/network";
 
@@ -15,6 +15,7 @@ export interface NetworkResponse {
 export interface SingleNetworkResponse {
     data: Network | null;
     error: string | null;
+    status: number | null;
 }
 
 // Filtros aceitos pela listagem principal (🌟 Atualizado com offset e limit)
@@ -81,15 +82,15 @@ export const networkService = {
             return {
                 data: response.data.data || response.data,
                 error: null,
+                status: response.status,
             };
         } catch (error) {
-            console.error(
-                `Erro no service getNetworkById para o ID ${id}:`,
-                error,
-            );
+            // O registro do erro fica com quem chama (loadOrNotFound): 404 e
+            // 400 são esperados e não devem virar log
             return {
                 data: null,
                 error: apiErrorMessage(error, "Rede não encontrada.", "error"),
+                status: getApiErrorStatus(error),
             };
         }
     },

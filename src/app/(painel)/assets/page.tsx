@@ -11,6 +11,7 @@ import {
     Printer,
     Wifi,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { QuickSearchTrigger } from "@/components/assets/quick-search-Trigger";
@@ -24,6 +25,8 @@ import {
 } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { fetchAssetDashboardData } from "@/services/asset-dashboard";
+
+export const metadata: Metadata = { title: "Ativos de TI" };
 
 const ASSET_TYPE_CONFIG: Record<
     string,

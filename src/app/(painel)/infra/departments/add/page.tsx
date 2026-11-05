@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
+
 import { DepartmentForm } from "@/components/infra/departments/department-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+
+export const metadata: Metadata = { title: "Novo departamento" };
 
 export default function NewDepartmentPage() {
     return (

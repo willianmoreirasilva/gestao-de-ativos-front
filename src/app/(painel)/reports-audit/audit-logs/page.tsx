@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { AccessDenied } from "@/components/access-denied";
@@ -5,6 +6,8 @@ import { AuditLogsContainer } from "@/components/audit-logs/audit-log-container"
 import { ErrorBox } from "@/components/error-box";
 import { RequirePermission } from "@/components/require-permission";
 import { fetchAuditLogs } from "@/services/audit.service";
+
+export const metadata: Metadata = { title: "Logs de Operações" };
 
 interface AuditLogsPageProps {
     searchParams: Promise<{

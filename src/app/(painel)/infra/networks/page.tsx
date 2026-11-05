@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { NetworkFilters } from "@/components/infra/networks/network-filters";
@@ -20,6 +21,8 @@ import { can } from "@/lib/permissions";
 import { networkService } from "@/services/network";
 import { userService } from "@/services/user";
 import type { Network } from "@/types/network";
+
+export const metadata: Metadata = { title: "Redes e Subredes" };
 
 type PageProps = {
     searchParams: Promise<{

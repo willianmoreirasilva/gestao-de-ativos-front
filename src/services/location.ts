@@ -1,3 +1,4 @@
+import { getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { Location } from "@/types/location";
 
@@ -47,10 +48,19 @@ export const locationService = {
         try {
             const api = await getServerApi();
             const response = await api.get(`/api/locations/${id}`);
-            return { error: null, data: response.data.data as Location };
+            return {
+                error: null,
+                data: response.data.data as Location,
+                status: response.status,
+            };
         } catch (error) {
-            console.error("Erro ao buscar local:", error);
-            return { error: "Erro ao buscar local", data: null };
+            // O registro do erro fica com quem chama (loadOrNotFound): 404 e
+            // 400 são esperados e não devem virar log
+            return {
+                error: "Erro ao buscar local",
+                data: null,
+                status: getApiErrorStatus(error),
+            };
         }
     },
 };

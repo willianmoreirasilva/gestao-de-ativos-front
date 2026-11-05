@@ -1,4 +1,8 @@
+import type { Metadata } from "next";
+
 import { RequirePermission } from "@/components/require-permission";
+
+export const metadata: Metadata = { title: "Novo Access Point" };
 
 // Cadastro de AP: só SUPERADM e ADMIN
 export default function AddAccessPointLayout({

@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import { ReportContainer } from "@/components/reports/report-container";
 import { RequirePermission } from "@/components/require-permission";
 import { BackButton } from "@/components/users/back-button";
@@ -13,6 +15,8 @@ import { switchService } from "@/services/switches";
 import { userService } from "@/services/user";
 import type { SingleFilter } from "@/types/report";
 import { ReportOptions } from "@/types/report-options";
+
+export const metadata: Metadata = { title: "Construtor de Relatórios" };
 
 interface Props {
     searchParams: Promise<{

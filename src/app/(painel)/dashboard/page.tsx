@@ -1,9 +1,12 @@
 import { AlertCircle } from "lucide-react";
+import type { Metadata } from "next";
 
 import { DashboardClientView } from "@/components/dashboard/dashboard-client-view";
 import { dashboardService } from "@/services/dashboard-service";
 import { userService } from "@/services/user";
 import { AuditPeriod } from "@/types/dashboard";
+
+export const metadata: Metadata = { title: "Dashboard" };
 
 export const revalidate = 0;
 

@@ -7,7 +7,10 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
-    title: "NetManager",
+    title: {
+        default: "NetManager",
+        template: "%s · NetManager",
+    },
 };
 
 // Configura a fonte Inter

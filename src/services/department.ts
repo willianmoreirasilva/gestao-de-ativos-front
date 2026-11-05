@@ -1,3 +1,4 @@
+import { getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { Department } from "@/types/department";
 
@@ -62,6 +63,7 @@ export const departmentService = {
             return {
                 data: (response.data.data ?? response.data) as Department,
                 error: null,
+                status: response.status,
             };
         } catch (error: unknown) {
             const apiError = error as {
@@ -76,6 +78,7 @@ export const departmentService = {
             return {
                 data: null,
                 error: errorMessage,
+                status: getApiErrorStatus(error),
             };
         }
     },

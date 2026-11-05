@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { CameraRowItem } from "@/components/assets/cameras/camera-row-item";
@@ -19,6 +20,8 @@ import { PageTitle } from "@/components/users/page-title";
 import { can } from "@/lib/permissions";
 import { getAssets } from "@/services/assets";
 import { userService } from "@/services/user";
+
+export const metadata: Metadata = { title: "Câmeras CFTV" };
 
 type PageProps = {
     searchParams: Promise<{
