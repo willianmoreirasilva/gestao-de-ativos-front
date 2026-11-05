@@ -33,7 +33,7 @@ src/
 ├── server.ts         # listen em 0.0.0.0:PORT (padrão 3005)
 ├── config/env.ts     # schema zod de env (PORT, HOST, CORS_ORIGINS) — sem uso
 ├── plugins/          # cors.ts, swagger.ts, apiReference.ts, errorHandler.ts
-├── middlewares/auth.middleares.ts   # requireAuth, requireAdmin, requireSuperAdmin
+├── middlewares/auth.middlewares.ts   # requireAuth, requireAdmin, requireSuperAdmin
 ├── routes/           # um arquivo por domínio; index.ts registra tudo sob /api
 ├── controllers/      # leem req, chamam services e formatam a resposta
 ├── services/         # regras de negócio e Prisma

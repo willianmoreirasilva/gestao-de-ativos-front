@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect,useState } from "react";
+import { useEffect, useState } from "react";
 
-import { getAvailableIpsAction } from "@/actions/networks";
+import { getAvailableIpsByTypeAction } from "@/actions/networks";
 
 interface AvailableIp {
     id: string;
@@ -16,7 +16,11 @@ interface NetworkGroup {
     availableIps: AvailableIp[];
 }
 
-export function useAvailableIps(type: string, limit: number = 5, enabled: boolean = false) {
+export function useAvailableIps(
+    type: string,
+    limit: number = 5,
+    enabled: boolean = false,
+) {
     const [networks, setNetworks] = useState<NetworkGroup[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -27,9 +31,9 @@ export function useAvailableIps(type: string, limit: number = 5, enabled: boolea
         async function fetchIps() {
             setIsLoading(true);
             setError(null);
-            
-            const result = await getAvailableIpsAction(type, limit);
-            
+
+            const result = await getAvailableIpsByTypeAction(type, limit);
+
             if (result.error) {
                 setError(result.error);
                 setNetworks([]);

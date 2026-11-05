@@ -63,7 +63,7 @@ flowchart LR
    - Os Client Components chamam Server Actions (`src/actions/*`, com `"use server"`).
    - Elas validam com zod (`src/schemas/*`), chamam a API pelo mesmo `getServerApi()` e fazem `revalidatePath(...)`.
 5. **No back:**
-   - Cada rota declara `preHandler: [requireAuth, ...]` (`back:src/middlewares/auth.middleares.ts`).
+   - Cada rota declara `preHandler: [requireAuth, ...]` (`back:src/middlewares/auth.middlewares.ts`).
    - `requireAuth` resolve a sessão com `auth.api.getSession`.
    - `requireAdmin` e `requireSuperAdmin` leem o `role` no banco, porque a sessão do Better Auth não traz o papel.
 6. **Resposta:** o padrão é `{ data, error }` (`src/types/api.ts`). As listagens trazem `meta: { total, page, limit, totalPages }`.

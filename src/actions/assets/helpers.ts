@@ -49,12 +49,9 @@ export async function revalidateAssetPaths(
         revalidatePath(`/assets/${typePath}`);
     }
 
-    // 3. Se informou o ID do ativo
-    if (assetId) {
-        revalidatePath(`/assets/${assetId}`);
-        // Se também tiver o tipo, revalida a página detalhada da categoria
-        if (typePath) {
-            revalidatePath(`/assets/${typePath}/${assetId}`);
-        }
+    // 3. Se informou o tipo e o ID, revalida a página de detalhe do ativo
+    // (não existe /assets/[id]: o detalhe é sempre /assets/<tipo>/<id>)
+    if (assetId && typePath) {
+        revalidatePath(`/assets/${typePath}/${assetId}`);
     }
 }

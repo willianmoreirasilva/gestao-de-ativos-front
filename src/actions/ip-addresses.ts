@@ -10,8 +10,8 @@ import { ipAddressService } from "@/services/ip-address";
 function revalidateIpPaths(networkId?: string) {
     revalidatePath("/dashboard/overview");
     revalidatePath("/infra/networks");
-    if (networkId) revalidatePath(`/infra/networks/${networkId}`);
-    revalidatePath("/infra/ip-addresses");
+    // Não existe tela de detalhe da rede nem de IPs fora do painel de visão geral
+    if (networkId) revalidatePath(`/infra/networks/edit/${networkId}`);
 }
 
 /* ==========================================================================
@@ -88,10 +88,7 @@ export async function updateIpReservationAction(
 /**
  * 9. PATCH /api/ip-addresses/{id}/cancel-reservation
  */
-export async function cancelIpReservationAction(
-    id: string,
-    networkId?: string,
-) {
+export async function cancelIpReservationAction(id: string) {
     try {
         const api = await getServerApi();
         const response = await api.delete(`/api/ip-addresses/reserve/${id}`, {
@@ -110,13 +107,9 @@ export async function cancelIpReservationAction(
             };
         }
 
-        // Revalidações no Next.js utilizando networkId para purgar os caches certos
+        // Revalida o painel que lista as reservas
         try {
             revalidatePath("/dashboard/overview");
-            revalidatePath("/dashboard/ip-addresses");
-            if (networkId) {
-                revalidatePath(`/dashboard/ip-addresses/${networkId}`);
-            }
         } catch (revalidateError) {
             console.warn(
                 "[ACTION] Erro ao revalidar caminhos no Next.js:",

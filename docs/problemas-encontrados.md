@@ -60,7 +60,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Esforço:** P
 
 ### C2. Usuário desativado consegue entrar de novo ✅ resolvido
-- **Arquivos:** `back:src/lib/auth.ts:30-145` (hooks) e `back:src/middlewares/auth.middleares.ts:20`
+- **Arquivos:** `back:src/lib/auth.ts:30-145` (hooks) e `back:src/middlewares/auth.middlewares.ts:20`
 - **Problema:** a desativação marca `isActive=false` e apaga as sessões (`back:src/services/user.service.ts:330-339`). Porém nem o login do Better Auth nem o `requireAuth` verificam `isActive`. **[leitura]**
 - **Por que importa:** a pessoa desativada faz login de novo com a mesma senha e recupera todo o acesso. Na prática, a desativação não bloqueia nada.
 - **Sugestão:**
@@ -633,7 +633,13 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **Sugestão:** colocar `title` por página (template `"%s · NetManager"`) e um `error.tsx` no grupo `(painel)`.
 - **Esforço:** P
 
-### B6. Detalhes menores
+### B6. Detalhes menores ✅ corrigido (05/11/2026)
+> **Resolvido (front):** (1) `server-api.ts` não envia mais `Authorization: Bearer` (o back não usa o plugin bearer; só o `Cookie` é repassado; teste `server-api.test.ts`). (2) `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx` (aspas viraram `&quot;`). (3) `use-availableIps.ts` formatado com o Prettier. (4) `revalidatePath` de rotas que não existem: `/infra/ip-addresses`, `/dashboard/ip-addresses` (e com ID) saíram, `/infra/networks/<id>` virou `/infra/networks/edit/<id>`, e em `actions/assets/helpers.ts` saiu `/assets/<id>` (o detalhe é sempre `/assets/<tipo>/<id>`); `cancelIpReservationAction` perdeu o parâmetro `networkId`, que só servia para isso. Trava nova: `actions/revalidate-paths.test.ts` falha se algum `revalidatePath` apontar para rota inexistente. (5) As duas `getAvailableIpsAction` **não eram cópias** (uma pagina por sub-rede, em `ip-addresses.ts`; a outra busca por tipo de rede, em `networks.ts`): a segunda virou `getAvailableIpsByTypeAction`. (6) `README.md` trocado pelo do projeto. O `eslint --fix` dos arquivos tocados também zerou os erros de ordem de imports neles (lint do front: 46 para 44).
+> **Resolvido (back):** `routes/infra-dashoboard.ts` virou `infra-dashboard.ts` e `middlewares/auth.middleares.ts` virou `auth.middlewares.ts` (`git mv`, imports ajustados, `CLAUDE.md` e docs atualizados). O tipo `AuthSession` sem uso já não existia mais. `.env.example` ganhou `FRONTEND_URL`, `SMTP_HOST/PORT/USER/PASS`, `EMAIL_FROM` e `UPLOADS_DIR`, com teste (`env-example.test.ts`) que falha se o código ler uma variável que o exemplo não lista. O `.env` local tinha `PORT:3005` e passou a `PORT=3005` (arquivo fora do git; o valor é o mesmo do padrão, então nada muda no comportamento). O back não tem README (só o front tinha o padrão do `create-next-app`).
+> **Verificação:** front `tsc`, 445 testes e lint (44, antes 46); back `tsc`, 509 testes e lint igual (5). **Teste real** (back compilado no banco de testes, front em produção, usuário temporário): dashboard, departamentos, redes, localizações, computadores, switches, usuários, perfil e logs de operações responderam 200 com dados e sem erro, já sem o cabeçalho Bearer. **Não testado:** uma tela de detalhe `[id]` com dados reais e o envio de convite por e-mail.
+> **Ficou de fora:** o tratamento de registro inexistente nas páginas `[id]` de ativos (ver o último ponto abaixo).
+
+- **Itens originais do B6:**
 - **Front:**
   - `src/lib/server-api.ts:21` envia o cookie também como `Authorization: Bearer`, mas o back não usa o plugin bearer.
   - `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx:41`.

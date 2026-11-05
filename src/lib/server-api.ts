@@ -20,8 +20,6 @@ export async function getServerApi() {
     if (sessionCookie) {
         api.defaults.headers.common["Cookie"] =
             `${sessionCookie.name}=${sessionCookie.value}`;
-        api.defaults.headers.common["Authorization"] =
-            `Bearer ${sessionCookie.value}`;
     }
 
     return api;

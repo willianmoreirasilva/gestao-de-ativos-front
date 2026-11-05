@@ -129,7 +129,12 @@ export async function deleteNetworkAction(id: string) {
     }
 }
 
-export async function getAvailableIpsAction(type: string, limit: number = 5) {
+// Por tipo de rede (usado pelo hook useAvailableIps); a paginada por sub-rede
+// é getAvailableIpsAction, em actions/ip-addresses.ts
+export async function getAvailableIpsByTypeAction(
+    type: string,
+    limit: number = 5,
+) {
     try {
         const api = await getServerApi();
         const response = await api.get(

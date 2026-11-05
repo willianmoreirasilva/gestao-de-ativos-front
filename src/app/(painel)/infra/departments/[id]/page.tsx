@@ -32,7 +32,7 @@ export default async function EditDepartmentPage({ params }: Props) {
                 <p className="text-sm text-muted-foreground pl-10">
                     Alterando as informações de{" "}
                     <span className="font-semibold text-foreground">
-                        "{department.name}"
+                        &quot;{department.name}&quot;
                     </span>
                 </p>
             </div>

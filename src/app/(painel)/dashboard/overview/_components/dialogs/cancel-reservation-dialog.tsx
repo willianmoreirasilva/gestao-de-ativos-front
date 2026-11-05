@@ -34,7 +34,7 @@ export function CancelReservationDialog({
     const handleConfirm = async () => {
         try {
             setLoading(true);
-            const res = await cancelIpReservationAction(ip.id, ip.networkId);
+            const res = await cancelIpReservationAction(ip.id);
 
             if (res?.success) {
                 toast.success(

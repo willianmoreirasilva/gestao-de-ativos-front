@@ -31,7 +31,7 @@ Não existe `.env.example` no front. Só existe esta variável, e ela não é se
 | `CORS_ORIGINS` | não (padrão `http://localhost:3000,http://127.0.0.1:3000`) | Origens do front aceitas pelo CORS e pelo `trustedOrigins` do Better Auth, separadas por vírgula. Cada item é esquema + host + porta, sem barra no final; valor inválido impede a API de subir. Em produção, o endereço HTTPS do proxy | `src/config/env.ts`, `src/plugins/cors.ts`, `src/lib/auth.ts` |
 | `TRUST_PROXY` | não (padrão `false`) | `true` quando a API está atrás do proxy reverso: o `req.ip` (e o rate limit) passa a usar o `X-Forwarded-For` (M16). Só ligue com o proxy como único caminho até a API | `src/config/env.ts`, `src/app.ts` |
 
-O `.env.example` só lista `PORT`, `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` e `ENABLE_API_DOCS` (`false`), `CREDENTIALS_ENCRYPTION_KEY` e `TEST_DATABASE_URL` (vazias). Faltam `FRONTEND_URL`, `SMTP_*`, `EMAIL_FROM` e `UPLOADS_DIR` (B6).
+O `.env.example` do back lista todas as variáveis que o código lê (`FRONTEND_URL`, `SMTP_*`, `EMAIL_FROM` e `UPLOADS_DIR` entraram no B6). Um teste (`src/config/env-example.test.ts`) falha se alguma variável nova ficar de fora.
 
 O `tsx --watch` **não recarrega** o `.env`. Depois de alterá-lo, reinicie o `pnpm dev`.
 
