@@ -585,7 +585,9 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **shadcn:** `components.json:7` aponta para `tailwind.config.js`, que não existe no Tailwind v4.
 - **Esforço:** P
 
-### B2. Tokens de fonte quebrados no tema
+### B2. Tokens de fonte quebrados no tema ✅ corrigido (05/11/2026)
+> **Resolvido:** **[confirmado no CSS compilado]** `.font-sans`, `.font-heading` e `.font-mono` apontavam para `--font-geist-*`, que não existem; o texto só saía em Inter por herança do `className` do `body`, e os 135 usos de `font-mono` (IPs, MACs, códigos) saíam em Inter, não em monoespaçada. Correção: `layout.tsx` usa `Inter({ variable: "--font-inter" })` e aplica `inter.variable` no `<html>` (no `body` a variável não chegaria à regra `html { font-sans }`); `globals.css` perdeu o `:root` e o `@theme` que se referenciava, e o `@theme inline` ficou com `--font-sans: var(--font-inter), system-ui, ...`, `--font-heading: var(--font-sans)` e `--color-destructive-foreground` (a classe `text-destructive-foreground`, usada em `button` e `badge`, passa a ser gerada). `--font-mono` saiu do tema, então vale a pilha monoespaçada padrão do Tailwind. Diferença para a sugestão: a variável se chama `--font-inter` e não `--font-sans`, porque o token do Tailwind não pode ter o mesmo nome da variável que ele lê.
+> **Verificação:** `tsc`, 409 testes, `build` do zero (`rm -rf .next`; o cache do Turbopack deixava o CSS antigo) e lint igual (46). No navegador (build de produção, `/login`): `html`, `body` e títulos em Inter (fonte carregada) e `.font-mono` em `ui-monospace, ...`. **Testado pelo usuário no painel.** **Efeito visível:** IPs, MACs e códigos passam a aparecer em fonte monoespaçada nas telas que usam `font-mono`. **Não testado:** as telas internas do painel (exigem login).
 - **Arquivo:** `src/app/globals.css`
 - **Problema:**
   - A linha 15 define `--font-sans` como `var(--font-sans)`, ou seja, referência a si mesmo.

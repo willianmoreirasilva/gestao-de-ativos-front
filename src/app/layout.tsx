@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 const inter = Inter({
     subsets: ["latin"],
     display: "swap",
+    variable: "--font-inter",
 });
 export default function RootLayout({
     children,
@@ -21,13 +22,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="pt-br" suppressHydrationWarning>
+        <html lang="pt-br" className={inter.variable} suppressHydrationWarning>
             <head />
             {/* Extensões do navegador (ex.: ColorZilla) injetam atributos no body */}
-            <body
-                className={`${inter.className} antialiased`}
-                suppressHydrationWarning
-            >
+            <body className="antialiased" suppressHydrationWarning>
                 <ThemeProvider
                     attribute="class"
                     defaultTheme="system"
