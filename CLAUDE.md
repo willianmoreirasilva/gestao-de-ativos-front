@@ -74,6 +74,7 @@ A documentação completa está em `docs/` (índice: `docs/README.md`). Problema
   - Não apague `../sysip-backend-2.0/uploads/`: são fotos reais.
   - O `tsx --watch` do back não recarrega o `.env`.
 - **Commits:** em pt-BR. Não faça commit sem pedido do usuário.
+- **Fluxo de branches:** direto `find-errors` → `main`. O CI (`.github/workflows/ci.yml`) roda em push na `main` e `find-errors` e em pull request para `main`.
 
 ## Como trabalhar nas correções
 
@@ -94,11 +95,12 @@ Vale para os itens de `docs/problemas-encontrados.md` (nos dois repositórios).
 - Dizer com clareza o que **não** foi testado.
 
 **Ordem dos itens que faltam**
-Já concluídos e commitados: M14, M12, M4, M13 (módulos 1 a 6), M21, M22, M23, M24 e M25.
-1. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports (30 erros no lint do front, 27 corrigíveis; os outros: `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx` e o `any` acima).
-2. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
+Já concluídos e commitados: M14, M12, M4, M13 (módulos 1 a 6), M16, M21, M22, M23, M24 e M25.
+1. **M16** (IP da auditoria de login/logout por `request.ip`): concluído e commitado.
+2. **Itens 🟢** (B1 a B6) e `eslint --fix` para a ordem dos imports (30 erros no lint do front, 27 corrigíveis; os outros: `react/no-unescaped-entities` em `infra/departments/[id]/page.tsx` e o `any` de `computer-specs-form-block.tsx:343`).
+3. **Campos desconhecidos (`.strict()`):** o back descarta em silêncio o que o schema não conhece. Antes, limpar os payloads do front (o cadastro de AP manda `vlanType`); depois `.strict()` nas rotas de escrita, com teste por rota. Ver o M24.
+4. Por fim, o lint do CI deixa de ser aviso e passa a bloquear (remover o `continue-on-error` dos dois `ci.yml`).
 
 **Pendências fora dessa ordem**
-- A7: o CI ainda não rodou no GitHub (falta o primeiro `push`).
-- M16: os hooks de auditoria de login e logout do back leem o `x-forwarded-for` direto; trocar por `req.ip`.
+- A7: o primeiro `push` foi feito; falta conferir o resultado do CI no GitHub.
 - Produção: banco novo recebe só `prisma migrate deploy`; `TRUST_PROXY=true`, `HOST=127.0.0.1` e `CORS_ORIGINS` com o endereço HTTPS do proxy.
