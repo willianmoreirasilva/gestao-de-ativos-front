@@ -199,7 +199,7 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 >
 > **Histórico (28/10/2026):**
 > - **Back:** scripts `build` (`tsc -p tsconfig.build.json`, sem os testes) e `start` (`node dist/index.js`), já que o back roda como JavaScript compilado. O `tsc` voltou a ficar sem erros: o `createAuditLog` morto de `ip-utils.ts` foi removido e o `headers` do `auth.ts` foi corrigido. O `server.ts` passou a usar `HOST` e `PORT` do `env`. Testado: `node dist/index.js` sobe, escuta em `127.0.0.1` e responde (401 sem login; o login inválido consulta o banco pelo Prisma).
-> - **CI:** `.github/workflows/ci.yml` nos dois repositórios. Bloqueia em `typecheck`, testes e `build`; o `lint` roda como aviso (`continue-on-error`) até o M13 e a limpeza zerarem os erros.
+> - **CI:** `.github/workflows/ci.yml` nos dois repositórios. Bloqueia em `typecheck`, testes, `build` e `lint` (o lint ficou bloqueante em 06/11/2026, com 0 erros nos dois repositórios; avisos não falham o job).
 - **Arquivos:** os dois repositórios
 - **Problema:** não há testes nem CI, e com isso o build quebrado (C4) e os erros de tipo (C5, A3, A4) foram para a branch principal sem ninguém perceber.
 - **Sugestão:**
@@ -587,8 +587,13 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 > **Rotas sem chamador no front:** `PUT /assets/:id/specs/switch` (o front edita switch por `PATCH /switches/:id`), `POST /options/processors` e `POST /options/operating-systems` (o front só lista as opções) e `POST /assets` com `ACCESS_POINT`/`SWITCH`/`OTHER` (o front usa as rotas próprias de switch e AP). Estritas mesmo assim.
 > **Não testado no navegador:** o cadastro e a edição de cada tela (roteiro de teste na resposta da conversa).
 
+### CI bloqueante (06/11/2026)
+- **Feito:** back com 0 erros de lint (3 `any` de `utils/sanitize.ts` viraram `unknown`; 2 atribuições inúteis em `ipaddress.service.ts` removidas) e `continue-on-error` removido do `lint` dos dois `ci.yml`. O lint só falha com erro; os 16 avisos do front (`no-unused-vars`) não bloqueiam.
+- **Verificação:** `tsc`, 549 testes do back e lint com exit 0 nos dois repositórios.
+- **Não testado:** a execução do CI no GitHub com o lint bloqueante (só vale depois do push).
+
 ## 🟢 Baixo
-> **`eslint --fix` (05/11/2026):** `pnpm exec eslint --fix src` reordenou imports e exports em 19 arquivos de `components/ui` (só ordem, sem mudança de código), ; o `any` de `computer-specs-form-block.tsx` (parte do M13) virou `PathValue<TFieldValues, Path<TFieldValues>>`. Lint do front: **0 erros**, 16 avisos (`no-unused-vars`), antes 46 problemas. `tsc`, 445 testes e `build` ok. O lint do back continua com 5 erros (`any`), a zerar antes do CI bloqueante.
+> **`eslint --fix` (05/11/2026):** `pnpm exec eslint --fix src` reordenou imports e exports em 19 arquivos de `components/ui` (só ordem, sem mudança de código), ; o `any` de `computer-specs-form-block.tsx` (parte do M13) virou `PathValue<TFieldValues, Path<TFieldValues>>`. Lint do front: **0 erros**, 16 avisos (`no-unused-vars`), antes 46 problemas. `tsc`, 445 testes e `build` ok. O lint do back foi zerado depois (ver CI bloqueante).
 
 ### B1. Configurações duplicadas ou erradas ✅ resolvido (05/11/2026)
 > **Resolvido:** `eslint.config.mts` removido (o ESLint usa o `.mjs`, que vem primeiro na busca). `components.json` passou a ter `"config": ""`, o valor do shadcn para Tailwind v4. Removidas do `package.json` as dependências que só o `.mts` usava (`eslint-config-prettier`, `eslint-plugin-react`, `globals`, `typescript-eslint`); uma busca no repositório (fora de `node_modules`) mostrou que nenhum outro arquivo as importava. Verificado: `tsc`, 409 testes, `build` ok e lint igual (46 problemas), antes e depois. **Não testado:** `npx shadcn add` com o `components.json` novo; testar na primeira vez que for preciso adicionar um componente.
