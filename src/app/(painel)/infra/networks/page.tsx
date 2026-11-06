@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { NetworkFilters } from "@/components/infra/networks/network-filters";
@@ -16,8 +17,12 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
+import { can } from "@/lib/permissions";
 import { networkService } from "@/services/network";
+import { userService } from "@/services/user";
 import type { Network } from "@/types/network";
+
+export const metadata: Metadata = { title: "Redes e Subredes" };
 
 type PageProps = {
     searchParams: Promise<{
@@ -55,18 +60,26 @@ export default async function NetworksPage({ searchParams }: PageProps) {
     const currentLimitActive = meta?.limit ?? currentLimit;
     const totalPages = Math.ceil(totalRecords / currentLimitActive);
 
+    // Criar rede: SUPERADM e ADMIN
+    const { data: profile } = await userService.getMyProfile();
+    const canCreate = can(profile?.role, "networks", "create");
+    const createLabel = canCreate ? "Cadastrar Nova Rede" : undefined;
+    const createHref = canCreate ? "/infra/networks/add" : undefined;
+
     // Título da página
     const pageTitle = (
         <PageTitle
             title="Infraestrutura de Redes"
             leftSide={<BackButton />}
             rightSide={
-                <Link href="/infra/networks/add">
-                    <Button className="flex items-center gap-2">
-                        <Plus size={16} />
-                        Nova Rede
-                    </Button>
-                </Link>
+                canCreate && (
+                    <Link href="/infra/networks/add">
+                        <Button className="flex items-center gap-2">
+                            <Plus size={16} />
+                            Nova Rede
+                        </Button>
+                    </Link>
+                )
             }
         />
     );
@@ -81,8 +94,8 @@ export default async function NetworksPage({ searchParams }: PageProps) {
                 {pageTitle}
                 <EmptyState
                     message="Nenhuma rede de infraestrutura cadastrada ou base de dados desconectada."
-                    label="Cadastrar Nova Rede"
-                    href="/infra/networks/add"
+                    label={createLabel}
+                    href={createHref}
                 />
             </div>
         );
@@ -129,8 +142,8 @@ export default async function NetworksPage({ searchParams }: PageProps) {
                                 <TableCell colSpan={6} className="py-4">
                                     <EmptyState
                                         message="Nenhuma rede de infraestrutura foi localizada com os filtros aplicados."
-                                        label="Cadastrar Nova Rede"
-                                        href="/infra/networks/add"
+                                        label={createLabel}
+                                        href={createHref}
                                     />
                                 </TableCell>
                             </TableRow>

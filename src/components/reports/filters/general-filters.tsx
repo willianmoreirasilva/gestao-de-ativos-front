@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import React, { useMemo } from "react";
 
 import { ComboboxSearch } from "@/components/ui/combobox-search";
+import { cn } from "@/lib/utils";
 import { ReportOptions } from "@/types/report-options";
 
 import { ReportTypeSelector } from "../report-type-selector";
@@ -23,6 +24,8 @@ interface GeneralFiltersProps {
     onNetworkIdChange: (id: string) => void;
     connectedToSwitchId: string;
     onConnectedToSwitchIdChange: (id: string) => void;
+    includeCascade: boolean;
+    onIncludeCascadeChange: (value: boolean) => void;
     options: ReportOptions;
 }
 
@@ -41,6 +44,8 @@ export function GeneralFilters({
     onNetworkIdChange,
     connectedToSwitchId,
     onConnectedToSwitchIdChange,
+    includeCascade,
+    onIncludeCascadeChange,
     options,
 }: GeneralFiltersProps) {
     const departmentOptions = useMemo(
@@ -111,33 +116,36 @@ export function GeneralFilters({
                     <button
                         type="button"
                         onClick={() => onIpStatusChange("ALL")}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                        className={cn(
+                            "px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer",
                             ipStatus === "ALL"
                                 ? "bg-background text-foreground shadow-xs border border-border/50 font-semibold"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
+                                : "text-muted-foreground hover:text-foreground",
+                        )}
                     >
                         Todos
                     </button>
                     <button
                         type="button"
                         onClick={() => onIpStatusChange("true")}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                        className={cn(
+                            "px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer",
                             ipStatus === "true"
                                 ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 font-semibold"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
+                                : "text-muted-foreground hover:text-foreground",
+                        )}
                     >
                         Com IP
                     </button>
                     <button
                         type="button"
                         onClick={() => onIpStatusChange("false")}
-                        className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer ${
+                        className={cn(
+                            "px-3 py-1.5 text-xs font-medium rounded-lg transition-all cursor-pointer",
                             ipStatus === "false"
                                 ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30 font-semibold"
-                                : "text-muted-foreground hover:text-foreground"
-                        }`}
+                                : "text-muted-foreground hover:text-foreground",
+                        )}
                     >
                         Sem IP
                     </button>
@@ -206,6 +214,19 @@ export function GeneralFilters({
                         searchPlaceholder="Buscar switch..."
                         emptyMessage="Nenhum switch encontrado."
                     />
+                    {connectedToSwitchId && (
+                        <label className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={includeCascade}
+                                onChange={(e) =>
+                                    onIncludeCascadeChange(e.target.checked)
+                                }
+                                className="h-3.5 w-3.5 accent-primary"
+                            />
+                            Incluir ativos em cascata
+                        </label>
+                    )}
                 </div>
             </div>
         </div>

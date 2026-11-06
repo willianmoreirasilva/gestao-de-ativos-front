@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
+
 import { NetworkForm } from "@/components/infra/networks/network-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+
+export const metadata: Metadata = { title: "Nova rede" };
 
 export default function AddNetworkPage() {
     return (

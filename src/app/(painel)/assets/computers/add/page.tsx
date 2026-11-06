@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { type z } from "zod";
 
 import { createComputerAssetAction } from "@/actions/assets";
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { ComputerSpecsFormBlock } from "@/components/assets/computers/computer-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
@@ -20,7 +21,6 @@ import {
     computerFormSchema,
     type ComputerFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddComputerPage() {
@@ -162,7 +162,7 @@ export default function AddComputerPage() {
         };
 
         try {
-            const result = await createComputerAssetAction(payload as any);
+            const result = await createComputerAssetAction(payload);
 
             if (result.success) {
                 toast.success("Computador cadastrado com sucesso!", {

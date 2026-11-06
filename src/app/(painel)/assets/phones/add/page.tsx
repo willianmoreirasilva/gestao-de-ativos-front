@@ -10,6 +10,7 @@ import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type z } from "zod";
 
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { createPhoneAssetAction } from "@/actions/assets/phones.actions";
 import { PhoneSpecsFormBlock } from "@/components/assets/phones/phone-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
@@ -20,7 +21,6 @@ import {
     phoneFormSchema,
     type PhoneFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddPhonePage() {
@@ -146,7 +146,7 @@ export default function AddPhonePage() {
         };
 
         try {
-            const result = await createPhoneAssetAction(payload as any);
+            const result = await createPhoneAssetAction(payload);
 
             if (result.success) {
                 toast.success("Telefone/Ramal cadastrado com sucesso!", {

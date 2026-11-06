@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { deleteNetworkAction } from "@/actions/networks";
+import { Can } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
@@ -45,6 +46,9 @@ export function NetworkItem({ network }: Props) {
         if (!open) setActionError(null);
     };
 
+    // Sem _count, a role não vê o uso desta rede (USER; CAM_OPERATOR fora
+    // da VLAN de câmeras): as colunas de uso mostram "—"
+    const usageHidden = network._count === undefined;
     const allocatedCount = network._count?.ips ?? 0;
 
     // 🧮 CÁLCULO REAL DE IPS USÁVEIS NA SUB-REDE (Fórmula: 2^(32 - CIDR) - 2)
@@ -81,24 +85,30 @@ export function NetworkItem({ network }: Props) {
             {/* Coluna 4: IPs Alocados (Verde) */}
             {/* 4. IPs Alocados (Oculto no celular e tablet vertical, surge no 'md') */}
             <TableCell className="hidden md:table-cell">
-                <span
-                    className={
-                        hasAllocatedIps
-                            ? "text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5"
-                            : "text-zinc-500 text-xs px-2.5 py-1"
-                    }
-                >
-                    {hasAllocatedIps && (
-                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    )}
-                    {allocatedCount} IPs alocados
-                </span>
+                {usageHidden ? (
+                    <span className="text-zinc-400 text-xs px-2.5 py-1">—</span>
+                ) : (
+                    <span
+                        className={
+                            hasAllocatedIps
+                                ? "text-emerald-600 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5"
+                                : "text-zinc-500 text-xs px-2.5 py-1"
+                        }
+                    >
+                        {hasAllocatedIps && (
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        )}
+                        {allocatedCount} IPs alocados
+                    </span>
+                )}
             </TableCell>
 
             {/* Coluna 5: IPs Disponíveis com Alerta de Esgotamento Preventivo */}
             {/* 5. IPs Disponíveis (Oculto no celular e tablet vertical, surge no 'md') */}
             <TableCell className="hidden md:table-cell">
-                {isFullyAllocated ? (
+                {usageHidden ? (
+                    <span className="text-zinc-400 text-xs px-2.5 py-1">—</span>
+                ) : isFullyAllocated ? (
                     <span className="text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-950/30 px-2.5 py-1 rounded-md text-xs inline-flex items-center gap-1.5 border border-red-200 dark:border-red-900/40">
                         <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
                         Esgotada
@@ -121,26 +131,31 @@ export function NetworkItem({ network }: Props) {
             {/* COLUNA 5: Ações */}
             <TableCell className="w-24">
                 <div className="flex items-center gap-1">
-                    <Link href={`/infra/networks/edit/${network.id}`}>
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                            title="Editar rede"
-                        >
-                            <Edit size={16} />
-                        </Button>
-                    </Link>
+                    <Can resource="networks" action="update">
+                        <Link href={`/infra/networks/edit/${network.id}`}>
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                                title="Editar rede"
+                            >
+                                <Edit size={16} />
+                            </Button>
+                        </Link>
+                    </Can>
 
-                    <ConfirmDeleteDialog
-                        name={`${network.networkAddress}/${network.cidr}`}
-                        onConfirm={handleDelete}
-                        isDeleting={isDeleting}
-                        error={actionError}
-                        open={modalOpen}
-                        setOpen={handleModalOpenChange}
-                        disabled={hasAllocatedIps}
-                    />
+                    {/* Excluir rede: SUPERADM e ADMIN */}
+                    <Can resource="networks" action="delete">
+                        <ConfirmDeleteDialog
+                            name={`${network.networkAddress}/${network.cidr}`}
+                            onConfirm={handleDelete}
+                            isDeleting={isDeleting}
+                            error={actionError}
+                            open={modalOpen}
+                            setOpen={handleModalOpenChange}
+                            disabled={hasAllocatedIps}
+                        />
+                    </Can>
                 </div>
             </TableCell>
         </TableRow>

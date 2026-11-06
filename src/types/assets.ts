@@ -53,7 +53,7 @@ export interface PrinterDetails {
 export interface PhoneDetails {
     id: string;
     hostname?: string | null;
-    phoneNumber: string;
+    phoneNumber?: string | null;
     model?: string | null;
     notes?: string | null;
 }
@@ -75,13 +75,15 @@ export interface AccessPointDetails {
     vendor?: string | null;
     mac?: string | null;
     ssid?: string | null;
-    wifiPassword?: string | null;
     securityType?: string | null;
     frequencyBand?: string | null;
     adminUsername?: string | null;
-    adminPassword?: string | null;
     firmwareVersion?: string | null;
     notes?: string | null;
+    // As senhas nunca vêm nas leituras: só se existem. O valor sai pela
+    // rota de revelar (revealAccessPointSecretsAction), com auditoria
+    hasWifiPassword?: boolean;
+    hasAdminPassword?: boolean;
 }
 
 export interface AssetItem {
@@ -113,7 +115,12 @@ export interface AssetItem {
     ip: {
         id: string;
         address: string;
-        network?: any | null;
+        network?: {
+            type?: string | null;
+            vlanTag?: number | null;
+            networkAddress?: string;
+            cidr?: number;
+        } | null;
     } | null;
 
     connectedToSwitch?: {
@@ -161,7 +168,7 @@ export interface SystemSpecsModalOptions {
     disks: OptionItem[];
 }
 
-export interface ActionResult<T = any> {
+export interface ActionResult<T = unknown> {
     success: boolean;
     data?: T;
     error?: string;

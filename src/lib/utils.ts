@@ -18,12 +18,17 @@ export function getFieldErrors(error: ZodError): Record<string, string[]> {
     return fieldErrors;
 }
 
+/** Type guard: objeto simples (não nulo e não array) */
+export function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
 /**
  * 🧼 Higienizador inteligente de Payload
  * Transforma strings vazias em null, preserva nulls explícitos para o Prisma zerar campos,
  * e ignora undefined para evitar sobrescrever dados não enviados.
  */
-export function sanitizePayloadForBackend(obj: any): any {
+export function sanitizePayloadForBackend(obj: unknown): unknown {
     // 1. undefined é ignorado (não altera o banco)
     if (obj === undefined) return undefined;
 
@@ -37,10 +42,9 @@ export function sanitizePayloadForBackend(obj: any): any {
     if (Array.isArray(obj)) return obj.map(sanitizePayloadForBackend);
 
     // 5. Tratamento recursivo de Objetos
-    if (typeof obj === "object") {
-        const cleaned: any = {};
-        for (const key of Object.keys(obj)) {
-            const val = obj[key];
+    if (isRecord(obj)) {
+        const cleaned: Record<string, unknown> = {};
+        for (const [key, val] of Object.entries(obj)) {
             if (val === undefined) continue;
 
             const sanitizedVal = sanitizePayloadForBackend(val);

@@ -1,4 +1,5 @@
 import { ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 
 import { AssetTechnicalCard } from "@/components/assets/shared/asset-technical-card";
 import { BackButton } from "@/components/users/back-button";
@@ -10,6 +11,8 @@ import { locationService } from "@/services/location";
 import { switchService } from "@/services/switches";
 import type { AssetItem } from "@/types/assets";
 
+export const metadata: Metadata = { title: "Access Point" };
+
 interface Props {
     params: Promise<{ id: string }>;
 }
@@ -20,8 +23,8 @@ export default async function AccessPointDetailsPage({ params }: Props) {
     const [apResult, departmentsRes, locationsRes, switchesRes] =
         await Promise.all([
             accessPointService.getAccessPointById(id),
-            departmentService.getDepartments(),
-            locationService.getLocations(),
+            departmentService.getDepartments(1, 1000),
+            locationService.getLocations(1, 1000),
             switchService.getSwitches({ page: 1, limit: 100 }),
         ]);
 
@@ -59,8 +62,16 @@ export default async function AccessPointDetailsPage({ params }: Props) {
         locationId: rawAsset.location?.id || null,
         ipId: rawAsset.ip?.id || null,
 
-        connectedToSwitchId: null,
-        switchPort: null,
+        connectedToSwitchId: rawAsset.connectedToSwitchId ?? null,
+        switchPort: rawAsset.switchPort ?? null,
+        connectedToSwitch: rawAsset.connectedToSwitch
+            ? {
+                  ...rawAsset.connectedToSwitch,
+                  hostname:
+                      rawAsset.connectedToSwitch.hostname ||
+                      rawAsset.connectedToSwitch.model,
+              }
+            : null,
 
         vlanType: targetVlanType, // 👈 Agora o valor de 'targetVlanType' está sendo lido aqui!
         vlanTag: rawAsset.ip?.network?.vlanTag ?? null,
@@ -75,11 +86,11 @@ export default async function AccessPointDetailsPage({ params }: Props) {
             vendor: apData.vendor ?? null,
             mac: apData.mac ?? null,
             ssid: apData.ssid ?? null,
-            wifiPassword: apData.wifiPassword ?? null,
             securityType: apData.securityType ?? null,
             frequencyBand: apData.frequencyBand ?? null,
             adminUsername: apData.adminUsername ?? null,
-            adminPassword: apData.adminPassword ?? null,
+            hasWifiPassword: apData.hasWifiPassword,
+            hasAdminPassword: apData.hasAdminPassword,
             firmwareVersion: apData.firmwareVersion ?? null,
             notes: apData.notes ?? null,
         },

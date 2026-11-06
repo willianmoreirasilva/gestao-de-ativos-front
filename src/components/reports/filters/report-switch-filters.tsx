@@ -7,14 +7,16 @@ interface ReportSwitchFiltersProps {
     model?: string;
     vendor?: string;
     totalPorts?: number;
-    onChange: (field: string, val: any) => void;
+    onTextChange: (field: "model" | "vendor", val: string | undefined) => void;
+    onTotalPortsChange: (val: number | undefined) => void;
 }
 
 export function ReportSwitchFilters({
     model,
     vendor,
     totalPorts,
-    onChange,
+    onTextChange,
+    onTotalPortsChange,
 }: ReportSwitchFiltersProps) {
     return (
         <div className="p-3.5 bg-muted/30 rounded-xl border border-border/80 space-y-2.5">
@@ -34,7 +36,7 @@ export function ReportSwitchFilters({
                         type="text"
                         value={vendor || ""}
                         onChange={(e) =>
-                            onChange("vendor", e.target.value || undefined)
+                            onTextChange("vendor", e.target.value || undefined)
                         }
                         placeholder="Ex: Cisco, Ubiquiti"
                         className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -48,7 +50,7 @@ export function ReportSwitchFilters({
                         type="text"
                         value={model || ""}
                         onChange={(e) =>
-                            onChange("model", e.target.value || undefined)
+                            onTextChange("model", e.target.value || undefined)
                         }
                         placeholder="Ex: Catalyst 2960"
                         className="w-full bg-background border border-border text-foreground placeholder:text-muted-foreground/60 rounded-lg px-3 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
@@ -62,8 +64,7 @@ export function ReportSwitchFilters({
                         type="number"
                         value={totalPorts || ""}
                         onChange={(e) =>
-                            onChange(
-                                "totalPorts",
+                            onTotalPortsChange(
                                 e.target.value
                                     ? Number(e.target.value)
                                     : undefined,

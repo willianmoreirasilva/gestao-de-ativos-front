@@ -10,6 +10,7 @@ const ACTIONS = [
     { label: "Excluiu", value: "DELETE" },
     { label: "Login", value: "LOGIN" },
     { label: "Logout", value: "LOGOUT" },
+    { label: "Revelou senha", value: "VIEW_SECRET" },
 ];
 
 const ENTITY_OPTIONS = [
@@ -99,6 +100,7 @@ export function AuditLogFilters() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
                         type="text"
+                        aria-label="Pesquisar"
                         placeholder="Pesquisar por detalhes, ID ou usuário..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
@@ -107,6 +109,7 @@ export function AuditLogFilters() {
                     {search && (
                         <button
                             type="button"
+                            aria-label="Limpar pesquisa"
                             onClick={() => {
                                 setSearch("");
                                 handleFilterChange("search", "");
@@ -120,6 +123,7 @@ export function AuditLogFilters() {
 
                 {/* Filtro por Ação */}
                 <select
+                    aria-label="Filtrar por ação"
                     value={action}
                     onChange={(e) => {
                         setAction(e.target.value);
@@ -137,6 +141,7 @@ export function AuditLogFilters() {
 
                 {/* Filtro por Entidade */}
                 <select
+                    aria-label="Filtrar por entidade"
                     value={entity}
                     onChange={(e) => {
                         setEntity(e.target.value);
@@ -172,6 +177,7 @@ export function AuditLogFilters() {
                         </span>
                         <input
                             type="date"
+                            aria-label="Data inicial"
                             value={startDate}
                             onChange={(e) => {
                                 setStartDate(e.target.value);
@@ -187,6 +193,7 @@ export function AuditLogFilters() {
                         </span>
                         <input
                             type="date"
+                            aria-label="Data final"
                             value={endDate}
                             onChange={(e) => {
                                 setEndDate(e.target.value);

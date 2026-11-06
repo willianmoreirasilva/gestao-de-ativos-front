@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/users/field-error";
-import { authClient } from "@/lib/auth-client";
 import { updateProfileSchema } from "@/schemas/user";
 
 type FormInput = z.input<typeof updateProfileSchema>;
@@ -27,7 +26,6 @@ type Props = {
 
 export function ProfileForm({ name, email, roleLabel }: Props) {
     const router = useRouter();
-    const { refetch } = authClient.useSession();
     const [serverError, setServerError] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
 
@@ -45,7 +43,6 @@ export function ProfileForm({ name, email, roleLabel }: Props) {
                 toast.success(result.message);
                 form.reset({ name: values.name });
                 // Atualiza o nome exibido no menu lateral
-                await refetch();
                 router.refresh();
                 return;
             }

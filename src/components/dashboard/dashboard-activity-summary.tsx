@@ -1,3 +1,5 @@
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { ArrowRight, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
@@ -13,10 +15,11 @@ export function DashboardActivitySummary({
     const { summary, recentLogs, operationsSummary, topUsers } = audit;
 
     // Helper para extrair o nome do utilizador com segurança
-    const getUserDisplayName = (userObj: any): string => {
-        if (!userObj) return "Sistema";
-        if (typeof userObj === "string") return userObj;
-        return userObj.name || userObj.email || userObj.id || "Desconhecido";
+    const getUserDisplayName = (
+        user: AuditDashboardData["recentLogs"][number]["user"],
+    ): string => {
+        if (!user) return "Sistema";
+        return user.name || user.email || user.id || "Desconhecido";
     };
 
     return (
@@ -83,7 +86,7 @@ export function DashboardActivitySummary({
                         Atividade Recente
                     </h3>
                     <Link
-                        href="/audit-logs"
+                        href="/reports-audit/audit-logs"
                         className="text-xs text-primary hover:underline font-medium inline-flex items-center gap-1"
                     >
                         Ver todos
@@ -97,7 +100,7 @@ export function DashboardActivitySummary({
                     </div>
                 ) : (
                     <div className="space-y-2.5">
-                        {recentLogs.slice(0, 4).map((log: any) => (
+                        {recentLogs.slice(0, 4).map((log) => (
                             <div
                                 key={log.id}
                                 className="p-2.5 border border-border/40 bg-background/40 rounded-lg text-xs flex items-center justify-between"
@@ -116,7 +119,13 @@ export function DashboardActivitySummary({
                                     </p>
                                 </div>
                                 <span className="text-[10px] font-mono text-muted-foreground">
-                                    {log.timestamp}
+                                    {formatDistanceToNow(
+                                        new Date(log.createdAt),
+                                        {
+                                            addSuffix: true,
+                                            locale: ptBR,
+                                        },
+                                    )}
                                 </span>
                             </div>
                         ))}
@@ -139,11 +148,9 @@ export function DashboardActivitySummary({
                     </div>
                 ) : (
                     <div className="space-y-2">
-                        {topUsers.slice(0, 4).map((u: any, idx: number) => {
-                            const name = getUserDisplayName(
-                                u.user || u.userName || u,
-                            );
-                            const count = u.operationsCount ?? u.count ?? 0;
+                        {topUsers.slice(0, 4).map((u, idx) => {
+                            const name = u.userName;
+                            const count = u.count;
 
                             return (
                                 <div

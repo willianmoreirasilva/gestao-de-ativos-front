@@ -5,14 +5,15 @@ import {
     HardDrive,
     Laptop,
     Layers,
+    type LucideIcon,
     Network,
     PhoneCall,
     Printer,
     Wifi,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getAssetDashboardData } from "@/actions/asset-dashboard.action";
 import { QuickSearchTrigger } from "@/components/assets/quick-search-Trigger";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,12 +23,16 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { fetchAssetDashboardData } from "@/services/asset-dashboard";
+
+export const metadata: Metadata = { title: "Ativos de TI" };
 
 const ASSET_TYPE_CONFIG: Record<
     string,
     {
         label: string;
-        icon: any;
+        icon: LucideIcon;
         color: string;
         href: string;
         description: string;
@@ -78,7 +83,7 @@ const ASSET_TYPE_CONFIG: Record<
 };
 
 export default async function AssetsDashboardPage() {
-    const { data, error } = await getAssetDashboardData();
+    const { data, error } = await fetchAssetDashboardData();
 
     if (error || !data) {
         return (
@@ -207,7 +212,10 @@ export default async function AssetsDashboardPage() {
                                     <CardHeader className="p-4 pb-3 flex flex-row items-start justify-between space-y-0">
                                         <div className="flex items-center gap-4">
                                             <div
-                                                className={`p-3 rounded-xl border transition-all duration-200 ${config.color}`}
+                                                className={cn(
+                                                    "p-3 rounded-xl border transition-all duration-200",
+                                                    config.color,
+                                                )}
                                             >
                                                 <Icon className="h-6 w-6" />
                                             </div>

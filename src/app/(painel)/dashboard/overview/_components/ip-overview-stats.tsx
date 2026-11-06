@@ -2,6 +2,7 @@
 
 import { CheckCircle2, Clock, Network, Server } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { NetworkUsageMetric } from "@/types/ip-address";
 
 type IpOverviewStatsProps = {
@@ -78,7 +79,12 @@ export function IpOverviewStats({ summary }: IpOverviewStatsProps) {
                             </p>
                         </div>
                         <div
-                            className={`p-3 rounded-xl ${kpi.bg} ${kpi.color} shrink-0`}
+                            className={cn(
+                                "p-3 rounded-xl",
+                                kpi.bg,
+                                kpi.color,
+                                "shrink-0",
+                            )}
                         >
                             <Icon className="h-5 w-5" />
                         </div>

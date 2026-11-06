@@ -21,16 +21,16 @@ export function DashboardClientView({
     period,
 }: DashboardClientViewProps) {
     const [showNetworkUsage, setShowNetworkUsage] = useState(false);
-    const { infra, audit } = data;
+    const { infra, audit, totalAssets } = data;
 
     return (
         <div className="p-6 space-y-6 max-w-(--breakpoint-2xl) mx-auto text-foreground">
             {/* Header com Filtro de Período */}
-            <DashboardHeader currentPeriod={period} />
+            <DashboardHeader currentPeriod={period} showPeriod={!!audit} />
 
             {/* KPIs Principais */}
             <DashboardKpiCards
-                totalAssets={audit.summary.totalAssets}
+                totalAssets={totalAssets}
                 totalNetworks={infra.summary.totalNetworks}
                 totalDepartments={infra.summary.totalDepartments}
                 totalLocations={infra.summary.totalLocations}
@@ -39,39 +39,41 @@ export function DashboardClientView({
             {/* Ações Rápidas e Atalhos */}
             <DashboardQuickActions />
 
-            {/* Seção Retrátil: Utilização por Rede */}
-            <div className="space-y-3">
-                <div className="flex items-center justify-between border-b border-border/40 pb-2">
-                    <Button
-                        onClick={() => setShowNetworkUsage((prev) => !prev)}
-                        variant="ghost"
-                        size="sm"
-                        className="gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer p-0 h-auto"
-                    >
-                        <Network className="h-4 w-4" />
-                        {showNetworkUsage
-                            ? "Ocultar Utilização por Rede"
-                            : "Ver Utilização por Rede (Distribuição e Capacidade)"}
-                        {showNetworkUsage ? (
-                            <ChevronUp className="h-4 w-4" />
-                        ) : (
-                            <ChevronDown className="h-4 w-4" />
-                        )}
-                    </Button>
-                </div>
-
-                {showNetworkUsage && (
-                    <div className="animate-in fade-in-50 slide-in-from-top-2 duration-200">
-                        <DashboardNetworkUsage
-                            summary={infra.summary}
-                            networksUsage={infra.networksUsage}
-                        />
+            {/* Seção Retrátil: Utilização por Rede (só para quem vê o uso de IPs) */}
+            {infra.summary.totalIpsInUse !== null && (
+                <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-border/40 pb-2">
+                        <Button
+                            onClick={() => setShowNetworkUsage((prev) => !prev)}
+                            variant="ghost"
+                            size="sm"
+                            className="gap-2 text-xs font-semibold text-muted-foreground hover:text-foreground cursor-pointer p-0 h-auto"
+                        >
+                            <Network className="h-4 w-4" />
+                            {showNetworkUsage
+                                ? "Ocultar Utilização por Rede"
+                                : "Ver Utilização por Rede (Distribuição e Capacidade)"}
+                            {showNetworkUsage ? (
+                                <ChevronUp className="h-4 w-4" />
+                            ) : (
+                                <ChevronDown className="h-4 w-4" />
+                            )}
+                        </Button>
                     </div>
-                )}
-            </div>
 
-            {/* Resumo de Atividades e Usuários Ativos */}
-            <DashboardActivitySummary audit={audit} />
+                    {showNetworkUsage && (
+                        <div className="animate-in fade-in-50 slide-in-from-top-2 duration-200">
+                            <DashboardNetworkUsage
+                                summary={infra.summary}
+                                networksUsage={infra.networksUsage}
+                            />
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Resumo de Atividades e Usuários Ativos (só SUPERADM) */}
+            {audit && <DashboardActivitySummary audit={audit} />}
         </div>
     );
 }

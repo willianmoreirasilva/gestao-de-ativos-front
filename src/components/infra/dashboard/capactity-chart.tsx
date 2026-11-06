@@ -7,6 +7,7 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import { NetworkUsageItem } from "@/types/infra-dashboard";
 
 type Props = {
@@ -111,7 +112,10 @@ export function CapacityChart({ inUse, available, networksUsage }: Props) {
                                             )}
                                         </div>
                                         <span
-                                            className={`text-xs ${theme.text}`}
+                                            className={cn(
+                                                "text-xs",
+                                                theme.text,
+                                            )}
                                         >
                                             {net.used} / {net.total} IPs (
                                             {net.usagePercentage}%)
@@ -119,7 +123,10 @@ export function CapacityChart({ inUse, available, networksUsage }: Props) {
                                     </div>
                                     <Progress
                                         value={net.usagePercentage}
-                                        className={`h-1.5 bg-zinc-100 dark:bg-zinc-800 transition-all ${theme.bar}`}
+                                        className={cn(
+                                            "h-1.5 bg-zinc-100 dark:bg-zinc-800 transition-all",
+                                            theme.bar,
+                                        )}
                                     />
                                 </div>
                             );

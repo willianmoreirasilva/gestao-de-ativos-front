@@ -4,6 +4,11 @@
 
 import { revalidatePath } from "next/cache";
 
+import {
+    apiErrorMessage,
+    getApiErrorBody,
+    hasApiErrorData,
+} from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { sanitizeNullable, sanitizePayloadForBackend } from "@/lib/utils";
 import { ComputerFormValues } from "@/schemas/asset-create.schema";
@@ -40,7 +45,7 @@ export async function updateComputerSpecsAction(
         await revalidateAssetPaths(assetId, "computers");
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar as especificações do computador.",
@@ -126,22 +131,18 @@ export async function createComputerAssetAction(
             success: true,
             data: response.data,
         };
-    } catch (error: any) {
-        if (error.response?.data) {
-            const apiData = error.response.data;
+    } catch (error) {
+        if (hasApiErrorData(error)) {
+            const { fieldErrors } = getApiErrorBody(error);
 
-            if (
-                apiData.fieldErrors &&
-                Object.keys(apiData.fieldErrors).length > 0
-            ) {
+            if (fieldErrors && Object.keys(fieldErrors).length > 0) {
                 return {
                     success: false,
-                    fieldErrors: apiData.fieldErrors,
+                    fieldErrors,
                 };
             }
 
-            const errorMsg =
-                apiData.message || apiData.error || "Erro ao salvar o ativo.";
+            const errorMsg = apiErrorMessage(error, "Erro ao salvar o ativo.");
 
             if (
                 errorMsg.toLowerCase().includes("switch") ||

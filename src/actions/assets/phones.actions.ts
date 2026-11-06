@@ -15,7 +15,7 @@ export async function updatePhoneSpecsAction(
     assetId: string,
     payload: {
         hostname?: string | null;
-        phoneNumber: string;
+        phoneNumber?: string | null;
         model?: string | null;
         notes?: string | null;
     },
@@ -31,7 +31,7 @@ export async function updatePhoneSpecsAction(
         await revalidateAssetPaths(assetId, "phones");
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar as especificações do telefone.",
@@ -90,7 +90,7 @@ export async function createPhoneAssetAction(
             switchPort: parsedSwitchPort,
             phone: {
                 hostname: sanitizeNullable(formData.hostname),
-                phoneNumber: formData.phoneNumber.trim(),
+                phoneNumber: sanitizeNullable(formData.phoneNumber),
                 model: sanitizeNullable(formData.model),
                 notes: sanitizeNullable(formData.notes),
             },
@@ -100,7 +100,7 @@ export async function createPhoneAssetAction(
         await revalidateAssetPaths(undefined, "phones");
 
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return handleError(error, "Erro ao cadastrar o telefone.") as any;
+    } catch (error) {
+        return handleError(error, "Erro ao cadastrar o telefone.");
     }
 }

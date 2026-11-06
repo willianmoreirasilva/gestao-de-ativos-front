@@ -1,12 +1,3 @@
-"use server";
-
-import { revalidatePath } from "next/cache";
-
-import {
-    getDisksAction,
-    getOperatingSystemsAction,
-    getProcessorsAction,
-} from "@/actions/options";
 import { getServerApi } from "@/lib/server-api";
 import { ApiResponse } from "@/types/api";
 import {
@@ -16,24 +7,10 @@ import {
     AssetItem,
 } from "@/types/assets";
 
-import { departmentService } from "./department";
-import { locationService } from "./location";
-import { switchService } from "./switches";
-
-interface ActionResponse<T> {
+interface AssetsListResult<T> {
     data: T | null;
     meta: ApiMeta | null;
     error: string | null;
-}
-
-/**
- * Auxiliar para revalidar todos os caminhos afetados por modificações
- */
-function revalidateAllAssetPaths() {
-    revalidatePath("/assets");
-    revalidatePath("/assets/computers");
-    revalidatePath("/assets/printers");
-    revalidatePath("/assets/cameras");
 }
 
 /**
@@ -41,7 +18,7 @@ function revalidateAllAssetPaths() {
  */
 export async function getAssets(
     filters: AssetFilters = {},
-): Promise<ActionResponse<AssetItem[]>> {
+): Promise<AssetsListResult<AssetItem[]>> {
     try {
         const api = await getServerApi();
         const searchParams = new URLSearchParams();
@@ -74,7 +51,7 @@ export async function getAssets(
             error: null,
         };
     } catch (error: unknown) {
-        console.error("❌ Erro na Action getAssets:", error);
+        console.error("❌ Erro ao buscar ativos:", error);
         const apiError = error as {
             response?: { status?: number; data?: { error?: string } };
         };
@@ -104,110 +81,6 @@ export async function getAssetById(
         return {
             data: null,
             error: "Erro ao buscar ativo.",
-        };
-    }
-}
-
-/**
- * Remove um ativo pelo ID (suporta Fastify 200/204)
- */
-export async function deleteAssetAction(id: string) {
-    try {
-        const api = await getServerApi();
-
-        // 🌟 Payload vazio para contornar limitações de parser em endpoints DELETE
-        const response = await api.delete(`/api/assets/${id}`, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-            data: {},
-        });
-
-        if (response.status === 204 || response.status === 200) {
-            revalidateAllAssetPaths();
-            return { error: "", fieldErrors: {} };
-        }
-
-        return { error: "", fieldErrors: {} };
-    } catch (error: any) {
-        console.error("❌ [DELETE_ASSET_ACTION_ERROR]:", error);
-
-        if (error.response?.status === 204 || error.response?.status === 200) {
-            revalidateAllAssetPaths();
-            return { error: "", fieldErrors: {} };
-        }
-
-        const errorMessage =
-            error.response?.data?.error || error.response?.data?.message;
-        return {
-            error:
-                errorMessage ||
-                "Erro interno do servidor ao tentar remover o ativo.",
-            fieldErrors: {},
-        };
-    }
-}
-
-/**
- * Agrega dados para preenchimento de formulários e selects em telas de criação/edição
- */
-export async function getAssetOptionsAction() {
-    try {
-        const [
-            processorsRes,
-            osRes,
-            disksRes,
-            departmentsRes,
-            locationsRes,
-            switchesRes,
-        ] = await Promise.all([
-            getProcessorsAction().catch(() => ({ data: [] })),
-            getOperatingSystemsAction().catch(() => ({ data: [] })),
-            getDisksAction().catch(() => ({ data: [] })),
-            departmentService.getDepartments(1, 1000),
-            locationService.getLocations(0, 100),
-            switchService.getSwitches({ page: 1, limit: 1000 }),
-        ]);
-
-        return {
-            success: true,
-            data: {
-                processors: processorsRes.data ?? [],
-                operatingSystems: osRes.data ?? [],
-                disks: disksRes.data ?? [],
-
-                // Mapeia Departamentos
-                departments: (departmentsRes.data ?? []).map((dep) => ({
-                    id: dep.id,
-                    name: dep.name,
-                })),
-
-                // Mapeia Locais / Unidades
-                units: (locationsRes.data ?? []).map((loc) => ({
-                    id: loc.id,
-                    name: loc.name,
-                })),
-
-                // Mapeia Switches com suporte a múltiplos atributos de nome
-                switches: (switchesRes.data ?? []).map((sw: any) => ({
-                    id: sw.id,
-                    name:
-                        sw.switch?.hostname ||
-                        sw.hostname ||
-                        sw.switch?.model ||
-                        sw.model ||
-                        sw.ip?.address ||
-                        "Switch Sem Nome",
-                })),
-
-                users: [],
-            },
-        };
-    } catch (error) {
-        console.error("Erro ao agregar opções de formulário:", error);
-        return {
-            success: false,
-            error: "Falha ao carregar opções para o cadastro.",
         };
     }
 }

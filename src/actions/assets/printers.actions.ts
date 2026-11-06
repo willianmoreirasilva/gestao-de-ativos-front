@@ -31,7 +31,7 @@ export async function updatePrinterSpecsAction(
         await revalidateAssetPaths(assetId, "printers");
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar as especificações da impressora.",
@@ -100,7 +100,7 @@ export async function createPrinterAssetAction(
         await revalidateAssetPaths(undefined, "printers");
 
         return { success: true, data: response.data };
-    } catch (error: any) {
-        return handleError(error, "Erro ao salvar a impressora.") as any;
+    } catch (error) {
+        return handleError(error, "Erro ao salvar a impressora.");
     }
 }

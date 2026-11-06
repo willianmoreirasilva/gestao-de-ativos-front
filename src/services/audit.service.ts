@@ -1,12 +1,13 @@
 // src/services/audit.service.ts
 import { getServerApi } from "@/lib/server-api";
+import { extractApiError } from "@/services/user";
 import type { AuditLogFilterParams, AuditLogResponse } from "@/types/audit";
+import type { ServiceResult } from "@/types/user";
 
 export async function fetchAuditLogs(
     params: AuditLogFilterParams,
-): Promise<AuditLogResponse> {
+): Promise<ServiceResult<AuditLogResponse>> {
     const searchParams = new URLSearchParams();
-    const api = await getServerApi();
 
     Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== null && value !== "") {
@@ -15,21 +16,31 @@ export async function fetchAuditLogs(
     });
 
     try {
-        // Ajuste a URL abaixo de acordo com o prefixo do seu backend (ex: /api/audit-logs)
+        const api = await getServerApi();
         const queryString = searchParams.toString();
         const url = queryString
             ? `/api/audit-logs?${queryString}`
-            : "/audit-logs";
+            : "/api/audit-logs";
 
         const response = await api.get<AuditLogResponse>(url);
-        return response.data;
+        return { data: response.data, error: null, status: response.status };
     } catch (error) {
         console.error("Erro ao buscar logs de auditoria no servidor:", error);
 
-        // Retorno de fallback para evitar quebrar o Server Component
-        return {
-            data: [],
-            meta: { total: 0, page: 1, limit: 20, totalPages: 1 },
-        };
+        const { message, status } = extractApiError(
+            error,
+            "Não foi possível carregar os logs de auditoria.",
+        );
+
+        // Erro do servidor: a mensagem da API pode vir em inglês ou técnica
+        if (status !== null && status >= 500) {
+            return {
+                data: null,
+                error: "O servidor encontrou um erro ao carregar os logs de auditoria. Tente novamente em instantes.",
+                status,
+            };
+        }
+
+        return { data: null, error: message, status };
     }
 }

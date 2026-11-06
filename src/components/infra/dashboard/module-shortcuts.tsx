@@ -4,6 +4,7 @@ import { ArrowRight, Layers, MapPin, Network } from "lucide-react";
 import Link from "next/link";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export function ModuleShortcuts() {
     const modules = [
@@ -45,12 +46,18 @@ export function ModuleShortcuts() {
                 {modules.map((mod, idx) => (
                     <Link href={mod.href} key={idx} className="group block">
                         <Card
-                            className={`transition-all hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950 ${mod.borderColor}`}
+                            className={cn(
+                                "transition-all hover:shadow-md hover:border-zinc-300 dark:hover:border-zinc-700 bg-white dark:bg-zinc-950",
+                                mod.borderColor,
+                            )}
                         >
                             <CardContent className="p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-4">
                                     <div
-                                        className={`p-3 rounded-xl transition-colors ${mod.iconBg}`}
+                                        className={cn(
+                                            "p-3 rounded-xl transition-colors",
+                                            mod.iconBg,
+                                        )}
                                     >
                                         {mod.icon}
                                     </div>

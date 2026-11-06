@@ -9,10 +9,11 @@ import {
     ShieldCheck,
     Users,
 } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
-import { getReportsAuditDashboardAction } from "@/actions/reports-audit-dashboard.action";
 import { ReportKpiCards } from "@/components/reports/summary/report-kpi-cards";
+import { RequirePermission } from "@/components/require-permission";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,9 +25,12 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { getFormattedEntity } from "@/lib/audit-utils";
+import { fetchReportsAuditDashboardData } from "@/services/reports-audit.service";
 
-export default async function ReportsAuditDashboardPage() {
-    const { data, error } = await getReportsAuditDashboardAction();
+export const metadata: Metadata = { title: "Relatórios & Auditoria" };
+
+async function ReportsAuditDashboard() {
+    const { data, error } = await fetchReportsAuditDashboardData();
 
     if (error || !data) {
         return (
@@ -192,9 +196,7 @@ export default async function ReportsAuditDashboardPage() {
                             <div className="space-y-4">
                                 {recentLogs.map((log) => {
                                     // Formata o nome da entidade usando a mesma regra da tabela de logs
-                                    const entityName = getFormattedEntity(
-                                        log as any,
-                                    );
+                                    const entityName = getFormattedEntity(log);
 
                                     return (
                                         <div
@@ -315,5 +317,18 @@ export default async function ReportsAuditDashboardPage() {
                 </div>
             </div>
         </div>
+    );
+}
+
+// Painel de auditoria: exclusivo do SUPERADM
+export default function ReportsAuditDashboardPage() {
+    return (
+        <RequirePermission
+            resource="auditLogs"
+            action="view"
+            message="Apenas Superadministradores podem ver o painel de auditoria."
+        >
+            <ReportsAuditDashboard />
+        </RequirePermission>
     );
 }

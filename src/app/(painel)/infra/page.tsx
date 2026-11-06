@@ -1,11 +1,15 @@
-import { getInfraDashboardData } from "@/actions/infra-dashboard";
+import type { Metadata } from "next";
+
 import { CapacityChart } from "@/components/infra/dashboard/capactity-chart";
 import { DashboardHeader } from "@/components/infra/dashboard/header";
 import { ModuleShortcuts } from "@/components/infra/dashboard/module-shortcuts";
 import { StatsCards } from "@/components/infra/dashboard/stats-cards";
+import { fetchInfraDashboardData } from "@/services/infra-dashboard";
+
+export const metadata: Metadata = { title: "Infraestrutura & Redes" };
 
 export default async function InfraDashboardPage() {
-    const { data, error } = await getInfraDashboardData();
+    const { data, error } = await fetchInfraDashboardData();
 
     if (error || !data) {
         return (
@@ -42,13 +46,16 @@ export default async function InfraDashboardPage() {
                   Ao isolar este bloco na sua própria coluna desde a raiz do grid, 
                   ele automaticamente sobe e se alinha com o topo da tela.
                 */}
-                <div className="lg:col-span-6 h-full">
-                    <CapacityChart
-                        inUse={data.summary.totalIpsInUse}
-                        available={data.summary.totalIpsAvailable}
-                        networksUsage={data.networksUsage}
-                    />
-                </div>
+                {/* Uso das sub-redes: só para quem tem ipUsage (USER não) */}
+                {data.summary.totalIpsInUse !== null && (
+                    <div className="lg:col-span-6 h-full">
+                        <CapacityChart
+                            inUse={data.summary.totalIpsInUse}
+                            available={data.summary.totalIpsAvailable}
+                            networksUsage={data.networksUsage}
+                        />
+                    </div>
+                )}
             </div>
         </div>
     );

@@ -1,18 +1,22 @@
-import {
-    getDisksAction,
-    getOperatingSystemsAction,
-    getProcessorsAction,
-} from "@/actions/options";
+import type { Metadata } from "next";
+
 import { ReportContainer } from "@/components/reports/report-container";
+import { RequirePermission } from "@/components/require-permission";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+import { can } from "@/lib/permissions";
 import { ReportQueryInput } from "@/schemas/report.schema";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
 import { networkService } from "@/services/network";
-import { getAssetReportAction } from "@/services/reports.service";
+import { optionsService } from "@/services/options";
+import { fetchAssetReport } from "@/services/reports.service";
 import { switchService } from "@/services/switches";
+import { userService } from "@/services/user";
+import type { SingleFilter } from "@/types/report";
 import { ReportOptions } from "@/types/report-options";
+
+export const metadata: Metadata = { title: "Construtor de Relatórios" };
 
 interface Props {
     searchParams: Promise<{
@@ -24,7 +28,8 @@ interface Props {
         departmentId?: string;
         locationId?: string;
         networkId?: string;
-        connectedSwitchId?: string;
+        connectedToSwitchId?: string;
+        cascade?: string;
         // Especificações do Computador
         osId?: string;
         processorId?: string;
@@ -48,16 +53,17 @@ interface Props {
         phoneNumber?: string;
         // Especificações da impressora
         printerModel?: string;
+        printerSerial?: string;
     }>;
 }
 
-export default async function ReportsPage({ searchParams }: Props) {
+async function Reports({ searchParams }: Props) {
     const params = await searchParams;
 
     const page = parseInt(params.page || "1", 10);
     const limit = parseInt(params.limit || "4", 10);
 
-    const filters: any[] = [];
+    const filters: SingleFilter[] = [];
 
     // Busca Textual
     if (params.search?.trim()) {
@@ -77,9 +83,14 @@ export default async function ReportsPage({ searchParams }: Props) {
         });
     }
 
-    // Tipos Selecionados
-    if (params.types) {
-        const typesList = params.types.split(",").filter(Boolean);
+    // Tipos Selecionados. Sem relatório geral (CAM_OPERATOR), o relatório
+    // é sempre só de câmeras; a API recusa qualquer outro tipo
+    const { data: profile } = await userService.getMyProfile();
+    const typesParam = can(profile?.role, "reports", "view")
+        ? params.types
+        : "CAMERA";
+    if (typesParam) {
+        const typesList = typesParam.split(",").filter(Boolean);
         if (typesList.length > 0) {
             filters.push({
                 field: "type",
@@ -111,11 +122,11 @@ export default async function ReportsPage({ searchParams }: Props) {
             value: params.networkId,
         });
     }
-    if (params.connectedSwitchId) {
+    if (params.connectedToSwitchId) {
         filters.push({
             field: "connectedToSwitchId",
             operator: "eq",
-            value: params.connectedSwitchId,
+            value: params.connectedToSwitchId,
         });
     }
 
@@ -231,13 +242,21 @@ export default async function ReportsPage({ searchParams }: Props) {
     }
 
     // Filtro de Especificação (Impressora)
-    const printerModel = params.printerModel || (params as any).model;
+    const printerModel = params.printerModel;
 
     if (printerModel?.trim()) {
         filters.push({
             field: "printer.model",
             operator: "contains",
             value: printerModel.trim(),
+        });
+    }
+
+    if (params.printerSerial?.trim()) {
+        filters.push({
+            field: "printer.serial",
+            operator: "contains",
+            value: params.printerSerial.trim(),
         });
     }
 
@@ -248,6 +267,10 @@ export default async function ReportsPage({ searchParams }: Props) {
         orderBy: { field: "createdAt", direction: "desc" },
         page,
         limit,
+        // A cascata só faz sentido com um switch escolhido
+        includeCascade: Boolean(
+            params.connectedToSwitchId && params.cascade === "1",
+        ),
     };
 
     const [
@@ -260,82 +283,65 @@ export default async function ReportsPage({ searchParams }: Props) {
         disksRes,
         switchesRes,
     ] = await Promise.all([
-        getAssetReportAction(queryInput),
-        departmentService.getDepartments().catch((err) => {
+        fetchAssetReport(queryInput),
+        departmentService.getDepartments(1, 1000).catch((err) => {
             console.error("❌ Erro ao buscar Departamentos:", err);
-            return [];
+            return { data: [] };
         }),
-        locationService.getLocations().catch((err) => {
+        locationService.getLocations(1, 1000).catch((err) => {
             console.error("❌ Erro ao buscar Localidades:", err);
-            return [];
+            return { data: [] };
         }),
         networkService.getNetworks().catch((err) => {
             console.error("❌ Erro ao buscar Redes:", err);
-            return [];
+            return { data: [] };
         }),
-        getProcessorsAction().catch((err) => {
+        optionsService.getProcessors().catch((err) => {
             console.error("❌ Erro ao buscar Processadores:", err);
-            return [];
+            return { data: [] };
         }),
-        getOperatingSystemsAction().catch((err) => {
+        optionsService.getOperatingSystems().catch((err) => {
             console.error("❌ Erro ao buscar SOs:", err);
-            return [];
+            return { data: [] };
         }),
-        getDisksAction().catch((err) => {
+        optionsService.getDisks().catch((err) => {
             console.error("❌ Erro ao buscar Discos:", err);
-            return [];
+            return { data: [] };
         }),
         switchService.getSwitches({ page: 1, limit: 100 }).catch((err) => {
             console.error("❌ Erro ao buscar Switches:", err);
-            return [];
+            return { data: [] };
         }),
     ]);
 
-    const extractList = (res: any): any[] => {
-        if (!res) return [];
-        if (Array.isArray(res)) return res;
-        if (Array.isArray(res.data)) return res.data;
-        if (Array.isArray(res.items)) return res.items;
-        if (res.data && Array.isArray(res.data.data)) return res.data.data;
-        return [];
-    };
-
-    const rawDepartments = extractList(departmentsRes);
-    const rawLocations = extractList(locationsRes);
-    const rawNetworks = extractList(networksRes);
-    const rawProcessors = extractList(processorsRes);
-    const rawOs = extractList(osRes);
-    const rawDisks = extractList(disksRes);
-    const rawSwitches = extractList(switchesRes);
-
     const options: ReportOptions = {
-        departments: rawDepartments.map((d: any) => ({
+        departments: (departmentsRes.data ?? []).map((d) => ({
             id: d.id,
-            name: d.name || d.title || "Sem nome",
+            name: d.name || "Sem nome",
         })),
-        locations: rawLocations.map((l: any) => ({
+        locations: (locationsRes.data ?? []).map((l) => ({
             id: l.id,
-            name: l.name || l.title || "Sem nome",
+            name: l.name || "Sem nome",
         })),
-        networks: rawNetworks.map((n: any) => ({
+        networks: (networksRes.data ?? []).map((n) => ({
             id: n.id,
-            name: `${n.name || n.networkAddress || "Rede"} (VLAN ${n.vlanTag ?? "N/A"})`,
+            name: `${n.networkAddress} (VLAN ${n.vlanTag ?? "N/A"})`,
         })),
-        processors: rawProcessors.map((p: any) => ({
+        processors: (processorsRes.data ?? []).map((p) => ({
             id: p.id,
-            name: p.name || p.model || "Processador",
+            name: p.name || "Processador",
         })),
-        operatingSystems: rawOs.map((os: any) => ({
+        operatingSystems: (osRes.data ?? []).map((os) => ({
             id: os.id,
             name: os.name || "Sistema Operacional",
         })),
-        disks: rawDisks.map((disk: any) => ({
+        disks: (disksRes.data ?? []).map((disk) => ({
             id: disk.id,
-            name: disk.name || disk.model || "Disco",
+            name: disk.name || "Disco",
         })),
-        switches: rawSwitches.map((sw: any) => ({
+        switches: (switchesRes.data ?? []).map((sw) => ({
             id: sw.id,
-            hostname: sw.hostname || sw.name || sw.model || "Switch S/N",
+            hostname: sw.hostname || sw.model || "Switch S/N",
             model: sw.model || null,
             vendor: sw.vendor || null,
         })),
@@ -368,7 +374,21 @@ export default async function ReportsPage({ searchParams }: Props) {
                     }
                 }
                 options={options}
+                cascade={reportResult?.cascade}
             />
         </div>
+    );
+}
+
+// Relatórios: SUPERADM e ADMIN (gerais) e CAM_OPERATOR (só câmeras)
+export default function ReportsPage(props: Props) {
+    return (
+        <RequirePermission
+            resource="cameraReports"
+            action="view"
+            message="Você não tem permissão para gerar relatórios."
+        >
+            <Reports {...props} />
+        </RequirePermission>
     );
 }

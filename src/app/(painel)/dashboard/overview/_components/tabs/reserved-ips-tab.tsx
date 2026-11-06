@@ -1,7 +1,7 @@
 "use client";
 
-import { Ban, Loader2, RotateCcw, Search } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Ban, Loader2, Pencil, RotateCcw, Search } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import { getReservedIpsAction } from "@/actions/ip-addresses";
 import { NotesPopover } from "@/components/assets/shared/notes-popover";
@@ -30,6 +30,7 @@ import {
 } from "@/types/ip-address";
 
 import { CancelReservationDialog } from "../dialogs/cancel-reservation-dialog";
+import { EditReservationDialog } from "../dialogs/edit-reservation-dialog";
 
 type ReservedIpsTabProps = {
     networks: NetworkUsageMetric[];
@@ -46,9 +47,6 @@ export function ReservedIpsTab({
     networks,
     onRefreshAll,
 }: ReservedIpsTabProps) {
-    const [loading, setLoading] = useState(false);
-    const [ips, setIps] = useState<IpAddress[]>([]);
-    const [meta, setMeta] = useState<ExtendedPaginatedMeta | null>(null);
     const [networkId, setNetworkId] = useState<string>("ALL");
     const [search, setSearch] = useState("");
     const [page, setPage] = useState(1);
@@ -56,32 +54,59 @@ export function ReservedIpsTab({
 
     const [selectedIpToCancel, setSelectedIpToCancel] =
         useState<IpAddress | null>(null);
+    const [selectedIpToEdit, setSelectedIpToEdit] = useState<IpAddress | null>(
+        null,
+    );
 
-    const loadReserved = useCallback(async () => {
-        try {
-            setLoading(true);
-            const net = networkId === "ALL" ? undefined : networkId;
-            const res = await getReservedIpsAction({
-                networkId: net,
-                search: search || undefined,
-                page,
-                limit,
-            });
+    // Incrementa para recarregar a mesma página (ex.: depois de editar/cancelar)
+    const [reloadToken, setReloadToken] = useState(0);
+    const reload = () => setReloadToken((t) => t + 1);
 
-            if (res.success && res.data) {
-                setIps(res.data);
-                setMeta((res.meta as ExtendedPaginatedMeta) || null);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, [networkId, search, page, limit]);
+    // Resultado da última busca concluída, com a chave dos filtros que o geraram
+    const requestKey = `${networkId}|${search}|${page}|${limit}|${reloadToken}`;
+    const [result, setResult] = useState<{
+        key: string;
+        ips: IpAddress[];
+        meta: ExtendedPaginatedMeta | null;
+    } | null>(null);
+
+    const loading = result?.key !== requestKey;
+    const ips = result?.ips ?? [];
+    const meta = result?.meta ?? null;
 
     useEffect(() => {
-        loadReserved();
-    }, [loadReserved]);
+        let cancelled = false;
+        getReservedIpsAction({
+            networkId: networkId === "ALL" ? undefined : networkId,
+            search: search || undefined,
+            page,
+            limit,
+        })
+            .then((res) => {
+                if (cancelled) return;
+                setResult((prev) => ({
+                    key: requestKey,
+                    ips: res.success && res.data ? res.data : (prev?.ips ?? []),
+                    meta:
+                        res.success && res.data
+                            ? (res.meta as ExtendedPaginatedMeta) || null
+                            : (prev?.meta ?? null),
+                }));
+            })
+            .catch((error) => {
+                console.error(error);
+                if (cancelled) return;
+                setResult((prev) => ({
+                    key: requestKey,
+                    ips: prev?.ips ?? [],
+                    meta: prev?.meta ?? null,
+                }));
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [networkId, search, page, limit, requestKey]);
 
     const handleReset = () => {
         setNetworkId("ALL");
@@ -239,6 +264,17 @@ export function ReservedIpsTab({
                                                 variant="ghost"
                                                 size="sm"
                                                 onClick={() =>
+                                                    setSelectedIpToEdit(ip)
+                                                }
+                                                className="h-7 text-xs gap-1 cursor-pointer"
+                                            >
+                                                <Pencil className="h-3 w-3" />{" "}
+                                                Editar
+                                            </Button>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() =>
                                                     setSelectedIpToCancel(ip)
                                                 }
                                                 className="h-7 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 cursor-pointer"
@@ -271,11 +307,20 @@ export function ReservedIpsTab({
                 />
             )}
 
+            <EditReservationDialog
+                ip={selectedIpToEdit}
+                onClose={() => setSelectedIpToEdit(null)}
+                onSuccess={() => {
+                    reload();
+                    onRefreshAll?.();
+                }}
+            />
+
             <CancelReservationDialog
                 ip={selectedIpToCancel}
                 onClose={() => setSelectedIpToCancel(null)}
                 onSuccess={() => {
-                    loadReserved();
+                    reload();
                     onRefreshAll?.();
                 }}
             />

@@ -33,8 +33,13 @@ const baseAssetObject = {
     selectedIpId: lenientOptionalString,
 };
 
+// Campos que as refinações leem (todos os schemas de ativo estendem a base)
+type AssetBaseData = z.output<
+    ReturnType<typeof z.object<typeof baseAssetObject>>
+>;
+
 // Refinação lógica compartilhada (Alocação, IP e Switch)
-const refineAssetBase = (data: any, ctx: z.RefinementCtx) => {
+const refineAssetBase = (data: AssetBaseData, ctx: z.RefinementCtx) => {
     const hasDepartment = Boolean(
         data.departmentId && data.departmentId.trim() !== "",
     );
@@ -192,10 +197,8 @@ export const phoneFormSchema = z
             .trim()
             .min(1, "O hostname do telefone é obrigatório")
             .max(63, "Hostname muito longo"),
-        phoneNumber: z
-            .string()
-            .trim()
-            .min(1, "O número de telefone / ramal é obrigatório"),
+        // Opcional: o telefone pode ficar reservado, sem ramal
+        phoneNumber: lenientOptionalString,
         model: lenientOptionalString,
         notes: lenientOptionalString,
 
@@ -204,7 +207,7 @@ export const phoneFormSchema = z
     .superRefine(refineAssetBase);
 
 // Refinação específica para Switches e Access Points (valida IP e Alocação, mas IGNORA exigência de porta de switch)
-const refineSwitchBase = (data: any, ctx: z.RefinementCtx) => {
+const refineSwitchBase = (data: AssetBaseData, ctx: z.RefinementCtx) => {
     // 1. Validação de Alocação (ao menos Departamento ou Localidade)
     const hasDepartment = Boolean(
         data.departmentId && data.departmentId.trim() !== "",

@@ -4,28 +4,31 @@
 
 import { revalidatePath } from "next/cache";
 
-export interface ActionResponse<T = any> {
+import {
+    apiErrorMessage,
+    describeApiError,
+    getApiErrorBody,
+} from "@/lib/api-error";
+
+export interface ActionResponse<T = unknown> {
     success: boolean;
     data?: T;
     error?: string;
-    fieldErrors?: { [key: string]: string[] } | null;
+    fieldErrors?: Record<string, string[]>;
 }
 
 /**
  * Auxiliar para tratamento padronizado de erros
  */
 export async function handleError(
-    error: any,
+    error: unknown,
     defaultMessage: string,
 ): Promise<ActionResponse> {
-    console.error(`[ASSET_ACTION_ERROR]:`, error?.response?.data || error);
+    console.error(`[ASSET_ACTION_ERROR]:`, describeApiError(error));
     return {
         success: false,
-        error:
-            error?.response?.data?.message ||
-            error?.response?.data?.error ||
-            defaultMessage,
-        fieldErrors: error?.response?.data?.fieldErrors || null,
+        error: apiErrorMessage(error, defaultMessage),
+        fieldErrors: getApiErrorBody(error).fieldErrors,
     };
 }
 
@@ -46,12 +49,9 @@ export async function revalidateAssetPaths(
         revalidatePath(`/assets/${typePath}`);
     }
 
-    // 3. Se informou o ID do ativo
-    if (assetId) {
-        revalidatePath(`/assets/${assetId}`);
-        // Se também tiver o tipo, revalida a página detalhada da categoria
-        if (typePath) {
-            revalidatePath(`/assets/${typePath}/${assetId}`);
-        }
+    // 3. Se informou o tipo e o ID, revalida a página de detalhe do ativo
+    // (não existe /assets/[id]: o detalhe é sempre /assets/<tipo>/<id>)
+    if (assetId && typePath) {
+        revalidatePath(`/assets/${typePath}/${assetId}`);
     }
 }

@@ -9,6 +9,7 @@ import { AuditLogFilters } from "@/components/audit-logs/audit-log-filters";
 import { AuditLogTable } from "@/components/audit-logs/audit-log-table";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+import { cn } from "@/lib/utils";
 import type { AuditLog, AuditLogResponse } from "@/types/audit";
 
 import { Pagination } from "../pagination";
@@ -44,9 +45,10 @@ export function AuditLogsContainer({ initialData }: AuditLogsContainerProps) {
                         className="flex items-center gap-2 bg-secondary hover:bg-muted text-secondary-foreground px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border border-border/80 w-fit cursor-pointer shadow-2xs disabled:opacity-50"
                     >
                         <RefreshCw
-                            className={`w-4 h-4 text-muted-foreground ${
-                                isPending ? "animate-spin text-primary" : ""
-                            }`}
+                            className={cn(
+                                "w-4 h-4 text-muted-foreground",
+                                isPending ? "animate-spin text-primary" : "",
+                            )}
                         />
                         Atualizar
                     </button>

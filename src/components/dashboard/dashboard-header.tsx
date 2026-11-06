@@ -3,12 +3,16 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 
+import { cn } from "@/lib/utils";
 import { AuditPeriod } from "@/types/dashboard";
 
 export function DashboardHeader({
     currentPeriod,
+    showPeriod = true,
 }: {
     currentPeriod: AuditPeriod;
+    // O período só filtra a auditoria; sem ela o seletor não aparece
+    showPeriod?: boolean;
 }) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -34,31 +38,34 @@ export function DashboardHeader({
                 </p>
             </div>
 
-            <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-lg border border-border/50 self-start sm:self-auto">
-                {(["today", "7d", "30d"] as AuditPeriod[]).map((p) => {
-                    const labels: Record<AuditPeriod, string> = {
-                        today: "Hoje",
-                        "7d": "7 dias",
-                        "30d": "30 dias",
-                    };
-                    const isActive = currentPeriod === p;
+            {showPeriod && (
+                <div className="flex items-center gap-1.5 bg-muted/50 p-1 rounded-lg border border-border/50 self-start sm:self-auto">
+                    {(["today", "7d", "30d"] as AuditPeriod[]).map((p) => {
+                        const labels: Record<AuditPeriod, string> = {
+                            today: "Hoje",
+                            "7d": "7 dias",
+                            "30d": "30 dias",
+                        };
+                        const isActive = currentPeriod === p;
 
-                    return (
-                        <button
-                            key={p}
-                            onClick={() => handlePeriodChange(p)}
-                            disabled={isPending}
-                            className={`px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer ${
-                                isActive
-                                    ? "bg-background text-foreground shadow-xs font-semibold"
-                                    : "text-muted-foreground hover:text-foreground"
-                            }`}
-                        >
-                            {labels[p]}
-                        </button>
-                    );
-                })}
-            </div>
+                        return (
+                            <button
+                                key={p}
+                                onClick={() => handlePeriodChange(p)}
+                                disabled={isPending}
+                                className={cn(
+                                    "px-3 py-1 text-xs font-medium rounded-md transition-all cursor-pointer",
+                                    isActive
+                                        ? "bg-background text-foreground shadow-xs font-semibold"
+                                        : "text-muted-foreground hover:text-foreground",
+                                )}
+                            >
+                                {labels[p]}
+                            </button>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }

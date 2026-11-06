@@ -1,7 +1,7 @@
 "use client";
 
 import { BookmarkPlus, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { getAvailableIpsAction } from "@/actions/ip-addresses";
 import { Pagination } from "@/components/pagination";
@@ -39,46 +39,59 @@ export function AvailableIpsTab({
     networks,
     onRefreshAll,
 }: AvailableIpsTabProps) {
-    const [selectedNetworkId, setSelectedNetworkId] = useState<string>("");
-    const [loading, setLoading] = useState(false);
-    const [ips, setIps] = useState<IpAddress[]>([]);
-    const [meta, setMeta] = useState<PaginatedMeta | null>(null);
+    // Sub-rede escolhida pelo usuário; enquanto não escolhe, vale a primeira
+    const [chosenNetworkId, setChosenNetworkId] = useState<string>("");
+    const selectedNetworkId = chosenNetworkId || networks[0]?.id || "";
     const [page, setPage] = useState(1);
     const [limit, setLimit] = useState(4);
+    // Incrementa para recarregar a mesma página (ex.: depois de reservar)
+    const [reloadToken, setReloadToken] = useState(0);
 
     const [selectedIps, setSelectedIps] = useState<string[]>([]);
     const [isReserveDialogOpen, setIsReserveDialogOpen] = useState(false);
 
-    useEffect(() => {
-        if (networks.length > 0 && !selectedNetworkId) {
-            setSelectedNetworkId(networks[0].id);
-        }
-    }, [networks, selectedNetworkId]);
+    // Resultado da última busca concluída, com a chave dos filtros que o geraram
+    const requestKey = `${selectedNetworkId}|${page}|${limit}|${reloadToken}`;
+    const [result, setResult] = useState<{
+        key: string;
+        ips: IpAddress[];
+        meta: PaginatedMeta | null;
+    } | null>(null);
 
-    const fetchAvailableIps = useCallback(async () => {
+    const loading = Boolean(selectedNetworkId) && result?.key !== requestKey;
+    const ips = result?.ips ?? [];
+    const meta = result?.meta ?? null;
+
+    useEffect(() => {
         if (!selectedNetworkId) return;
-        try {
-            setLoading(true);
-            setSelectedIps([]);
-            const res = await getAvailableIpsAction(
-                selectedNetworkId,
-                page,
-                limit,
-            );
-            if (res.success && res.data) {
-                setIps(res.data);
-                setMeta(res.meta || null);
-            }
-        } catch (error) {
-            console.error(error);
-        } finally {
-            setLoading(false);
-        }
-    }, [selectedNetworkId, page, limit]);
 
-    useEffect(() => {
-        fetchAvailableIps();
-    }, [fetchAvailableIps]);
+        let cancelled = false;
+        getAvailableIpsAction(selectedNetworkId, page, limit)
+            .then((res) => {
+                if (cancelled) return;
+                setResult((prev) => ({
+                    key: requestKey,
+                    ips: res.success && res.data ? res.data : (prev?.ips ?? []),
+                    meta:
+                        res.success && res.data
+                            ? res.meta || null
+                            : (prev?.meta ?? null),
+                }));
+            })
+            .catch((error) => {
+                console.error(error);
+                if (cancelled) return;
+                setResult((prev) => ({
+                    key: requestKey,
+                    ips: prev?.ips ?? [],
+                    meta: prev?.meta ?? null,
+                }));
+            });
+
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedNetworkId, page, limit, requestKey]);
 
     const toggleIp = (ipStr: string) => {
         setSelectedIps((prev) =>
@@ -125,8 +138,9 @@ export function AvailableIpsTab({
                     <Select
                         value={selectedNetworkId}
                         onValueChange={(val) => {
-                            setSelectedNetworkId(val);
+                            setChosenNetworkId(val);
                             setPage(1);
+                            setSelectedIps([]);
                         }}
                     >
                         <SelectTrigger className="h-8 text-xs">
@@ -257,10 +271,14 @@ export function AvailableIpsTab({
                     limit={limit}
                     totalPages={meta.totalPages}
                     itemLabel="IPs livres"
-                    onPageChange={(newPage) => setPage(newPage)}
+                    onPageChange={(newPage) => {
+                        setPage(newPage);
+                        setSelectedIps([]);
+                    }}
                     onLimitChange={(newLimit) => {
                         setLimit(newLimit);
                         setPage(1);
+                        setSelectedIps([]);
                     }}
                 />
             )}
@@ -281,7 +299,7 @@ export function AvailableIpsTab({
                 onClose={() => setIsReserveDialogOpen(false)}
                 onSuccess={() => {
                     setSelectedIps([]);
-                    fetchAvailableIps();
+                    setReloadToken((t) => t + 1);
                     onRefreshAll?.();
                 }}
             />

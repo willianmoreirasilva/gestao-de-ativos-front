@@ -14,7 +14,9 @@ import Link from "next/link";
 import { useState } from "react";
 import { toast } from "sonner";
 
+import { deleteAssetAction } from "@/actions/assets/delete-asset.action";
 import { NotesPopover } from "@/components/assets/shared/notes-popover";
+import { Can } from "@/components/permission-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -25,7 +27,6 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
-import { deleteAssetAction } from "@/services/assets";
 import { AssetItem } from "@/types/assets";
 
 interface CameraRowItemProps {
@@ -243,14 +244,17 @@ export function CameraRowItem({ asset }: CameraRowItemProps) {
                             </TooltipContent>
                         </Tooltip>
 
-                        <ConfirmDeleteDialog
-                            name={identifier}
-                            onConfirm={handleDelete}
-                            isDeleting={isDeleting}
-                            error={actionError}
-                            open={modalOpen}
-                            setOpen={setModalOpen}
-                        />
+                        {/* Excluir câmera: SUPERADM e CAM_OPERATOR */}
+                        <Can resource="cameras" action="delete">
+                            <ConfirmDeleteDialog
+                                name={identifier}
+                                onConfirm={handleDelete}
+                                isDeleting={isDeleting}
+                                error={actionError}
+                                open={modalOpen}
+                                setOpen={setModalOpen}
+                            />
+                        </Can>
 
                         <Tooltip>
                             <TooltipTrigger asChild>

@@ -1,17 +1,16 @@
 import { ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 
-import {
-    getDisksAction,
-    getOperatingSystemsAction,
-    getProcessorsAction,
-} from "@/actions/options";
 import { AssetTechnicalCard } from "@/components/assets/shared/asset-technical-card";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
 import { getAssetById } from "@/services/assets";
 import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
+import { optionsService } from "@/services/options";
 import { switchService } from "@/services/switches";
+
+export const metadata: Metadata = { title: "Computador" };
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -31,11 +30,11 @@ export default async function ComputerDetailsPage({ params }: Props) {
         switchesRes,
     ] = await Promise.all([
         getAssetById(id),
-        departmentService.getDepartments(),
-        locationService.getLocations(),
-        getProcessorsAction(),
-        getOperatingSystemsAction(),
-        getDisksAction(),
+        departmentService.getDepartments(1, 1000),
+        locationService.getLocations(1, 1000),
+        optionsService.getProcessors(),
+        optionsService.getOperatingSystems(),
+        optionsService.getDisks(),
         switchService.getSwitches({ page: 1, limit: 100 }),
     ]);
 

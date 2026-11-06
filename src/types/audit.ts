@@ -4,6 +4,7 @@ export type AuditAction =
     | "DELETE"
     | "LOGIN"
     | "LOGOUT"
+    | "VIEW_SECRET"
     | "EXPORT"
     | string;
 
@@ -19,7 +20,7 @@ export interface AuditLog {
     action: AuditAction;
     entity: string;
     entityId: string;
-    details: Record<string, any> | null;
+    details: Record<string, unknown> | null;
     createdAt: string;
     user: AuditUser;
 }

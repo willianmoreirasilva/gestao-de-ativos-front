@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Cpu, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -37,6 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { FieldError } from "@/components/users/field-error";
+import type { ComputerDetails } from "@/types/assets";
 
 const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/;
 
@@ -65,7 +66,7 @@ interface SystemSpecsEditModalProps {
     isOpen: boolean;
     onClose: () => void;
     assetId: string;
-    computer?: any;
+    computer?: ComputerDetails | null;
     options: {
         processors: OptionItem[];
         operatingSystems: OptionItem[];
@@ -73,13 +74,14 @@ interface SystemSpecsEditModalProps {
     };
 }
 
-export function SystemSpecsEditModal({
-    isOpen,
+// O formulário mora dentro do DialogContent, que desmonta ao fechar: cada
+// abertura recomeça com os valores atuais do computador, sem reset em effect.
+function SystemSpecsForm({
     onClose,
     assetId,
     computer,
     options,
-}: SystemSpecsEditModalProps) {
+}: Omit<SystemSpecsEditModalProps, "isOpen">) {
     const router = useRouter();
     const [isPending, startTransition] = useTransition();
     const [apiError, setApiError] = useState<string | null>(null);
@@ -90,38 +92,14 @@ export function SystemSpecsEditModal({
             hostname: computer?.hostname || "",
             username: computer?.username || "",
             anydesk: computer?.anydesk || "",
-            processorId: computer?.processor?.id || computer?.processorId || "",
-            osId:
-                computer?.operatingSystem?.id ||
-                computer?.operatingSystemId ||
-                "",
-            diskId: computer?.disk?.id || computer?.storageDiskId || "",
-            memory: computer?.memory || computer?.ramMemory || "",
+            processorId: computer?.processor?.id || "",
+            osId: computer?.operatingSystem?.id || "",
+            diskId: computer?.disk?.id || "",
+            memory: computer?.memory || "",
             mac: computer?.mac || "",
             notes: computer?.notes || "",
         },
     });
-
-    useEffect(() => {
-        if (isOpen) {
-            setApiError(null);
-            form.reset({
-                hostname: computer?.hostname || "",
-                username: computer?.username || "",
-                anydesk: computer?.anydesk || "",
-                processorId:
-                    computer?.processor?.id || computer?.processorId || "",
-                osId:
-                    computer?.operatingSystem?.id ||
-                    computer?.operatingSystemId ||
-                    "",
-                diskId: computer?.disk?.id || computer?.storageDiskId || "",
-                memory: computer?.memory || computer?.ramMemory || "",
-                mac: computer?.mac || "",
-                notes: computer?.notes || "",
-            });
-        }
-    }, [isOpen, computer, form]);
 
     // Converte strings vazias ou com apenas espaços em `null` para o banco
     const normalizeNullableString = (val?: string | null) => {
@@ -159,6 +137,283 @@ export function SystemSpecsEditModal({
     }
 
     return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 pt-2"
+            >
+                {/* Hostname e Usuário */}
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="hostname"
+                        render={({ field, fieldState }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    Hostname *
+                                </FormLabel>
+                                <FormControl>
+                                    <Input {...field} className="h-9 text-xs" />
+                                </FormControl>
+                                <FieldError
+                                    errors={
+                                        fieldState.error?.message
+                                            ? [fieldState.error.message]
+                                            : undefined
+                                    }
+                                />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    Usuário *
+                                </FormLabel>
+                                <FormControl>
+                                    <Input {...field} className="h-9 text-xs" />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                {/* Código AnyDesk e Endereço MAC em 2 Colunas */}
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="anydesk"
+                        render={({ field, fieldState }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-bold text-rose-600 dark:text-rose-400">
+                                    Código AnyDesk
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        value={field.value || ""}
+                                        placeholder="Ex: 123 456 789"
+                                        className="h-9 text-xs font-mono"
+                                    />
+                                </FormControl>
+                                <FieldError
+                                    errors={
+                                        fieldState.error?.message
+                                            ? [fieldState.error.message]
+                                            : undefined
+                                    }
+                                />
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="mac"
+                        render={({ field, fieldState }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    Endereço MAC
+                                </FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        value={field.value || ""}
+                                        placeholder="Ex: 00:1A:3F:F1:4C:C2"
+                                        className="h-9 text-xs font-mono uppercase"
+                                    />
+                                </FormControl>
+                                <FieldError
+                                    errors={
+                                        fieldState.error?.message
+                                            ? [fieldState.error.message]
+                                            : undefined
+                                    }
+                                />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                {/* Processador */}
+                <FormField
+                    control={form.control}
+                    name="processorId"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Processador (CPU)
+                            </FormLabel>
+                            <ComboboxSearch
+                                options={options.processors}
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                placeholder="Selecionar processador (ou deixe vazio)..."
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Memória RAM e Armazenamento */}
+                <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                        control={form.control}
+                        name="memory"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    Memória RAM
+                                </FormLabel>
+                                <Select
+                                    onValueChange={field.onChange}
+                                    value={field.value || ""}
+                                >
+                                    <FormControl>
+                                        <SelectTrigger className="h-9 text-xs">
+                                            <SelectValue placeholder="Limpar / Selecionar" />
+                                        </SelectTrigger>
+                                    </FormControl>
+                                    <SelectContent>
+                                        <SelectItem
+                                            value=""
+                                            className="text-xs text-muted-foreground italic"
+                                        >
+                                            Remover / Desvincular
+                                        </SelectItem>
+                                        {[
+                                            "4GB",
+                                            "8GB",
+                                            "12GB",
+                                            "16GB",
+                                            "32GB",
+                                            "64GB",
+                                        ].map((m) => (
+                                            <SelectItem
+                                                key={m}
+                                                value={m}
+                                                className="text-xs"
+                                            >
+                                                {m}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </FormItem>
+                        )}
+                    />
+
+                    <FormField
+                        control={form.control}
+                        name="diskId"
+                        render={({ field }) => (
+                            <FormItem className="flex flex-col">
+                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    Armazenamento
+                                </FormLabel>
+                                <ComboboxSearch
+                                    options={options.disks}
+                                    value={field.value || ""}
+                                    onChange={field.onChange}
+                                    placeholder="Selecionar disco (ou deixe vazio)..."
+                                />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+
+                {/* Sistema Operacional */}
+                <FormField
+                    control={form.control}
+                    name="osId"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Sistema Operacional
+                            </FormLabel>
+                            <ComboboxSearch
+                                options={options.operatingSystems}
+                                value={field.value || ""}
+                                onChange={field.onChange}
+                                placeholder="Selecionar OS (ou deixe vazio)..."
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Notas / Observações */}
+                <FormField
+                    control={form.control}
+                    name="notes"
+                    render={({ field }) => (
+                        <FormItem>
+                            <div className="flex items-center justify-between">
+                                <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                    Notas / Observações
+                                </FormLabel>
+                                {field.value && (
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        onClick={() =>
+                                            form.setValue("notes", "")
+                                        }
+                                        className="h-6 px-2 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1"
+                                    >
+                                        <Trash2 size={12} /> Excluir nota
+                                    </Button>
+                                )}
+                            </div>
+                            <FormControl>
+                                <Textarea
+                                    placeholder="Adicione anotações técnicas..."
+                                    className="text-xs min-h-[70px] resize-none"
+                                    {...field}
+                                    value={field.value || ""}
+                                />
+                            </FormControl>
+                        </FormItem>
+                    )}
+                />
+
+                {apiError && <FieldError errors={[apiError]} />}
+
+                <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5 gap-2">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onClose}
+                        disabled={isPending}
+                        className="h-9 text-xs font-bold"
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950"
+                    >
+                        {isPending ? (
+                            <Loader2 className="animate-spin" size={14} />
+                        ) : (
+                            "Salvar Especificações"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </Form>
+    );
+}
+
+export function SystemSpecsEditModal({
+    isOpen,
+    onClose,
+    ...formProps
+}: SystemSpecsEditModalProps) {
+    return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="sm:max-w-125 bg-white dark:bg-zinc-950 p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-y-auto max-h-[90vh]">
                 <DialogHeader>
@@ -172,284 +427,7 @@ export function SystemSpecsEditModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4 pt-2"
-                    >
-                        {/* Hostname e Usuário */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="hostname"
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Hostname *
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                className="h-9 text-xs"
-                                            />
-                                        </FormControl>
-                                        <FieldError
-                                            errors={
-                                                fieldState.error?.message
-                                                    ? [fieldState.error.message]
-                                                    : undefined
-                                            }
-                                        />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="username"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Usuário *
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                className="h-9 text-xs"
-                                            />
-                                        </FormControl>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        {/* Código AnyDesk e Endereço MAC em 2 Colunas */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="anydesk"
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-rose-600 dark:text-rose-400">
-                                            Código AnyDesk
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                value={field.value || ""}
-                                                placeholder="Ex: 123 456 789"
-                                                className="h-9 text-xs font-mono"
-                                            />
-                                        </FormControl>
-                                        <FieldError
-                                            errors={
-                                                fieldState.error?.message
-                                                    ? [fieldState.error.message]
-                                                    : undefined
-                                            }
-                                        />
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="mac"
-                                render={({ field, fieldState }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Endereço MAC
-                                        </FormLabel>
-                                        <FormControl>
-                                            <Input
-                                                {...field}
-                                                value={field.value || ""}
-                                                placeholder="Ex: 00:1A:3F:F1:4C:C2"
-                                                className="h-9 text-xs font-mono uppercase"
-                                            />
-                                        </FormControl>
-                                        <FieldError
-                                            errors={
-                                                fieldState.error?.message
-                                                    ? [fieldState.error.message]
-                                                    : undefined
-                                            }
-                                        />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        {/* Processador */}
-                        <FormField
-                            control={form.control}
-                            name="processorId"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Processador (CPU)
-                                    </FormLabel>
-                                    <ComboboxSearch
-                                        options={options.processors}
-                                        value={field.value || ""}
-                                        onChange={field.onChange}
-                                        placeholder="Selecionar processador (ou deixe vazio)..."
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        {/* Memória RAM e Armazenamento */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                                control={form.control}
-                                name="memory"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Memória RAM
-                                        </FormLabel>
-                                        <Select
-                                            onValueChange={field.onChange}
-                                            value={field.value || ""}
-                                        >
-                                            <FormControl>
-                                                <SelectTrigger className="h-9 text-xs">
-                                                    <SelectValue placeholder="Limpar / Selecionar" />
-                                                </SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem
-                                                    value=""
-                                                    className="text-xs text-muted-foreground italic"
-                                                >
-                                                    Remover / Desvincular
-                                                </SelectItem>
-                                                {[
-                                                    "4GB",
-                                                    "8GB",
-                                                    "12GB",
-                                                    "16GB",
-                                                    "32GB",
-                                                    "64GB",
-                                                ].map((m) => (
-                                                    <SelectItem
-                                                        key={m}
-                                                        value={m}
-                                                        className="text-xs"
-                                                    >
-                                                        {m}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )}
-                            />
-
-                            <FormField
-                                control={form.control}
-                                name="diskId"
-                                render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Armazenamento
-                                        </FormLabel>
-                                        <ComboboxSearch
-                                            options={options.disks}
-                                            value={field.value || ""}
-                                            onChange={field.onChange}
-                                            placeholder="Selecionar disco (ou deixe vazio)..."
-                                        />
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-
-                        {/* Sistema Operacional */}
-                        <FormField
-                            control={form.control}
-                            name="osId"
-                            render={({ field }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Sistema Operacional
-                                    </FormLabel>
-                                    <ComboboxSearch
-                                        options={options.operatingSystems}
-                                        value={field.value || ""}
-                                        onChange={field.onChange}
-                                        placeholder="Selecionar OS (ou deixe vazio)..."
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        {/* Notas / Observações */}
-                        <FormField
-                            control={form.control}
-                            name="notes"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <div className="flex items-center justify-between">
-                                        <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                            Notas / Observações
-                                        </FormLabel>
-                                        {field.value && (
-                                            <Button
-                                                type="button"
-                                                variant="ghost"
-                                                onClick={() =>
-                                                    form.setValue("notes", "")
-                                                }
-                                                className="h-6 px-2 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1"
-                                            >
-                                                <Trash2 size={12} /> Excluir
-                                                nota
-                                            </Button>
-                                        )}
-                                    </div>
-                                    <FormControl>
-                                        <Textarea
-                                            placeholder="Adicione anotações técnicas..."
-                                            className="text-xs min-h-[70px] resize-none"
-                                            {...field}
-                                            value={field.value || ""}
-                                        />
-                                    </FormControl>
-                                </FormItem>
-                            )}
-                        />
-
-                        {apiError && <FieldError errors={[apiError]} />}
-
-                        <DialogFooter className="pt-4 border-t border-zinc-100 dark:border-zinc-900 mt-5 gap-2">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={onClose}
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950"
-                            >
-                                {isPending ? (
-                                    <Loader2
-                                        className="animate-spin"
-                                        size={14}
-                                    />
-                                ) : (
-                                    "Salvar Especificações"
-                                )}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                <SystemSpecsForm onClose={onClose} {...formProps} />
             </DialogContent>
         </Dialog>
     );

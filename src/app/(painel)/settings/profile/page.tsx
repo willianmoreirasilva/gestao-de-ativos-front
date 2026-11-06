@@ -5,6 +5,7 @@ import {
     Mail,
     UserRound,
 } from "lucide-react";
+import type { Metadata } from "next";
 
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,6 +26,8 @@ import { userService } from "@/services/user";
 import { ChangePasswordForm } from "./_components/change-password-form";
 import { ProfileAvatarCard } from "./_components/profile-avatar-card";
 import { ProfileForm } from "./_components/profile-form";
+
+export const metadata: Metadata = { title: "Minha Conta" };
 
 const TITLE = "Minha Conta";
 const DESCRIPTION = "Consulte e atualize suas informações pessoais.";

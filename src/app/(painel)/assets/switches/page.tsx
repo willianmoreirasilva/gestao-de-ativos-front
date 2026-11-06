@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { AssetFilters } from "@/components/assets/shared/asset-filters";
@@ -16,7 +17,11 @@ import {
 import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
+import { can } from "@/lib/permissions";
 import { switchService } from "@/services/switches";
+import { userService } from "@/services/user";
+
+export const metadata: Metadata = { title: "Switches" };
 
 type PageProps = {
     searchParams: Promise<{
@@ -45,17 +50,23 @@ export default async function SwitchesPage({ searchParams }: PageProps) {
 
     const switches = Array.isArray(data) ? data : [];
 
+    // Cadastrar switch/AP: só SUPERADM e ADMIN (os demais só veem a lista)
+    const { data: profile } = await userService.getMyProfile();
+    const canCreate = can(profile?.role, "networkDevices", "create");
+
     const pageTitle = (
         <PageTitle
             title="Switches & Infraestrutura de Rede"
             leftSide={<BackButton />}
             rightSide={
-                <Link href="/assets/switches/add">
-                    <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
-                        <Plus size={15} />
-                        Novo Switch
-                    </Button>
-                </Link>
+                canCreate && (
+                    <Link href="/assets/switches/add">
+                        <Button className="flex items-center gap-2 text-xs font-semibold h-9 shadow-sm bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900">
+                            <Plus size={15} />
+                            Novo Switch
+                        </Button>
+                    </Link>
+                )
             }
         />
     );
@@ -67,8 +78,8 @@ export default async function SwitchesPage({ searchParams }: PageProps) {
                 {pageTitle}
                 <EmptyState
                     message="Nenhum switch cadastrado no inventário de rede."
-                    label="Cadastrar Switch"
-                    href="/assets/switches/add"
+                    label={canCreate ? "Cadastrar Switch" : undefined}
+                    href={canCreate ? "/assets/switches/add" : undefined}
                 />
             </div>
         );
@@ -127,8 +138,16 @@ export default async function SwitchesPage({ searchParams }: PageProps) {
                                         >
                                             <EmptyState
                                                 message="Nenhum switch encontrado com os filtros aplicados."
-                                                label="Cadastrar Novo Switch"
-                                                href="/assets/switches/add"
+                                                label={
+                                                    canCreate
+                                                        ? "Cadastrar Novo Switch"
+                                                        : undefined
+                                                }
+                                                href={
+                                                    canCreate
+                                                        ? "/assets/switches/add"
+                                                        : undefined
+                                                }
                                             />
                                         </TableCell>
                                     </TableRow>

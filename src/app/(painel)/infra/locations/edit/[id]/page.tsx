@@ -1,10 +1,12 @@
-import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 
 import { LocationForm } from "@/components/infra/locations/location-form";
 import { BackButton } from "@/components/users/back-button";
 import { PageTitle } from "@/components/users/page-title";
+import { loadOrNotFound } from "@/lib/load-or-not-found";
 import { locationService } from "@/services/location";
-import { Location } from "@/types/location";
+
+export const metadata: Metadata = { title: "Editar localização" };
 
 type Props = {
     params: Promise<{ id: string }>;
@@ -16,13 +18,8 @@ export default async function Page({ params }: Props) {
     // 1. Busca o local específico no backend através do service
     const locationRes = await locationService.getLocationById(id);
 
-    // 2. Trava de segurança caso o ID seja inválido ou o registro não exista
-    if (locationRes.error || !locationRes.data) {
-        console.error("Erro na busca do local para edição:", locationRes.error);
-        redirect("/infra/locations");
-    }
-
-    const location = locationRes.data as Location;
+    // 2. 404/400: página "não encontrado". Outro erro: cai no error.tsx do painel
+    const location = loadOrNotFound(locationRes, "o local");
 
     return (
         /* 🌟 CONTAINER DE RESGATE: Mantém o formulário perfeitamente centralizado

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { apiErrorMessage } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import {
     CreateAccessPointInput,
@@ -18,13 +19,16 @@ export async function createAccessPointAction(data: CreateAccessPointInput) {
 
         revalidatePath("/assets/access-points");
         return { success: true, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error("❌ [createAccessPointAction Error]:", error);
         return {
             success: false,
-            error:
-                error.response?.data?.message ||
+            error: apiErrorMessage(
+                error,
                 "Não foi possível cadastrar o Access Point.",
+                "error",
+                "message",
+            ),
         };
     }
 }
@@ -43,13 +47,16 @@ export async function updateAccessPointAction(
         revalidatePath(`/assets/access-points/${id}`);
         revalidatePath("/assets/access-points");
         return { success: true, data: response.data };
-    } catch (error: any) {
+    } catch (error) {
         console.error("❌ [updateAccessPointAction Error]:", error);
         return {
             success: false,
-            error:
-                error.response?.data?.message ||
+            error: apiErrorMessage(
+                error,
                 "Não foi possível atualizar as informações do Access Point.",
+                "error",
+                "message",
+            ),
         };
     }
 }
@@ -64,13 +71,48 @@ export async function deleteAccessPointAction(id: string) {
 
         revalidatePath("/assets/access-points");
         return { success: true };
-    } catch (error: any) {
+    } catch (error) {
         console.error("❌ [deleteAccessPointAction Error]:", error);
         return {
             success: false,
-            error:
-                error.response?.data?.message ||
+            error: apiErrorMessage(
+                error,
                 "Não foi possível excluir o Access Point.",
+                "error",
+                "message",
+            ),
+        };
+    }
+}
+
+type ApiErrorShape = {
+    response?: { data?: { message?: string; error?: string } };
+};
+
+/**
+ * Revela as senhas (Wi-Fi e administração) do AP. A API só responde a quem
+ * tem networkDevices.viewSecrets e registra a visualização na auditoria.
+ */
+export async function revealAccessPointSecretsAction(id: string): Promise<
+    | {
+          success: true;
+          data: { wifiPassword: string | null; adminPassword: string | null };
+      }
+    | { success: false; error: string }
+> {
+    try {
+        const api = await getServerApi();
+        const response = await api.post(`/api/access-points/${id}/secrets`, {});
+        return { success: true, data: response.data.data };
+    } catch (error) {
+        console.error("❌ [revealAccessPointSecretsAction Error]:", error);
+        const data = (error as ApiErrorShape).response?.data;
+        return {
+            success: false,
+            error:
+                data?.message ||
+                data?.error ||
+                "Não foi possível revelar as senhas.",
         };
     }
 }

@@ -5,6 +5,7 @@ import {
     Control,
     FieldValues,
     Path,
+    PathValue,
     UseFormSetValue,
     useWatch,
 } from "react-hook-form";
@@ -340,7 +341,10 @@ export function ComputerSpecsFormBlock<TFieldValues extends FieldValues>({
                                     onClick={() =>
                                         setValue(
                                             "notes" as Path<TFieldValues>,
-                                            "" as any,
+                                            "" as PathValue<
+                                                TFieldValues,
+                                                Path<TFieldValues>
+                                            >,
                                         )
                                     }
                                     className="h-5 px-1.5 text-[10px] text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 gap-1"

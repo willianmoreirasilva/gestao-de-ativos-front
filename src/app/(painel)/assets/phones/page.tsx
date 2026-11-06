@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PhoneRowItem } from "@/components/assets/phones/phone-row-item";
@@ -17,6 +18,8 @@ import { BackButton } from "@/components/users/back-button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
 import { getAssets } from "@/services/assets";
+
+export const metadata: Metadata = { title: "Telefonia VoIP" };
 
 type PageProps = {
     searchParams: Promise<{

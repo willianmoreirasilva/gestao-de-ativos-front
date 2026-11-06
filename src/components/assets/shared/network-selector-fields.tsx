@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { FieldError } from "@/components/users/field-error";
 import { useAvailableIps } from "@/hooks/use-availableIps";
+import { cn } from "@/lib/utils";
 
 type VlanType = "GENERAL_DATA" | "CAMERA_VLAN" | "SWITCH_MGMT" | "WIFI_MGMT";
 
@@ -117,11 +118,12 @@ export function NetworkSelectorFields({
                         placeholder="Ex: 192.168.1.15"
                         value={manualIpValue}
                         onChange={(e) => onManualIpChange(e.target.value)}
-                        className={`font-mono h-10 bg-background text-foreground border-input focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 ${
+                        className={cn(
+                            "font-mono h-10 bg-background text-foreground border-input focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500",
                             manualIpErrors
                                 ? "border-destructive focus-visible:ring-destructive/20"
-                                : ""
-                        }`}
+                                : "",
+                        )}
                     />
                     <FieldError errors={manualIpErrors} />
                 </div>

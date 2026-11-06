@@ -5,7 +5,8 @@ export type InfraDashboardData = {
         totalNetworks: number;
         totalDepartments: number;
         totalLocations: number;
-        totalIpsInUse: number;
+        // null: a role não vê estatísticas de uso (USER)
+        totalIpsInUse: number | null;
         totalIpsAvailable: number;
     };
     networksUsage: {
@@ -29,8 +30,13 @@ export type AuditDashboardData = {
         id: string;
         action: string;
         entity: string;
-        user: string;
-        timestamp: string;
+        entityId: string;
+        createdAt: string;
+        user?: {
+            id: string;
+            name?: string | null;
+            email?: string | null;
+        };
     }[];
     operationsSummary: {
         action: string;
@@ -38,11 +44,13 @@ export type AuditDashboardData = {
     }[];
     topUsers: {
         userName: string;
-        operationsCount: number;
+        count: number;
     }[];
 };
 
 export type ExecutiveDashboardData = {
     infra: InfraDashboardData;
-    audit: AuditDashboardData;
+    totalAssets: number;
+    // null para quem não pode ver a auditoria (só o SUPERADM vê)
+    audit: AuditDashboardData | null;
 };

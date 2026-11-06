@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { apiErrorMessage, describeApiError } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { ipAddressService } from "@/services/ip-address";
 
@@ -9,8 +10,8 @@ import { ipAddressService } from "@/services/ip-address";
 function revalidateIpPaths(networkId?: string) {
     revalidatePath("/dashboard/overview");
     revalidatePath("/infra/networks");
-    if (networkId) revalidatePath(`/infra/networks/${networkId}`);
-    revalidatePath("/infra/ip-addresses");
+    // Não existe tela de detalhe da rede nem de IPs fora do painel de visão geral
+    if (networkId) revalidatePath(`/infra/networks/edit/${networkId}`);
 }
 
 /* ==========================================================================
@@ -40,14 +41,46 @@ export async function reserveIpsAction(payload: {
             error: null,
             count: response.data.count || payload.ipAddresses.length,
         };
-    } catch (error: any) {
+    } catch (error) {
+        return {
+            success: false,
+            error: apiErrorMessage(
+                error,
+                "Falha ao efetuar reserva de IPs",
+                "error",
+                "message",
+            ),
+            count: 0,
+        };
+    }
+}
+
+/**
+ * 10. PATCH /api/ip-addresses/reserve/:id
+ * Edita o motivo e/ou move a reserva para outro IP livre. A API valida a
+ * VLAN da reserva atual e a do IP novo (CAM_OPERATOR: só câmeras).
+ */
+export async function updateIpReservationAction(
+    id: string,
+    payload: { reason?: string | null; newAddress?: string },
+) {
+    try {
+        const api = await getServerApi();
+        await api.patch(`/api/ip-addresses/reserve/${id}`, payload);
+        revalidateIpPaths();
+        return { success: true, error: null };
+    } catch (error) {
+        const data = (
+            error as {
+                response?: { data?: { message?: string; error?: string } };
+            }
+        ).response?.data;
         return {
             success: false,
             error:
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                "Falha ao efetuar reserva de IPs",
-            count: 0,
+                data?.error ||
+                data?.message ||
+                "Não foi possível editar a reserva.",
         };
     }
 }
@@ -55,10 +88,7 @@ export async function reserveIpsAction(payload: {
 /**
  * 9. PATCH /api/ip-addresses/{id}/cancel-reservation
  */
-export async function cancelIpReservationAction(
-    id: string,
-    networkId?: string,
-) {
+export async function cancelIpReservationAction(id: string) {
     try {
         const api = await getServerApi();
         const response = await api.delete(`/api/ip-addresses/reserve/${id}`, {
@@ -77,13 +107,9 @@ export async function cancelIpReservationAction(
             };
         }
 
-        // Revalidações no Next.js utilizando networkId para purgar os caches certos
+        // Revalida o painel que lista as reservas
         try {
             revalidatePath("/dashboard/overview");
-            revalidatePath("/dashboard/ip-addresses");
-            if (networkId) {
-                revalidatePath(`/dashboard/ip-addresses/${networkId}`);
-            }
         } catch (revalidateError) {
             console.warn(
                 "[ACTION] Erro ao revalidar caminhos no Next.js:",
@@ -92,19 +118,22 @@ export async function cancelIpReservationAction(
         }
 
         return { success: true, error: null };
-    } catch (error: any) {
+    } catch (error) {
         console.error(
             "[ACTION ERROR] Falha no cancelIpReservationAction:",
-            error?.response?.data || error,
+            describeApiError(error),
         );
 
         return {
             success: false,
-            error:
-                error.response?.data?.error ||
-                error.response?.data?.message ||
-                error.message ||
-                "Falha ao cancelar reserva do IP.",
+            error: apiErrorMessage(
+                error,
+                error instanceof Error && error.message
+                    ? error.message
+                    : "Falha ao cancelar reserva do IP.",
+                "error",
+                "message",
+            ),
         };
     }
 }
@@ -127,14 +156,16 @@ export async function findAvailableIpsAction(
         );
 
         return { success: true, data: response.data, error: null };
-    } catch (error: any) {
+    } catch (error) {
         console.error("[ACTION - findAvailableIpsAction] Erro:", error);
         return {
             success: false,
             data: null,
-            error:
-                error.response?.data?.message ||
+            error: apiErrorMessage(
+                error,
                 "Erro ao consultar bloco de IPs disponíveis.",
+                "message",
+            ),
         };
     }
 }
@@ -158,7 +189,7 @@ export async function getAvailableIpsAction(
             meta: response.meta,
             error: null,
         };
-    } catch (error: any) {
+    } catch (error) {
         return {
             success: false,
             data: [],
@@ -189,80 +220,12 @@ export async function getReservedIpsAction(params: {
             meta: response.meta,
             error: null,
         };
-    } catch (error: any) {
+    } catch (error) {
         return {
             success: false,
             data: [],
             meta: null,
             error: "Erro ao carregar lista de reservas.",
-        };
-    }
-}
-
-/* ==========================================================================
-   ACTIONS ADICIONAIS DE LEITURA (A IMPLEMENTAR)
-   ========================================================================== */
-
-/**
- * 2. Busca estatísticas globais de IPs por status
- */
-export async function getIpStatsAction() {
-    try {
-        const response = await ipAddressService.getStats();
-        return { success: true, data: response.data, error: null };
-    } catch (error: any) {
-        return {
-            success: false,
-            data: [],
-            error: "Erro ao carregar estatísticas gerais de IPs.",
-        };
-    }
-}
-
-/**
- * 3. Valida se um IP pode ser atribuído a um tipo de ativo (General Data, Camera, etc)
- */
-export async function verifyIpAction(address: string, expectedType: string) {
-    try {
-        const response = await ipAddressService.verifyIp(address, expectedType);
-        return { success: true, data: response.data, error: null };
-    } catch (error: any) {
-        return {
-            success: false,
-            data: null,
-            error: error.message || "Erro ao verificar conformidade do IP.",
-        };
-    }
-}
-
-/**
- * 4. Obtém o panorama e porcentagem de uso das sub-redes para o Dashboard
- */
-export async function getOverviewStatsAction(networkId?: string) {
-    try {
-        const response = await ipAddressService.getOverviewStats(networkId);
-        return { success: true, data: response.data, error: null };
-    } catch (error: any) {
-        return {
-            success: false,
-            data: null,
-            error: "Erro ao carregar resumo e métricas de uso de redes.",
-        };
-    }
-}
-
-/**
- * 6. Lista os últimos IPs cadastrados/alterados na infraestrutura
- */
-export async function getRecentIpsAction(limit = 10) {
-    try {
-        const response = await ipAddressService.getRecentIps(limit);
-        return { success: true, data: response.data, error: null };
-    } catch (error: any) {
-        return {
-            success: false,
-            data: [],
-            error: "Erro ao buscar histórico de IPs recentes.",
         };
     }
 }

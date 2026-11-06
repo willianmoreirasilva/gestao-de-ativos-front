@@ -1,6 +1,8 @@
 "use server";
 
+import { describeApiError, getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
+import type { AssetItem } from "@/types/assets";
 
 export interface SearchAssetItem {
     id: string;
@@ -11,6 +13,25 @@ export interface SearchAssetItem {
     ipAddress?: string | null;
     mac?: string | null;
 }
+
+// Campos que a busca lê do ativo (a API também manda displayName, mac e ipAddress)
+type SearchApiItem = Pick<
+    AssetItem,
+    | "id"
+    | "type"
+    | "patrimony"
+    | "ip"
+    | "computer"
+    | "switch"
+    | "printer"
+    | "accessPoint"
+    | "camera"
+    | "phone"
+> & {
+    displayName?: string | null;
+    mac?: string | null;
+    ipAddress?: string | null;
+};
 
 export async function searchAssetsAction(
     query: string,
@@ -29,11 +50,12 @@ export async function searchAssetsAction(
             },
         });
 
-        const assetsList = response.data?.data || [];
+        const rawList: unknown = response.data?.data || [];
 
-        if (!Array.isArray(assetsList)) return [];
+        if (!Array.isArray(rawList)) return [];
+        const assetsList: SearchApiItem[] = rawList;
 
-        return assetsList.map((item: any) => {
+        return assetsList.map((item) => {
             let displayName =
                 item.displayName || item.patrimony || "Ativo sem nome";
             let subTitle: string | null = null;
@@ -81,7 +103,7 @@ export async function searchAssetsAction(
             else if (item.phone) {
                 subTitle = item.phone.phoneNumber
                     ? `Ramal/Tel: ${item.phone.phoneNumber}`
-                    : item.phone.model;
+                    : (item.phone.model ?? null);
             }
 
             const ipAddress = item.ip?.address || item.ipAddress || null;
@@ -96,11 +118,11 @@ export async function searchAssetsAction(
                 mac,
             };
         });
-    } catch (error: any) {
+    } catch (error) {
         console.error(
             "❌ [ERRO API]:",
-            error?.response?.status,
-            error?.response?.data || error?.message,
+            getApiErrorStatus(error),
+            describeApiError(error),
         );
 
         return [];

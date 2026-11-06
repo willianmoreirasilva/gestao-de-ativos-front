@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Layout, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import type { Resolver } from "react-hook-form";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -50,8 +50,9 @@ interface AllocationEditModalProps {
     locations: OptionItem[];
 }
 
-export function AllocationEditModal({
-    isOpen,
+// O formulário mora dentro do DialogContent, que desmonta ao fechar: cada
+// abertura recomeça com os valores atuais do ativo, sem reset em effect.
+function AllocationForm({
     onClose,
     assetId,
     patrimony,
@@ -59,7 +60,7 @@ export function AllocationEditModal({
     currentLocationId,
     departments,
     locations,
-}: AllocationEditModalProps) {
+}: Omit<AllocationEditModalProps, "isOpen">) {
     const router = useRouter();
     const [isPending, setIsPending] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
@@ -74,17 +75,6 @@ export function AllocationEditModal({
             locationId: currentLocationId || "",
         },
     });
-
-    useEffect(() => {
-        if (isOpen) {
-            setApiError(null);
-            form.reset({
-                patrimony: patrimony || "",
-                departmentId: currentDepartmentId || "",
-                locationId: currentLocationId || "",
-            });
-        }
-    }, [isOpen]);
 
     const normalizeNullableString = (val?: string | null) => {
         if (!val) return null;
@@ -120,6 +110,127 @@ export function AllocationEditModal({
     }
 
     return (
+        <Form {...form}>
+            <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4 pt-2"
+            >
+                {/* Código do Patrimônio */}
+                <FormField
+                    control={form.control}
+                    name="patrimony"
+                    render={({ field, fieldState }) => (
+                        <FormItem>
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Código do Patrimônio
+                            </FormLabel>
+                            <FormControl>
+                                <Input
+                                    {...field}
+                                    value={field.value || ""}
+                                    placeholder="Ex: PAT-2024-8832"
+                                    disabled={isPending}
+                                    className="h-9 text-xs uppercase tracking-wider font-mono"
+                                />
+                            </FormControl>
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Departamento / Setor */}
+                <FormField
+                    control={form.control}
+                    name="departmentId"
+                    render={({ field, fieldState }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Departamento / Setor Destino
+                            </FormLabel>
+                            <ComboboxSearch
+                                options={departments}
+                                value={field.value || ""}
+                                onChange={(val) => field.onChange(val || "")}
+                                placeholder="Selecionar departamento..."
+                            />
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {/* Localidade Principal */}
+                <FormField
+                    control={form.control}
+                    name="locationId"
+                    render={({ field, fieldState }) => (
+                        <FormItem className="flex flex-col">
+                            <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
+                                Localidade Física Principal
+                            </FormLabel>
+                            <ComboboxSearch
+                                options={locations}
+                                value={field.value || ""}
+                                onChange={(val) => field.onChange(val || "")}
+                                placeholder="Selecionar localidade..."
+                            />
+                            <FieldError
+                                errors={
+                                    fieldState.error?.message
+                                        ? [fieldState.error.message]
+                                        : undefined
+                                }
+                            />
+                        </FormItem>
+                    )}
+                />
+
+                {apiError && <FieldError errors={[apiError]} />}
+
+                <DialogFooter className="pt-3 border-t border-zinc-100 dark:border-zinc-900 mt-4 gap-2 sm:gap-0">
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={onClose}
+                        disabled={isPending}
+                        className="h-9 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        type="submit"
+                        disabled={isPending}
+                        className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900"
+                    >
+                        {isPending ? (
+                            <Loader2 className="animate-spin" size={14} />
+                        ) : (
+                            "Confirmar Alterações"
+                        )}
+                    </Button>
+                </DialogFooter>
+            </form>
+        </Form>
+    );
+}
+
+export function AllocationEditModal({
+    isOpen,
+    onClose,
+    ...formProps
+}: AllocationEditModalProps) {
+    return (
         <Dialog open={isOpen} onOpenChange={(o) => !o && onClose()}>
             <DialogContent className="sm:max-w-md bg-white dark:bg-zinc-950 p-6 border border-zinc-200 dark:border-zinc-800 shadow-xl overflow-visible">
                 <DialogHeader>
@@ -133,125 +244,7 @@ export function AllocationEditModal({
                     </DialogDescription>
                 </DialogHeader>
 
-                <Form {...form}>
-                    <form
-                        onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-4 pt-2"
-                    >
-                        {/* Código do Patrimônio */}
-                        <FormField
-                            control={form.control}
-                            name="patrimony"
-                            render={({ field, fieldState }) => (
-                                <FormItem>
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Código do Patrimônio
-                                    </FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            {...field}
-                                            value={field.value || ""}
-                                            placeholder="Ex: PAT-2024-8832"
-                                            disabled={isPending}
-                                            className="h-9 text-xs uppercase tracking-wider font-mono"
-                                        />
-                                    </FormControl>
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        {/* Departamento / Setor */}
-                        <FormField
-                            control={form.control}
-                            name="departmentId"
-                            render={({ field, fieldState }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Departamento / Setor Destino
-                                    </FormLabel>
-                                    <ComboboxSearch
-                                        options={departments}
-                                        value={field.value || ""}
-                                        onChange={(val) =>
-                                            field.onChange(val || "")
-                                        }
-                                        placeholder="Selecionar departamento..."
-                                    />
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        {/* Localidade Principal */}
-                        <FormField
-                            control={form.control}
-                            name="locationId"
-                            render={({ field, fieldState }) => (
-                                <FormItem className="flex flex-col">
-                                    <FormLabel className="text-xs font-bold text-zinc-700 dark:text-zinc-300">
-                                        Localidade Física Principal
-                                    </FormLabel>
-                                    <ComboboxSearch
-                                        options={locations}
-                                        value={field.value || ""}
-                                        onChange={(val) =>
-                                            field.onChange(val || "")
-                                        }
-                                        placeholder="Selecionar localidade..."
-                                    />
-                                    <FieldError
-                                        errors={
-                                            fieldState.error?.message
-                                                ? [fieldState.error.message]
-                                                : undefined
-                                        }
-                                    />
-                                </FormItem>
-                            )}
-                        />
-
-                        {apiError && <FieldError errors={[apiError]} />}
-
-                        <DialogFooter className="pt-3 border-t border-zinc-100 dark:border-zinc-900 mt-4 gap-2 sm:gap-0">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                onClick={onClose}
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold hover:bg-zinc-100 dark:hover:bg-zinc-900"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={isPending}
-                                className="h-9 text-xs font-bold bg-zinc-950 dark:bg-zinc-50 text-white dark:text-zinc-950 hover:bg-zinc-900"
-                            >
-                                {isPending ? (
-                                    <Loader2
-                                        className="animate-spin"
-                                        size={14}
-                                    />
-                                ) : (
-                                    "Confirmar Alterações"
-                                )}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </Form>
+                <AllocationForm onClose={onClose} {...formProps} />
             </DialogContent>
         </Dialog>
     );

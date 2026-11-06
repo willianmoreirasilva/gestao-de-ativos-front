@@ -1,17 +1,19 @@
-import { AlertCircle, ShieldOff } from "lucide-react";
-import Link from "next/link";
+import type { Metadata } from "next";
 
+import { AccessDenied } from "@/components/access-denied";
+import { ErrorBox } from "@/components/error-box";
 import { Pagination } from "@/components/pagination";
 import { SearchInput } from "@/components/search-input";
-import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/users/empty-state";
 import { PageTitle } from "@/components/users/page-title";
-import { canManageUsers } from "@/lib/user-roles";
+import { can } from "@/lib/permissions";
 import { userService } from "@/services/user";
 import type { UserListItem } from "@/types/user";
 
 import { InviteUserDialog } from "./_components/invite-user-dialog";
 import { UsersTable } from "./_components/users-table";
+
+export const metadata: Metadata = { title: "Usuários do Sistema" };
 
 type Props = {
     searchParams: Promise<{ page?: string; limit?: string; q?: string }>;
@@ -51,25 +53,11 @@ export default async function UsersPage({ searchParams }: Props) {
 
     const profile = profileRes.data;
 
-    if (!canManageUsers(profile.role)) {
+    if (!can(profile.role, "users", "view")) {
         return (
             <div className="space-y-6">
                 <PageTitle title={TITLE} description={DESCRIPTION} />
-                <div className="flex flex-col items-center justify-center py-16 px-4 text-center max-w-md mx-auto space-y-3">
-                    <div className="p-3 bg-zinc-100 dark:bg-zinc-900 rounded-full text-zinc-400">
-                        <ShieldOff size={28} strokeWidth={1.5} />
-                    </div>
-                    <h2 className="font-semibold text-foreground">
-                        Acesso restrito
-                    </h2>
-                    <p className="text-sm text-muted-foreground">
-                        Apenas Superadministradores podem gerenciar usuários e
-                        permissões.
-                    </p>
-                    <Button asChild variant="outline" size="sm">
-                        <Link href="/dashboard">Voltar ao início</Link>
-                    </Button>
-                </div>
+                <AccessDenied message="Apenas Superadministradores podem gerenciar usuários e permissões." />
             </div>
         );
     }
@@ -184,31 +172,6 @@ function PageIndicators({
                         </span>
                     ))}
                 </p>
-            )}
-        </div>
-    );
-}
-
-function ErrorBox({
-    message,
-    retryHref,
-}: {
-    message: string;
-    retryHref?: string;
-}) {
-    return (
-        <div
-            role="alert"
-            className="flex flex-col sm:flex-row sm:items-center gap-3 text-destructive text-sm p-4 bg-destructive/10 rounded-lg border border-destructive/20"
-        >
-            <div className="flex items-start gap-3 flex-1">
-                <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>{message}</span>
-            </div>
-            {retryHref && (
-                <Button asChild variant="outline" size="sm">
-                    <Link href={retryHref}>Tentar novamente</Link>
-                </Button>
             )}
         </div>
     );

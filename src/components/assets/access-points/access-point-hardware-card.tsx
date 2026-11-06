@@ -20,7 +20,10 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-import { updateAccessPointAction } from "@/actions/access-points";
+import {
+    revealAccessPointSecretsAction,
+    updateAccessPointAction,
+} from "@/actions/access-points";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -34,15 +37,18 @@ interface AccessPointHardwareCardProps {
         model?: string | null;
         mac?: string | null;
         ssid?: string | null;
-        wifiPassword?: string | null;
         securityType?: string | null;
         frequencyBand?: string | null;
         adminUsername?: string | null;
-        adminPassword?: string | null;
         firmwareVersion?: string | null;
         notes?: string | null;
+        // As senhas não vêm na página: só se existem
+        hasWifiPassword?: boolean;
+        hasAdminPassword?: boolean;
     };
 }
+
+type Secrets = { wifiPassword: string | null; adminPassword: string | null };
 
 export function AccessPointHardwareCard({
     assetId,
@@ -52,9 +58,34 @@ export function AccessPointHardwareCard({
     const [isLoading, setIsLoading] = useState(false);
     const [copiedMac, setCopiedMac] = useState(false);
 
-    // Toggle de visibilidade de senhas
+    // Senhas: buscadas só ao clicar em "Revelar" (a API registra quem viu)
+    const [secrets, setSecrets] = useState<Secrets | null>(null);
+    const [isRevealing, setIsRevealing] = useState(false);
     const [showWifiPassword, setShowWifiPassword] = useState(false);
     const [showAdminPassword, setShowAdminPassword] = useState(false);
+
+    const toggleSecret = async (field: keyof Secrets) => {
+        const setShow =
+            field === "wifiPassword"
+                ? setShowWifiPassword
+                : setShowAdminPassword;
+
+        if (secrets) {
+            setShow((prev) => !prev);
+            return;
+        }
+
+        setIsRevealing(true);
+        const res = await revealAccessPointSecretsAction(assetId);
+        setIsRevealing(false);
+
+        if (!res.success) {
+            toast.error(res.error);
+            return;
+        }
+        setSecrets(res.data);
+        setShow(true);
+    };
 
     // Estados do Formulário
     const [name, setName] = useState(apData.name || "");
@@ -62,7 +93,8 @@ export function AccessPointHardwareCard({
     const [model, setModel] = useState(apData.model || "");
     const [mac, setMac] = useState(apData.mac || "");
     const [ssid, setSsid] = useState(apData.ssid || "");
-    const [wifiPassword, setWifiPassword] = useState(apData.wifiPassword || "");
+    // Em branco = manter a senha atual
+    const [wifiPassword, setWifiPassword] = useState("");
     const [securityType, setSecurityType] = useState(apData.securityType || "");
     const [frequencyBand, setFrequencyBand] = useState(
         apData.frequencyBand || "",
@@ -70,9 +102,7 @@ export function AccessPointHardwareCard({
     const [adminUsername, setAdminUsername] = useState(
         apData.adminUsername || "",
     );
-    const [adminPassword, setAdminPassword] = useState(
-        apData.adminPassword || "",
-    );
+    const [adminPassword, setAdminPassword] = useState("");
     const [firmwareVersion, setFirmwareVersion] = useState(
         apData.firmwareVersion || "",
     );
@@ -97,11 +127,12 @@ export function AccessPointHardwareCard({
                 model,
                 mac,
                 ssid,
-                wifiPassword,
+                // Só envia a senha quando o usuário digitou uma nova
+                wifiPassword: wifiPassword || undefined,
                 securityType,
                 frequencyBand,
                 adminUsername,
-                adminPassword,
+                adminPassword: adminPassword || undefined,
                 firmwareVersion,
                 notes,
             });
@@ -109,6 +140,12 @@ export function AccessPointHardwareCard({
             if (res.success) {
                 toast.success("Especificações do Access Point atualizadas!");
                 setIsEditing(false);
+                // Senhas digitadas não ficam na memória da tela
+                setWifiPassword("");
+                setAdminPassword("");
+                setSecrets(null);
+                setShowWifiPassword(false);
+                setShowAdminPassword(false);
             } else {
                 toast.error(res.error || "Erro ao salvar alterações.");
             }
@@ -233,17 +270,23 @@ export function AccessPointHardwareCard({
                             </span>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-xs font-mono text-zinc-800 dark:text-zinc-200">
-                                    {showWifiPassword
-                                        ? apData.wifiPassword || "Sem senha"
-                                        : "••••••••••••"}
+                                    {!apData.hasWifiPassword
+                                        ? "Sem senha"
+                                        : showWifiPassword
+                                          ? secrets?.wifiPassword
+                                          : "••••••••••••"}
                                 </span>
-                                {apData.wifiPassword && (
+                                {apData.hasWifiPassword && (
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            setShowWifiPassword(
-                                                !showWifiPassword,
-                                            )
+                                            toggleSecret("wifiPassword")
+                                        }
+                                        disabled={isRevealing}
+                                        title={
+                                            showWifiPassword
+                                                ? "Ocultar"
+                                                : "Revelar (fica registrado na auditoria)"
                                         }
                                         className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                                     >
@@ -280,18 +323,23 @@ export function AccessPointHardwareCard({
                             </span>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <span className="text-xs font-mono text-zinc-800 dark:text-zinc-200">
-                                    {showAdminPassword
-                                        ? apData.adminPassword ||
-                                          "Não informada"
-                                        : "••••••••••••"}
+                                    {!apData.hasAdminPassword
+                                        ? "Não informada"
+                                        : showAdminPassword
+                                          ? secrets?.adminPassword
+                                          : "••••••••••••"}
                                 </span>
-                                {apData.adminPassword && (
+                                {apData.hasAdminPassword && (
                                     <button
                                         type="button"
                                         onClick={() =>
-                                            setShowAdminPassword(
-                                                !showAdminPassword,
-                                            )
+                                            toggleSecret("adminPassword")
+                                        }
+                                        disabled={isRevealing}
+                                        title={
+                                            showAdminPassword
+                                                ? "Ocultar"
+                                                : "Revelar (fica registrado na auditoria)"
                                         }
                                         className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200"
                                     >
@@ -412,10 +460,15 @@ export function AccessPointHardwareCard({
                             Senha do Wi-Fi
                         </label>
                         <Input
-                            type="text"
+                            type="password"
+                            autoComplete="new-password"
                             value={wifiPassword}
                             onChange={(e) => setWifiPassword(e.target.value)}
-                            placeholder="Ex: Senha1234"
+                            placeholder={
+                                apData.hasWifiPassword
+                                    ? "Em branco mantém a senha atual"
+                                    : "Ex: Senha1234"
+                            }
                             className="h-9 text-xs font-mono bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
                         />
                     </div>
@@ -461,10 +514,15 @@ export function AccessPointHardwareCard({
                             Senha Admin
                         </label>
                         <Input
-                            type="text"
+                            type="password"
+                            autoComplete="new-password"
                             value={adminPassword}
                             onChange={(e) => setAdminPassword(e.target.value)}
-                            placeholder="Ex: PassAdmin#123"
+                            placeholder={
+                                apData.hasAdminPassword
+                                    ? "Em branco mantém a senha atual"
+                                    : "Ex: PassAdmin#123"
+                            }
                             className="h-9 text-xs font-mono bg-zinc-50 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800"
                         />
                     </div>

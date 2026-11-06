@@ -10,6 +10,7 @@ import { FieldErrors, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { type z } from "zod";
 
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { createCameraAssetAction } from "@/actions/assets/cameras.actions";
 import { CameraSpecsFormBlock } from "@/components/assets/cameras/camera-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
@@ -20,7 +21,6 @@ import {
     cameraFormSchema,
     type CameraFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddCameraPage() {
@@ -148,7 +148,7 @@ export default function AddCameraPage() {
         };
 
         try {
-            const result = await createCameraAssetAction(payload as any);
+            const result = await createCameraAssetAction(payload);
 
             if (result.success) {
                 toast.success("Câmera cadastrada com sucesso!", {

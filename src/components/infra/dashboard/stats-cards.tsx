@@ -1,6 +1,7 @@
 import { Layers, MapPin, Network } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 type Props = {
     summary: {
@@ -51,7 +52,10 @@ export function StatsCards({ summary }: Props) {
             {cards.map((card, idx) => (
                 <Card
                     key={idx}
-                    className={`shadow-sm transition-all hover:shadow-md ${card.borderColor}`}
+                    className={cn(
+                        "shadow-sm transition-all hover:shadow-md",
+                        card.borderColor,
+                    )}
                 >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 pb-1">
                         <CardTitle className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground truncate">
@@ -59,7 +63,10 @@ export function StatsCards({ summary }: Props) {
                         </CardTitle>
                         {/* Ícones ligeiramente menores (p-1.5) para encaixar na nova proporção */}
                         <div
-                            className={`p-1.5 rounded-lg transition-colors shrink-0 ${card.iconBg}`}
+                            className={cn(
+                                "p-1.5 rounded-lg transition-colors shrink-0",
+                                card.iconBg,
+                            )}
                         >
                             {card.icon}
                         </div>

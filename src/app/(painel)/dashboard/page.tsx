@@ -1,8 +1,12 @@
 import { AlertCircle } from "lucide-react";
+import type { Metadata } from "next";
 
 import { DashboardClientView } from "@/components/dashboard/dashboard-client-view";
 import { dashboardService } from "@/services/dashboard-service";
+import { userService } from "@/services/user";
 import { AuditPeriod } from "@/types/dashboard";
+
+export const metadata: Metadata = { title: "Dashboard" };
 
 export const revalidate = 0;
 
@@ -16,8 +20,11 @@ export default async function DashboardPage({
     const resolvedParams = await searchParams;
     const period = resolvedParams.period || "7d";
 
-    const { data, error } =
-        await dashboardService.getExecutiveDashboard(period);
+    const { data: profile } = await userService.getMyProfile();
+    const { data, error } = await dashboardService.getExecutiveDashboard(
+        period,
+        profile?.role ?? null,
+    );
 
     if (error || !data) {
         return (

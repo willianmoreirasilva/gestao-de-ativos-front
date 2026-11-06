@@ -11,6 +11,7 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { getFormattedEntity } from "@/lib/audit-utils";
+import { isRecord } from "@/lib/utils";
 import type { AuditLog } from "@/types/audit";
 
 import { AuditLogActionBadge } from "./audit-log-action-badge";
@@ -52,14 +53,15 @@ export function AuditLogDetailsModal({
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const formatValue = (val: any): string => {
+    const formatValue = (val: unknown): string => {
         if (val === null || val === undefined || val === "—") return "—";
 
-        if (typeof val === "object") {
-            if (val.address && val.name) return `${val.address} (${val.name})`;
-            if (val.address) return val.address;
-            if (val.name) return val.name;
-            if (val.label) return val.label;
+        if (isRecord(val)) {
+            const { address, name, label } = val;
+            if (address && name) return `${String(address)} (${String(name)})`;
+            if (address) return String(address);
+            if (name) return String(name);
+            if (label) return String(label);
             return JSON.stringify(val);
         }
 
@@ -75,11 +77,12 @@ export function AuditLogDetailsModal({
             );
 
         const details = log.details;
-        let diffs: Array<{ field: string; before: any; after: any }> = [];
+        let diffs: Array<{ field: string; before: unknown; after: unknown }> =
+            [];
 
         if (details.before || details.after) {
-            const beforeObj = details.before || {};
-            const afterObj = details.after || {};
+            const beforeObj = isRecord(details.before) ? details.before : {};
+            const afterObj = isRecord(details.after) ? details.after : {};
             const allKeys = Array.from(
                 new Set([...Object.keys(beforeObj), ...Object.keys(afterObj)]),
             );
@@ -95,14 +98,12 @@ export function AuditLogDetailsModal({
                     before: beforeObj[key] ?? "—",
                     after: afterObj[key] ?? "—",
                 }));
-        } else if (details.changes && typeof details.changes === "object") {
-            diffs = Object.entries(details.changes).map(
-                ([field, val]: [string, any]) => ({
-                    field,
-                    before: val?.before ?? "—",
-                    after: val?.after ?? "—",
-                }),
-            );
+        } else if (isRecord(details.changes)) {
+            diffs = Object.entries(details.changes).map(([field, val]) => ({
+                field,
+                before: (isRecord(val) ? val.before : undefined) ?? "—",
+                after: (isRecord(val) ? val.after : undefined) ?? "—",
+            }));
         }
 
         if (diffs.length > 0) {

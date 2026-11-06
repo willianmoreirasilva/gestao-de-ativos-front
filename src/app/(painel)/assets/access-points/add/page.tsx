@@ -10,6 +10,7 @@ import { FieldErrors, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
 import { createAccessPointAction } from "@/actions/access-points";
+import { getAssetOptionsAction } from "@/actions/assets/asset-options.action";
 import { AccessPointSpecsFormBlock } from "@/components/assets/access-points/access-point-specs-form-block";
 import { AllocationFormBlock } from "@/components/assets/shared/allocation-form-block";
 import { ConnectivityFormBlock } from "@/components/assets/shared/connectivity-form-block";
@@ -20,7 +21,6 @@ import {
     accessPointFormSchema,
     AccessPointFormValues,
 } from "@/schemas/asset-create.schema";
-import { getAssetOptionsAction } from "@/services/assets";
 import { OptionItem } from "@/types/assets";
 
 export default function AddAccessPointPage() {
@@ -86,15 +86,29 @@ export default function AddAccessPointPage() {
     // 2. Resolve dinamicamente o vlanType baseado na marca (Ruckus -> WIFI_MGMT, Outras -> GENERAL_DATA)
     const currentVlanType = getApVlanType(currentVendor);
 
-    // 3. Reseta a seleção de rede/IP se o usuário alterar o fabricante para um com escopo diferente
+    // 3. Reseta a seleção de rede/IP se o usuário alterar o fabricante para um com
+    // escopo diferente. É uma assinatura do formulário (sistema externo): o
+    // setState acontece no callback, não durante o effect.
     useEffect(() => {
-        if (selectedNetworkId) {
-            setSelectedNetworkId("");
-            setSelectedIpId("");
-            form.setValue("selectedNetworkId", "");
-            form.setValue("selectedIpId", "");
-        }
-    }, [currentVlanType]);
+        let lastVlanType = getApVlanType(form.getValues("vendor"));
+
+        return form.subscribe({
+            name: "vendor",
+            formState: { values: true },
+            callback: ({ values }) => {
+                const nextVlanType = getApVlanType(values.vendor);
+                if (nextVlanType === lastVlanType) return;
+                lastVlanType = nextVlanType;
+
+                if (form.getValues("selectedNetworkId")) {
+                    setSelectedNetworkId("");
+                    setSelectedIpId("");
+                    form.setValue("selectedNetworkId", "");
+                    form.setValue("selectedIpId", "");
+                }
+            },
+        });
+    }, [form]);
 
     useEffect(() => {
         async function fetchFormOptions() {
@@ -176,13 +190,13 @@ export default function AddAccessPointPage() {
             departmentId: data.departmentId || null,
             locationId: data.unitId || data.locationId || null,
             ipId: targetIpId,
+            connectedToSwitchId: data.switchId || null,
+            switchPort: data.switchId ? Number(data.switchPort) || null : null,
             notes: data.notes || null,
-            // Opcional: envia a vlanType resolvida para persistência/auditoria no backend
-            vlanType: getApVlanType(data.vendor),
         };
 
         try {
-            const result = await createAccessPointAction(payload as any);
+            const result = await createAccessPointAction(payload);
 
             if (result.success) {
                 toast.success("Access Point cadastrado com sucesso!");

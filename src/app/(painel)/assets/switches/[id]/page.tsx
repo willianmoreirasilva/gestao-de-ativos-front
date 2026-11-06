@@ -1,4 +1,5 @@
 import { ShieldAlert } from "lucide-react";
+import type { Metadata } from "next";
 
 import { AssetTechnicalCard } from "@/components/assets/shared/asset-technical-card";
 import { BackButton } from "@/components/users/back-button";
@@ -7,6 +8,8 @@ import { departmentService } from "@/services/department";
 import { locationService } from "@/services/location";
 import { switchService } from "@/services/switches";
 import type { AssetItem } from "@/types/assets";
+
+export const metadata: Metadata = { title: "Switch" };
 
 interface Props {
     params: Promise<{ id: string }>;
@@ -18,8 +21,8 @@ export default async function SwitchDetailsPage({ params }: Props) {
     const [switchResult, departmentsRes, locationsRes, switchesRes] =
         await Promise.all([
             switchService.getSwitchById(id),
-            departmentService.getDepartments(),
-            locationService.getLocations(),
+            departmentService.getDepartments(1, 1000),
+            locationService.getLocations(1, 1000),
             switchService.getSwitches({ page: 1, limit: 100 }),
         ]);
 
@@ -38,8 +41,7 @@ export default async function SwitchDetailsPage({ params }: Props) {
         );
     }
 
-    // Cast seguro para ler propriedades dinâmicas do backend sem erro do TS
-    const rawAsset = switchData.asset as any;
+    const rawAsset = switchData.asset;
 
     // Normaliza a resposta do backend montando o objeto compatível com AssetTechnicalCard
     const assetFormatted: AssetItem = {
@@ -55,6 +57,14 @@ export default async function SwitchDetailsPage({ params }: Props) {
         // Propriedades de porta e switch pai tratadas com fallback
         connectedToSwitchId: rawAsset.connectedToSwitchId || null,
         switchPort: rawAsset.switchPort ? Number(rawAsset.switchPort) : null,
+        connectedToSwitch: rawAsset.connectedToSwitch
+            ? {
+                  ...rawAsset.connectedToSwitch,
+                  hostname:
+                      rawAsset.connectedToSwitch.hostname ||
+                      rawAsset.connectedToSwitch.model,
+              }
+            : null,
 
         // Como é uma página exclusiva de SWITCH, a VLAN é SWITCH_MGMT
         vlanType:
@@ -62,7 +72,15 @@ export default async function SwitchDetailsPage({ params }: Props) {
         vlanTag: rawAsset.vlanTag ?? rawAsset.ip?.network?.vlanTag ?? null,
 
         department: rawAsset.department || null,
-        location: rawAsset.location || null,
+        location: rawAsset.location
+            ? {
+                  id: rawAsset.location.id,
+                  name: rawAsset.location.name,
+                  building: rawAsset.location.building ?? null,
+                  floor: rawAsset.location.floor ?? null,
+                  room: rawAsset.location.room ?? null,
+              }
+            : null,
         ip: rawAsset.ip || null,
         switch: {
             id: switchData.id,

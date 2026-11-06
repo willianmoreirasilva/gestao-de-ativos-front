@@ -3,6 +3,7 @@
 
 "use server";
 
+import { apiErrorMessage, describeApiError } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { sanitizePayloadForBackend } from "@/lib/utils";
 
@@ -30,7 +31,7 @@ export async function updateAssetConnectivityAction(
         revalidateAssetPaths(assetId);
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar os dados de conectividade de rede.",
@@ -60,7 +61,7 @@ export async function updateAssetAllocationAction(
         revalidateAssetPaths(assetId);
 
         return { success: true, data: response.data?.data };
-    } catch (error: any) {
+    } catch (error) {
         return handleError(
             error,
             "Erro ao atualizar os dados de alocação física.",
@@ -94,17 +95,19 @@ export async function findIpByAddressAction(
             success: true,
             data: response.data.data,
         };
-    } catch (error: any) {
+    } catch (error) {
         console.error(
             "❌ [findIpByAddressAction Error]:",
-            error?.response?.data || error.message,
+            describeApiError(error),
         );
 
         return {
             success: false,
-            error:
-                error.response?.data?.error ||
+            error: apiErrorMessage(
+                error,
                 "O endereço IP informado não é válido para este ativo.",
+                "error",
+            ),
         };
     }
 }

@@ -15,6 +15,7 @@ export interface SwitchLocation {
 export interface SwitchIp {
     id: string;
     address: string;
+    network?: { type?: string | null; vlanTag?: number | null } | null;
 }
 
 // --- Entidade Asset Pai ---
@@ -27,6 +28,16 @@ export interface SwitchAsset {
     ipId: string | null;
     departmentId: string | null;
     locationId: string | null;
+    connectedToSwitchId?: string | null;
+    switchPort?: number | string | null;
+    connectedToSwitch?: {
+        id: string;
+        hostname: string | null;
+        model: string;
+        vendor: string | null;
+    } | null;
+    vlanType?: string | null;
+    vlanTag?: number | null;
     // Relacionamentos populados pelo include do backend:
     department?: SwitchDepartment | null;
     location?: SwitchLocation | null;
@@ -58,7 +69,9 @@ export interface CreateSwitchPayload {
     patrimony?: string | null;
     departmentId?: string | null;
     locationId?: string | null;
-    ipId: string; // Obrigatório no backend para criação de Switch
+    ipId?: string | null; // Opcional: o switch pode ficar sem IP (ex.: almoxarifado)
+    connectedToSwitchId?: string | null; // Switch concentrador (cascata)
+    switchPort?: number | null;
     hostname?: string | null;
     model: string;
     vendor?: string | null;

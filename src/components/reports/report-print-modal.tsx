@@ -3,6 +3,8 @@
 import { FileText, Printer, X } from "lucide-react";
 import React from "react";
 
+import type { AssetReportData, ReportCascadeInfo } from "@/types/report";
+
 interface PrintModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -13,7 +15,10 @@ interface PrintModalProps {
         withoutIp: number;
         departmentsCount: number;
     };
-    data: any[];
+    data: AssetReportData[];
+    // Colunas "Nível" e "Conectado via" (filtro de switch em cascata)
+    showCascade?: boolean;
+    cascade?: ReportCascadeInfo;
 }
 
 export function ReportPrintModal({
@@ -22,6 +27,8 @@ export function ReportPrintModal({
     activeFiltersLabels,
     summary,
     data,
+    showCascade = false,
+    cascade,
 }: PrintModalProps) {
     if (!isOpen) return null;
 
@@ -168,6 +175,14 @@ export function ReportPrintModal({
                             </div>
                         </div>
 
+                        {cascade?.truncated && (
+                            <p className="text-xs font-semibold text-amber-800">
+                                Resultado limitado a {cascade.maxDepth} níveis:
+                                há ativos mais abaixo na cascata que não
+                                aparecem neste relatório.
+                            </p>
+                        )}
+
                         {/* Tabela Principal */}
                         <table className="w-full text-left border-collapse text-xs">
                             <thead>
@@ -193,43 +208,74 @@ export function ReportPrintModal({
                                     <th className="py-2 px-2 font-bold">
                                         VLAN
                                     </th>
+                                    {showCascade && (
+                                        <>
+                                            <th className="py-2 px-2 font-bold">
+                                                Nível
+                                            </th>
+                                            <th className="py-2 px-2 font-bold">
+                                                Conectado via
+                                            </th>
+                                        </>
+                                    )}
                                 </tr>
                             </thead>
                             <tbody>
-                                {data.map((item, index) => (
-                                    <tr
-                                        key={item.id || index}
-                                        className="border-b border-slate-200 hover:bg-slate-50"
-                                    >
-                                        <td className="py-2 px-2 font-mono">
-                                            {item.patrimony || "S/N"}
-                                        </td>
-                                        <td className="py-2 px-2 font-medium">
-                                            {item.computer?.hostname ||
-                                                item.printer?.hostname ||
-                                                item.camera?.hostname ||
-                                                item.phone?.phoneNumber ||
-                                                "-"}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.type}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.department?.name || "-"}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.location?.name || "-"}
-                                        </td>
-                                        <td className="py-2 px-2 font-mono">
-                                            {item.ip?.address || "Sem IP"}
-                                        </td>
-                                        <td className="py-2 px-2">
-                                            {item.ip?.network?.vlanTag
-                                                ? `VLAN ${item.ip.network.vlanTag}`
-                                                : "-"}
-                                        </td>
-                                    </tr>
-                                ))}
+                                {data.map((item, index) => {
+                                    const ip =
+                                        typeof item.ip === "object"
+                                            ? item.ip
+                                            : null;
+                                    const ipAddress = ip?.address;
+                                    const vlanTag = ip?.network?.vlanTag;
+
+                                    return (
+                                        <tr
+                                            key={item.id || index}
+                                            className="border-b border-slate-200 hover:bg-slate-50"
+                                        >
+                                            <td className="py-2 px-2 font-mono">
+                                                {item.patrimony || "S/N"}
+                                            </td>
+                                            <td className="py-2 px-2 font-medium">
+                                                {item.computer?.hostname ||
+                                                    item.printer?.hostname ||
+                                                    item.camera?.hostname ||
+                                                    item.phone?.phoneNumber ||
+                                                    "-"}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {item.type}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {item.department?.name || "-"}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {item.location?.name || "-"}
+                                            </td>
+                                            <td className="py-2 px-2 font-mono">
+                                                {ipAddress || "Sem IP"}
+                                            </td>
+                                            <td className="py-2 px-2">
+                                                {vlanTag
+                                                    ? `VLAN ${vlanTag}`
+                                                    : "-"}
+                                            </td>
+                                            {showCascade && (
+                                                <>
+                                                    <td className="py-2 px-2">
+                                                        {item.cascadeLevel ??
+                                                            "-"}
+                                                    </td>
+                                                    <td className="py-2 px-2">
+                                                        {item.cascadePath ||
+                                                            "-"}
+                                                    </td>
+                                                </>
+                                            )}
+                                        </tr>
+                                    );
+                                })}
                             </tbody>
                         </table>
                     </div>

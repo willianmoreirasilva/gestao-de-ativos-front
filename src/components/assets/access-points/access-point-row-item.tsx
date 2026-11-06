@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 import { deleteAccessPointAction } from "@/actions/access-points";
 import { NotesPopover } from "@/components/assets/shared/notes-popover";
+import { useCan } from "@/components/permission-provider";
 import { Button } from "@/components/ui/button";
 import { TableCell, TableRow } from "@/components/ui/table";
 import {
@@ -17,6 +18,7 @@ import {
 } from "@/components/ui/tooltip";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
 import { getApVlanType } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { AccessPointItem } from "@/types/access-points";
 
 interface AccessPointRowItemProps {
@@ -27,6 +29,13 @@ export function AccessPointRowItem({ apItem }: AccessPointRowItemProps) {
     const [isDeleting, setIsDeleting] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+
+    // USER e CAM_OPERATOR só veem os campos básicos: sem IP, observações,
+    // detalhe ou exclusão (a API nem envia esses dados)
+    const can = useCan();
+    const canSeeSecrets = can("networkDevices", "viewSecrets");
+    const canViewDetails = can("networkDevices", "viewDetails");
+    const canDelete = can("networkDevices", "delete");
 
     const identifier =
         apItem.name || apItem.model || "Access Point sem identificação";
@@ -96,11 +105,12 @@ export function AccessPointRowItem({ apItem }: AccessPointRowItemProps) {
                         </span>
                         <div className="flex items-center">
                             <span
-                                className={`text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider ${
+                                className={cn(
+                                    "text-[10px] font-semibold px-1.5 py-0.5 rounded uppercase tracking-wider",
                                     isRuckus
                                         ? "bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 border border-purple-200 dark:border-purple-800/40"
-                                        : "bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40"
-                                }`}
+                                        : "bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800/40",
+                                )}
                             >
                                 {vlanType}
                             </span>
@@ -110,7 +120,11 @@ export function AccessPointRowItem({ apItem }: AccessPointRowItemProps) {
 
                 {/* IP de Gerência */}
                 <TableCell className="py-3.5">
-                    {apItem.asset?.ip?.address ? (
+                    {!canSeeSecrets ? (
+                        <span className="text-xs text-zinc-400 italic">
+                            Restrito
+                        </span>
+                    ) : apItem.asset?.ip?.address ? (
                         <code className="text-xs font-semibold text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/40 px-2 py-1 rounded">
                             {apItem.asset.ip.address}
                         </code>
@@ -143,37 +157,41 @@ export function AccessPointRowItem({ apItem }: AccessPointRowItemProps) {
                 {/* Ações */}
                 <TableCell className="py-3.5 pr-5 text-center">
                     <div className="flex items-center justify-center gap-1.5">
-                        <NotesPopover notes={apItem.notes} />
+                        {canSeeSecrets && <NotesPopover notes={apItem.notes} />}
 
-                        <ConfirmDeleteDialog
-                            name={identifier}
-                            onConfirm={handleDelete}
-                            isDeleting={isDeleting}
-                            error={actionError}
-                            open={modalOpen}
-                            setOpen={setModalOpen}
-                        />
+                        {canDelete && (
+                            <ConfirmDeleteDialog
+                                name={identifier}
+                                onConfirm={handleDelete}
+                                isDeleting={isDeleting}
+                                error={actionError}
+                                open={modalOpen}
+                                setOpen={setModalOpen}
+                            />
+                        )}
 
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <Link
-                                    href={`/assets/access-points/${apItem.id}`}
-                                >
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-950/40 border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 rounded-lg transition-all"
+                        {canViewDetails && (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Link
+                                        href={`/assets/access-points/${apItem.id}`}
                                     >
-                                        <Eye size={14} />
-                                    </Button>
-                                </Link>
-                            </TooltipTrigger>
-                            <TooltipContent side="top">
-                                <p className="text-[10px] font-semibold">
-                                    Visualizar AP
-                                </p>
-                            </TooltipContent>
-                        </Tooltip>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-950/40 border border-transparent hover:border-blue-100 dark:hover:border-blue-900/30 rounded-lg transition-all"
+                                        >
+                                            <Eye size={14} />
+                                        </Button>
+                                    </Link>
+                                </TooltipTrigger>
+                                <TooltipContent side="top">
+                                    <p className="text-[10px] font-semibold">
+                                        Visualizar AP
+                                    </p>
+                                </TooltipContent>
+                            </Tooltip>
+                        )}
                     </div>
                 </TableCell>
             </TableRow>

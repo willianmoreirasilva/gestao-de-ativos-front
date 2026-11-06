@@ -1,3 +1,4 @@
+import { apiErrorMessage, getApiErrorStatus } from "@/lib/api-error";
 import { getServerApi } from "@/lib/server-api";
 import { Network } from "@/types/network";
 
@@ -14,6 +15,7 @@ export interface NetworkResponse {
 export interface SingleNetworkResponse {
     data: Network | null;
     error: string | null;
+    status: number | null;
 }
 
 // Filtros aceitos pela listagem principal (🌟 Atualizado com offset e limit)
@@ -56,13 +58,16 @@ export const networkService = {
                 meta: response.data.meta || { total: 0, offset: 0, limit: 10 },
                 error: null,
             };
-        } catch (error: any) {
+        } catch (error) {
             console.error("Erro no service getNetworks:", error);
             return {
                 data: [],
                 meta: { total: 0, offset: 0, limit: 10 },
-                error:
-                    error.response?.data?.error || "Falha ao carregar redes.",
+                error: apiErrorMessage(
+                    error,
+                    "Falha ao carregar redes.",
+                    "error",
+                ),
             };
         }
     },
@@ -77,20 +82,16 @@ export const networkService = {
             return {
                 data: response.data.data || response.data,
                 error: null,
+                status: response.status,
             };
-        } catch (error: any) {
-            console.error(
-                `Erro no service getNetworkById para o ID ${id}:`,
-                error,
-            );
+        } catch (error) {
+            // O registro do erro fica com quem chama (loadOrNotFound): 404 e
+            // 400 são esperados e não devem virar log
             return {
                 data: null,
-                error: error.response?.data?.error || "Rede não encontrada.",
+                error: apiErrorMessage(error, "Rede não encontrada.", "error"),
+                status: getApiErrorStatus(error),
             };
         }
     },
-
-
-   
-
 };

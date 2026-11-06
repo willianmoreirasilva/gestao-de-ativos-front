@@ -32,11 +32,17 @@ export function validateAvatarFile(file: File): string | null {
     return null;
 }
 
-// User.image guarda um caminho relativo da API; URLs absolutas e
-// pré-visualizações locais (blob:/data:) passam direto
+// Único formato que a API grava em User.image (ver back:src/lib/avatar-storage.ts)
+const AVATAR_PATH =
+    /^\/api\/avatars\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.webp$/;
+
+// User.image guarda um caminho relativo da API; pré-visualizações locais
+// (blob:) passam direto. Qualquer outro valor é ignorado: uma URL externa
+// serviria de pixel de rastreamento de quem abre a tela.
 export function resolveAvatarUrl(image: string | null | undefined) {
     if (!image) return undefined;
-    if (/^(https?:|blob:|data:)/i.test(image)) return image;
+    if (image.startsWith("blob:")) return image;
+    if (!AVATAR_PATH.test(image)) return undefined;
     return `${process.env.NEXT_PUBLIC_API_URL ?? ""}${image}`;
 }
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { FieldError } from "@/components/users/field-error";
+import { cn } from "@/lib/utils";
 
 const NETWORK_TYPES = {
     GENERAL_DATA: "Dados Gerais (Corporativa)",
@@ -135,11 +136,12 @@ export const NetworkForm = ({ network }: Props) => {
                             name="type"
                             defaultValue={network?.type || "GENERAL_DATA"}
                             disabled={isEditMode}
-                            className={`flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm focus-visible:outline-none dark:border-zinc-800 dark:bg-zinc-950 ${
+                            className={cn(
+                                "flex h-10 w-full rounded-md border border-zinc-200 bg-white px-3 py-2 text-sm focus-visible:outline-none dark:border-zinc-800 dark:bg-zinc-950",
                                 isEditMode
                                     ? "bg-zinc-50 text-zinc-500 cursor-not-allowed dark:bg-zinc-900"
-                                    : ""
-                            }`}
+                                    : "",
+                            )}
                         >
                             {Object.entries(NETWORK_TYPES).map(
                                 ([value, label]) => (

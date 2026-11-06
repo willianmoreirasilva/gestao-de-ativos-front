@@ -1,4 +1,5 @@
 import { AlertCircle } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,6 +8,8 @@ import { ROLE_LABELS } from "@/lib/user-roles";
 import { userService } from "@/services/user";
 
 import { AcceptInviteForm } from "./_components/accept-invite-form";
+
+export const metadata: Metadata = { title: "Aceitar convite" };
 
 type Props = {
     searchParams: Promise<{ token?: string }>;

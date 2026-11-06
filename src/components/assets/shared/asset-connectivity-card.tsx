@@ -12,6 +12,7 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { OptionItem } from "@/types/assets";
 
 import { SwitchConnectionEditModal } from "./components/switch-connection-edit-modal";
@@ -34,6 +35,8 @@ interface AssetConnectivityCardProps {
     } | null;
     switchPort?: string | null;
     switches: OptionItem[];
+    // Sem permissão de edição (ex.: ADMIN em câmeras), os botões somem
+    readOnly?: boolean;
 }
 
 const vlanConfig: Record<VlanType, { label: string; className: string }> = {
@@ -68,6 +71,7 @@ export function AssetConnectivityCard({
     connectedToSwitch,
     switchPort,
     switches,
+    readOnly = false,
 }: AssetConnectivityCardProps) {
     const [isSwitchModalOpen, setIsSwitchModalOpen] = useState(false);
 
@@ -112,23 +116,25 @@ export function AssetConnectivityCard({
                         <Terminal size={16} className="text-emerald-500" />{" "}
                         Conectividade IP & Rede
                     </CardTitle>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                className="h-8 w-8 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
-                                onClick={() => setIsSwitchModalOpen(true)}
-                            >
-                                <Pencil size={14} />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="top">
-                            <p className="text-[10px] font-semibold">
-                                Editar Porta/Switch
-                            </p>
-                        </TooltipContent>
-                    </Tooltip>
+                    {!readOnly && (
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Button
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors"
+                                    onClick={() => setIsSwitchModalOpen(true)}
+                                >
+                                    <Pencil size={14} />
+                                </Button>
+                            </TooltipTrigger>
+                            <TooltipContent side="top">
+                                <p className="text-[10px] font-semibold">
+                                    Editar Porta/Switch
+                                </p>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
                 </CardHeader>
 
                 <CardContent className="p-6 space-y-5 flex-1 flex flex-col justify-between">
@@ -167,7 +173,10 @@ export function AssetConnectivityCard({
                                 />
                                 <Badge
                                     variant="outline"
-                                    className={`text-xs font-medium px-2.5 py-0.5 rounded-md ${currentVlan.className}`}
+                                    className={cn(
+                                        "text-xs font-medium px-2.5 py-0.5 rounded-md",
+                                        currentVlan.className,
+                                    )}
                                 >
                                     {currentVlan.label}
                                 </Badge>
@@ -227,17 +236,19 @@ export function AssetConnectivityCard({
                         </div>
                     </div>
 
-                    <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900">
-                        <QuickChangeIpModal
-                            assetId={assetId}
-                            currentIp={ip?.address || null}
-                            vlanType={validVlanType}
-                        />
-                    </div>
+                    {!readOnly && (
+                        <div className="pt-4 border-t border-zinc-100 dark:border-zinc-900">
+                            <QuickChangeIpModal
+                                assetId={assetId}
+                                currentIp={ip?.address || null}
+                                vlanType={validVlanType}
+                            />
+                        </div>
+                    )}
                 </CardContent>
 
                 <SwitchConnectionEditModal
-                    isOpen={isSwitchModalOpen}
+                    isOpen={!readOnly && isSwitchModalOpen}
                     onClose={() => setIsSwitchModalOpen(false)}
                     assetId={assetId}
                     currentSwitchId={connectedToSwitch?.id || null}
