@@ -758,5 +758,5 @@ Servidor Linux próprio, front e back no mesmo host, atrás de proxy reverso com
 ### Não testado
 - **O CI no GitHub com o lint bloqueante:** só vale depois do push.
 - **Exportar relatório:** o clique em exportar (a action só roda pelo componente de cliente); as chamadas `/api/reports/*` deram 200.
-- **`error.tsx` com erro real do servidor:** testado com o back desligado só na verificação do B5; vale repetir após o deploy.
+- **`error.tsx` com erro real do servidor** (B5): confirmar no navegador, com o back desligado, que aparece a página de erro com "Tentar novamente"; repetir após o deploy.
 - **Navegação depois da remoção de código morto (M4):** o `build` e o `tsc` cobrem imports, não rotas dinâmicas.
