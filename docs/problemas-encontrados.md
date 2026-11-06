@@ -722,3 +722,41 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
    - M13: `any`.
    - Itens 🟢.
    - `eslint --fix` para a ordem dos imports.
+
+---
+
+## Pendências após a revisão
+
+O que ficou para depois, reunido em um só lugar (06/11/2026). Os detalhes de cada item estão nas seções indicadas.
+
+### Produção (antes de publicar)
+Servidor Linux próprio, front e back no mesmo host, atrás de proxy reverso com HTTPS (ver a resposta de 28/10/2026 no M6).
+- **Banco novo:** rodar só `prisma migrate deploy` (nunca `migrate dev` nem `db push`).
+- **`TRUST_PROXY=true`:** para o IP real do cliente chegar à auditoria e ao rate limit (M16).
+- **`HOST=127.0.0.1`:** back e Next escutam só em localhost; quem fica exposto é o proxy.
+- **`CORS_ORIGINS`, `BETTER_AUTH_URL` e `trustedOrigins`:** com o endereço HTTPS do proxy (M6).
+- **`ENABLE_API_DOCS=false`** (padrão): `/docs`, `/reference`, `/swagger.json` e o OpenAPI do Better Auth ficam desligados.
+- **`NODE_ENV=production`** no back e no front (`next build` + `next start`).
+- **`CREDENTIALS_ENCRYPTION_KEY`:** gerada para produção, **diferente** da de desenvolvimento, e guardada **fora do servidor** (cofre ou gerenciador de segredos). Se for perdida, as senhas de AP cifradas não podem ser recuperadas.
+- **Backup do banco** e da pasta `uploads/` (fotos reais).
+- Ver `docs/variaveis-de-ambiente.md` para a lista completa.
+
+### Front
+- **Cores para tokens (B3, parte 2):** ~2.300 classes de cor fixa contra ~1.000 com tokens. Primeiro criar os tokens que faltam (ex.: o do `zinc-900` no escuro) com os mesmos valores de hoje; depois migrar por módulo, quando cada tela for alterada. Concentração: `assets/shared`, menu lateral e `infra/dashboard`.
+- **16 avisos `no-unused-vars`** no lint do front (0 erros). Não bloqueiam o CI; limpar quando as telas forem mexidas.
+- **Aviso do `next-themes` no dev** ("script tag" no overlay após `notFound()`): limitação conhecida da versão 0.4.6, só no desenvolvimento; não contornar.
+- **ID inválido nos ativos (`[id]`):** mostram uma caixa "Ativo não encontrado." na tela e tratam 404 e 500 do mesmo jeito; departamentos, localidades e redes já usam `loadOrNotFound` (404/400 → página de não encontrado; outro erro → `error.tsx`). Decidir se os ativos passam a usar o helper (B6).
+- **Fora do escopo do B5:** títulos dinâmicos em `[id]` e `edit/[id]` (hoje fixos, como "Computador"), `loading.tsx` por rota e `global-error.tsx` (erro no layout raiz).
+- **Sem teste automatizado no front** que impeça voltar a enviar campo extra ao back (M26): hoje só o 400 do back e o roteiro manual cobrem.
+
+### Back
+- **Dependências com major novo:** `@fastify/rate-limit` 11 e `fastify-type-provider-zod` 7 (sem aviso de segurança).
+- **Limites de listagem altos:** `departments`, `locations` e `switches` vão até 1000 e `reports` até 10000 (o front pede `switches?limit=1000`). Reduzir exige paginar essas telas (M8).
+- **Rotas sem chamador no front** (ficaram estritas mesmo assim): `PUT /specs/switch`, `POST /options/*` e o `POST /assets` de AP, switch e OTHER.
+- **Constraint única nova:** o tratador de erros mapeia patrimônio, MAC, hostname, série, código, nome, e-mail, IP, VLAN e rede. Outra restrição única sem mapeamento cai em "Este registro já existe no sistema." (409); mapear quando aparecer.
+
+### Não testado
+- **O CI no GitHub com o lint bloqueante:** só vale depois do push.
+- **Exportar relatório:** o clique em exportar (a action só roda pelo componente de cliente); as chamadas `/api/reports/*` deram 200.
+- **`error.tsx` com erro real do servidor:** testado com o back desligado só na verificação do B5; vale repetir após o deploy.
+- **Navegação depois da remoção de código morto (M4):** o `build` e o `tsc` cobrem imports, não rotas dinâmicas.
