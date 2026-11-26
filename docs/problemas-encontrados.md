@@ -754,8 +754,11 @@ Servidor Linux próprio, front e back no mesmo host, atrás de proxy reverso com
 - **Limites de listagem altos:** `departments`, `locations` e `switches` vão até 1000 e `reports` até 10000 (o front pede `switches?limit=1000`). Reduzir exige paginar essas telas (M8).
 - **Rotas sem chamador no front** (ficaram estritas mesmo assim): `PUT /specs/switch`, `POST /options/*` e o `POST /assets` de AP, switch e OTHER.
 - **Constraint única nova:** o tratador de erros mapeia patrimônio, MAC, hostname, série, código, nome, e-mail, IP, VLAN e rede. Outra restrição única sem mapeamento cai em "Este registro já existe no sistema." (409); mapear quando aparecer.
+- **Avisos do `pnpm audit` que ficaram (26/11/2026):** zod, swagger, swagger-ui e Scalar já foram atualizados (PR #3 do back).
+  - **Prisma:** `hono`, `@hono/node-server`, `effect`, `lodash`, `defu`, `valibot`, `deepmerge-ts` e `mysql2` vêm do CLI do Prisma (`@prisma/client` → `prisma` → `@prisma/dev` e `@prisma/config`). Só rodam no `migrate deploy`, não no serviço. Dependem de uma versão nova do Prisma: atualizar quando sair e rodar `pnpm audit` de novo.
+  - **`fast-uri` 3.1.0:** roda em produção, porque o próprio Fastify o usa (pelo `ajv` e pelo `@fastify/ajv-compiler`). A versão corrigida (≥ 3.1.9) cabe nas faixas `^3`, mas ainda não foi feito o update transitivo.
+  - **`yaml`, `glob`, `minimatch` e `brace-expansion`:** ficam presos às versões antigas dentro do swagger e do swagger-ui, mesmo nas versões mais novas deles. Com `ENABLE_API_DOCS=false` não são carregados (import dinâmico no `app.ts`).
 
 ### Não testado
-- **O CI no GitHub com o lint bloqueante:** só vale depois do push.
 - **`error.tsx` com erro real do servidor** (B5): confirmar no navegador, com o back desligado, que aparece a página de erro com "Tentar novamente"; repetir após o deploy.
 - **Navegação depois da remoção de código morto (M4):** o `build` e o `tsc` cobrem imports, não rotas dinâmicas.
