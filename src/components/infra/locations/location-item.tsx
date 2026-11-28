@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/popover";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { ConfirmDeleteDialog } from "@/components/users/confirm-delete-dialog";
+import { formatFloor } from "@/lib/location-floor";
 import { Location } from "@/types/location";
 
 type Props = {
@@ -46,12 +47,12 @@ export function LocationItem({ location }: Props) {
         }
     };
 
-    // 💡 Tipo ajustado para aceitar `undefined` do tipo Location
     const renderFloor = (floor?: string | null) => {
-        if (!floor || floor.trim().toUpperCase() === "N/A") {
+        const label = formatFloor(floor);
+        if (!label) {
             return <span className="text-muted-foreground/50">—</span>;
         }
-        return <span>{floor}º Andar</span>;
+        return <span>{label}</span>;
     };
 
     return (
