@@ -671,6 +671,12 @@ Os caminhos e as linhas foram conferidos no código na data da revisão.
 - **README:** os `README.md` são os padrões do `create-next-app`.
 - **Esforço:** P
 
+### B7. Andar da localidade sempre com "º Andar" ✅ corrigido (28/11/2026)
+> **Problema:** o andar é texto livre (`floor String?` no Prisma, sem regra no back), mas a lista de localidades e o card de alocação dos detalhes de ativo sempre acrescentavam "º Andar": "térreoº Andar", "3º andarº Andar" e, no card, "N/Aº Andar".
+> **Resolvido:** função única `formatFloor` (`src/lib/location-floor.ts`), que ignora maiúsculas, acentos e espaços. Número (com ou sem "º" ou "andar") → "2º Andar"; térreo → "Térreo"; subsolo → "Subsolo"; último (andar) → "Último andar"; vazio ou "N/A" → nada ("—" na lista). Valor fora das regras aparece como foi gravado. Usada em `location-item.tsx` e `asset-allocation-card.tsx`, os únicos lugares que exibem o andar; relatórios, impressão e listas de switch/AP mostram só o nome da localidade, e não há exportação de arquivo.
+> **Verificação:** `location-floor.test.ts` (cada caso) e `location-floor-display.test.tsx` (as duas telas renderizadas; falha com o código antigo). **Não testado** no navegador.
+> **Ficou de fora:** trocar o campo do cadastro por um select (aguardando decisão).
+
 ---
 
 ## Dúvidas registradas

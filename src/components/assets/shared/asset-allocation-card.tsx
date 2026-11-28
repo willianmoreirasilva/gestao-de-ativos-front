@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { formatFloor } from "@/lib/location-floor";
 import { OptionItem } from "@/types/assets";
 
 interface AssetAllocationCardProps {
@@ -38,8 +39,9 @@ export function AssetAllocationCard({
     readOnly = false,
 }: AssetAllocationCardProps) {
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const floorLabel = formatFloor(location?.floor);
     const hasSubLocation =
-        location?.building || location?.floor || location?.room;
+        location && (location.building || floorLabel || location.room);
 
     return (
         <TooltipProvider delayDuration={200}>
@@ -125,12 +127,12 @@ export function AssetAllocationCard({
                                             Prédio: {location.building}
                                         </Badge>
                                     )}
-                                    {location.floor && (
+                                    {floorLabel && (
                                         <Badge
                                             variant="secondary"
                                             className="text-[10px] font-medium px-1.5 py-0 bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 border-none"
                                         >
-                                            {location.floor}º Andar
+                                            {floorLabel}
                                         </Badge>
                                     )}
                                     {location.room && (
